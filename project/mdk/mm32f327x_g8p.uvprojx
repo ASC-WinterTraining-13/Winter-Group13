@@ -419,6 +419,16 @@
               <FileType>5</FileType>
               <FilePath>..\code\Key.h</FilePath>
             </File>
+            <File>
+              <FileName>Menu.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\Menu.c</FilePath>
+            </File>
+            <File>
+              <FileName>Menu.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\Menu.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

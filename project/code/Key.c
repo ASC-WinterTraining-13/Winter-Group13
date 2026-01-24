@@ -32,7 +32,6 @@ uint8_t Key_GetNum(void)
 //	return 0;
 }
 
-
 uint8_t Key_GetState(void)//获取当前按键状态的子函数
 {
 	if (!gpio_get_level(KEY1))//检测KEY1按下
@@ -53,4 +52,21 @@ uint8_t Key_GetState(void)//获取当前按键状态的子函数
 	}
 	return 0;//没有任何按键按下
 }
+
+uint8_t Key_Tick(void)
+{
+	static uint8_t CurrState,PrevState;//Current,Previous
+	//静态变量默认值为0，函数退出后值不会丢失
+	
+	PrevState = CurrState;
+	CurrState = Key_GetState();
+	
+	if(CurrState == 0 && PrevState != 0)//捕获按键松手瞬间
+	{
+		Key_Num = PrevState;//键码标志位
+	}
+}
+
+
+
 
