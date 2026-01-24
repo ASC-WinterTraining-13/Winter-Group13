@@ -110,6 +110,8 @@ static uint8_t mode_flag = 1;
 
 int Mode_2_Function(void)
 {
+	mode_flag = 1;
+	
 	oled_set_font(OLED_6X8_FONT);  
 	//显示菜单
 	Mode_2_UI(1);
