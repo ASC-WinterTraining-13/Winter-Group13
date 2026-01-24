@@ -16,11 +16,12 @@ int main(void)
     clock_init(SYSTEM_CLOCK_120M);                                              	// 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               	// 初始化默认 Debug UART
 
+	//外设初始化
 	Peripheral_Init();
         
     while(1)
     {
-        
+        //显示菜单
 		Menu_Show();
 
     }

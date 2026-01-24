@@ -429,6 +429,66 @@
               <FileType>5</FileType>
               <FilePath>..\code\Menu.h</FilePath>
             </File>
+            <File>
+              <FileName>Mode_1.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\Mode_1.c</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_1.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\Mode_1.h</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_2.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\Mode_2.c</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_2.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\Mode_2.h</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\Mode_3.c</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_3.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\Mode_3.h</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\Mode_4.c</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_4.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\Mode_4.h</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_5.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\Mode_5.c</FilePath>
+            </File>
+            <File>
+              <FileName>Mode_5.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\Mode_5.h</FilePath>
+            </File>
+            <File>
+              <FileName>param_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\param_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>param_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\param_config.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
