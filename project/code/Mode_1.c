@@ -22,7 +22,6 @@ void Mode_1_UI(uint8_t Page)
 			oled_show_float(24, 3, angle_pid.ki, 2, 2);
 			oled_show_float(24, 4, angle_pid.kd, 2, 2);
 
-
 			break;
 		}
 	}
@@ -39,10 +38,6 @@ static volatile uint8_t KeyNum = 0;
 
 
 /*--------------------[S] 数据更改 [S]--------------------*/
-
-
-
-
 
 
 void Set_Mode_1_Param(uint8_t Num)
@@ -103,24 +98,17 @@ void Set_Mode_1_Param(uint8_t Num)
         }
 	}
 }
-
-
-
-
-
-
 /*--------------------[E] 数据更改 [E]--------------------*/
 
 
 /*--------------------[S] 交互界面 [S]--------------------*/
 
 
-
 //选项数量
 #define OPT_NUM			3
 
 //菜单选项标志位
-uint8_t mode_flag = 1;
+static uint8_t mode_flag = 1;
 
 int Mode_1_Function(void)
 {
@@ -165,8 +153,7 @@ int Mode_1_Function(void)
 		if (mode_flag_temp)
 		{
 			Set_Mode_1_Param(mode_flag_temp);
-		}
-		
+		}		
 
 		
 		/*菜单显示更新*/
@@ -196,10 +183,8 @@ int Mode_1_Function(void)
 					
 					break;
 				
-
 			}
-		}
-	
+		}	
 	}
 }
 

@@ -103,13 +103,13 @@ void Menu_Show(void)
 		//模式1
 		if (menuflag_temp == 1){oled_clear();Mode_1_Function();}
 		//模式2
-		else if (menuflag_temp == 2){}
+		else if (menuflag_temp == 2){oled_clear();Mode_2_Function();}
 		//模式3
-		else if (menuflag_temp == 3){}
+		else if (menuflag_temp == 3){oled_clear();Mode_3_Function();}
 		//模式4
-		else if (menuflag_temp == 4){}
+		else if (menuflag_temp == 4){oled_clear();Mode_4_Function();}
 		//模式5
-		else if (menuflag_temp == 5){}	
+		else if (menuflag_temp == 5){oled_clear();Mode_5_Function();}	
 
 		
 		/*菜单显示更新*/
