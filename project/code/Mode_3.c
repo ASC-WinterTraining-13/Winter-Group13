@@ -3,6 +3,7 @@
 #include "Key.h"
 #include "Menu.h"
 #include "param_config.h"
+#include "param_storage.h"
 
 /*--------------------[S] 菜单样式 [S]--------------------*/
 
@@ -18,9 +19,9 @@ void Mode_3_UI(uint8_t Page)
 			oled_show_string(2, 2, " Kp:");
 			oled_show_string(2, 3, " Ki:");
 			oled_show_string(2, 4, " Kd:");
-			oled_show_float(24, 2, mode_3_pid.kp, 2, 2);
-			oled_show_float(24, 3, mode_3_pid.ki, 2, 2);
-			oled_show_float(24, 4, mode_3_pid.kd, 2, 2);
+			oled_show_float(24, 2, MODE3_KP, 2, 2);
+			oled_show_float(24, 3, MODE3_KI, 2, 2);
+			oled_show_float(24, 4, MODE3_KD, 2, 2);
 
 			break;
 		}
@@ -54,19 +55,19 @@ void Set_Mode_3_Param(uint8_t Num)
     switch (Num)
     {
         case 1:  // Kp
-            current_param = &mode_3_pid.kp;
+            current_param = &MODE3_KP;
             step_value = mode_3_pid_step.kp;
             row = 2;
             break;
             
         case 2:  // Ki
-            current_param = &mode_3_pid.ki;
+            current_param = &MODE3_KI;
             step_value = mode_3_pid_step.ki;
             row = 3;
             break;
             
         case 3:  // Kd
-            current_param = &mode_3_pid.kd;
+            current_param = &MODE3_KD;
             step_value = mode_3_pid_step.kd;
             row = 4;
             break;
@@ -92,8 +93,9 @@ void Set_Mode_3_Param(uint8_t Num)
         }
         else if (KeyNum == KEY_CONFIRM || KeyNum == KEY_BACK)
         {
-            // 恢复光标为 ">"
+            // 恢复光标为 ">"			
             oled_show_string(0, row, ">");
+			Param_Save();
             break;  // 退出修改模式
         }
 	}

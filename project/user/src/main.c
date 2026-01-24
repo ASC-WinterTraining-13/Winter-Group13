@@ -41,6 +41,7 @@
 #include "zf_device_oled.h"
 
 #include "Menu.h"
+#include "param_storage.h"
 
 
 // 打开新的工程或者工程移动了位置务必执行以下操作
@@ -54,6 +55,10 @@ int main(void)
     clock_init(SYSTEM_CLOCK_120M);                                              	// 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               	// 初始化默认 Debug UART
 
+	//如果有需要，取消注释，使得flash接下来存储默认值
+//	Param_Erase();
+	//falsh读取尝试
+	Param_Init();
 	//外设初始化
 	Peripheral_Init();
         

@@ -3,6 +3,7 @@
 #include "Key.h"
 #include "Menu.h"
 #include "param_config.h"
+#include "param_storage.h"
 
 /*--------------------[S] 菜单样式 [S]--------------------*/
 
@@ -13,14 +14,14 @@ void Mode_5_UI(uint8_t Page)
 		//第一页
 		case 1:
 		{
-			oled_show_string(0, 0, "Mode_4");
+			oled_show_string(0, 0, "Mode_5");
 			oled_show_string(0, 1, "===");
 			oled_show_string(2, 2, " Kp:");
 			oled_show_string(2, 3, " Ki:");
 			oled_show_string(2, 4, " Kd:");
-			oled_show_float(24, 2, mode_5_pid.kp, 2, 2);
-			oled_show_float(24, 3, mode_5_pid.ki, 2, 2);
-			oled_show_float(24, 4, mode_5_pid.kd, 2, 2);
+			oled_show_float(24, 2, MODE5_KP, 2, 2);
+			oled_show_float(24, 3, MODE5_KI, 2, 2);
+			oled_show_float(24, 4, MODE5_KD, 2, 2);
 
 			break;
 		}
@@ -54,19 +55,19 @@ void Set_Mode_5_Param(uint8_t Num)
     switch (Num)
     {
         case 1:  // Kp
-            current_param = &mode_5_pid.kp;
+            current_param = &MODE5_KP;
             step_value = mode_5_pid_step.kp;
             row = 2;
             break;
             
         case 2:  // Ki
-            current_param = &mode_5_pid.ki;
+            current_param = &MODE5_KI;
             step_value = mode_5_pid_step.ki;
             row = 3;
             break;
             
         case 3:  // Kd
-            current_param = &mode_5_pid.kd;
+            current_param = &MODE5_KD;
             step_value = mode_5_pid_step.kd;
             row = 4;
             break;
@@ -92,8 +93,9 @@ void Set_Mode_5_Param(uint8_t Num)
         }
         else if (KeyNum == KEY_CONFIRM || KeyNum == KEY_BACK)
         {
-            // 恢复光标为 ">"
+            // 恢复光标为 ">"			
             oled_show_string(0, row, ">");
+			Param_Save();
             break;  // 退出修改模式
         }
 	}
