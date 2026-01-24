@@ -1,0 +1,56 @@
+# Keil MDK build outputs
+project/mdk/Objects/
+project/mdk/Listings/
+project/mdk/*.axf
+project/mdk/*.bin
+project/mdk/*.hex
+project/mdk/*.map
+project/mdk/*.lst
+project/mdk/*.crf
+project/mdk/*.d
+project/mdk/*.o
+project/mdk/*.obj
+project/mdk/*.tra
+project/mdk/*.log
+project/mdk/JLinkLog.txt
+project/mdk/*.uvgui*
+project/mdk/*.scvd
+project/mdk/*.bak
+project/mdk/*.__i
+project/mdk/*.tmp
+
+# IAR build outputs
+project/iar/**/Debug/
+project/iar/**/Release/
+project/iar/**/Obj/
+project/iar/**/Exe/
+project/iar/**/*.dep
+project/iar/**/*.map
+project/iar/**/*.lst
+project/iar/**/*.crun
+project/iar/**/*.dbgdt
+project/iar/**/*.ps1
+project/iar/**/*.xcl
+project/iar/**/*.reggroups
+
+# Generic C/C++ artifacts
+*.o
+*.obj
+*.d
+*.elf
+*.out
+*.map
+*.lst
+*.log
+*.tmp
+*.bak
+*.swp
+*.swo
+
+# Tooling/IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
