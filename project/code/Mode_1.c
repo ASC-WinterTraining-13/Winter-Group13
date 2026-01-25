@@ -310,7 +310,7 @@ int Mode_1_Menu(void)
 int Mode_1_Running(void)
 {
 	oled_set_font(OLED_6X8_FONT);
-    oled_show_string(0, 0, "Running");
+
 	oled_show_string(0, 1, "R :");
 	oled_show_string(0, 2, "Y :");
 	oled_show_string(0, 3, "P :");
@@ -318,8 +318,32 @@ int Mode_1_Running(void)
 	oled_show_string(0, 5, "GY:");
 	oled_show_string(0, 6, "GZ:");
     
+	//校准逻辑
+	MPU6050_Calibration_Start();
+	while(1)  // 校准循环
+    {
+        if (MPU6050_Calibration_Check() == 0)  // 校准完成
+        {
+            break;  //跳出校准循环，往下执行
+        }
+        
+        //可以考虑在这里操作OLED
+        
+        //强制校准退出
+        if(KEY_SHORT_PRESS == key_get_state(KEY_BACK)) {
+            key_clear_state(KEY_BACK);
+            break;  // 退出整个模式
+        }
+        
+        //防止刷新过快
+        system_delay_ms(1);
+    }
+	
+	oled_show_string(0, 0, "Running");
+	
     while(1)
     {  
+		
         
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
         {
@@ -354,9 +378,9 @@ int Mode_1_Running(void)
 		}
 
 		
-		oled_show_float(18, 1, Roll, 3, 3);
-		oled_show_float(18, 2, Yaw, 3, 3);
-		oled_show_float(18, 3, Pitch, 3, 3);
+		oled_show_float(18, 1, Roll_Result, 3, 3);
+		oled_show_float(18, 2, Yaw_Result, 3, 3);
+		oled_show_float(18, 3, Pitch_Result, 3, 3);
 		oled_show_int(18, 4, mpu6050_gyro_x, 4);
 		oled_show_int(18, 5, mpu6050_gyro_y, 4);
 		oled_show_int(18, 6, mpu6050_gyro_z, 4);
