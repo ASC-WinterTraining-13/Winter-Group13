@@ -34,8 +34,8 @@ void Menu_UI(uint8_t Page)
 		{
 			oled_show_string(0, 0, "MENU");
 			oled_show_string(0, 2, "===");
-			oled_show_string(0, 4, " Mode_1");
-			oled_show_string(0, 6, " Mode_2");
+			oled_show_string(2, 4, " Mode_1");
+			oled_show_string(2, 6, " Mode_2");
 
 			break;
 		}
@@ -43,9 +43,9 @@ void Menu_UI(uint8_t Page)
 		//第二页
 		case 2:
 		{
-			oled_show_string(0, 0, " Mode_3");
-			oled_show_string(0, 2, " Mode_4");
-			oled_show_string(0, 4, " Mode_5");
+			oled_show_string(2, 0, " Mode_3");
+			oled_show_string(2, 2, " Mode_4");
+			oled_show_string(2, 4, " Mode_5");
 			
 			break;
 		}
