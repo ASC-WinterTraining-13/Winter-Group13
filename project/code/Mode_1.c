@@ -7,21 +7,31 @@
 
 /*--------------------[S] 菜单样式 [S]--------------------*/
 
-void Mode_1_UI(uint8_t Page)
+//模式内界面
+void Mode_1_Menu_UI(void)
+{
+	oled_show_string(0, 0, "Mode_1");
+	oled_show_string(0, 2, "===");
+	oled_show_string(2, 4, " Start");
+	oled_show_string(2, 6, " Param");
+}
+
+//模式内参数设置界面
+void Mode_1_Set_Param_UI(uint8_t Page)
 {
 	switch(Page){
 		
 		//第一页
 		case 1:
 		{
-			oled_show_string(0, 0, "Mode_1");
+			oled_show_string(0, 0, "Param");
 			oled_show_string(0, 1, "===");
 			oled_show_string(2, 2, " Kp:");
 			oled_show_string(2, 3, " Ki:");
 			oled_show_string(2, 4, " Kd:");
-			oled_show_float(24, 2, ANGLE_KP, 2, 2);
-			oled_show_float(24, 3, ANGLE_KI, 2, 2);
-			oled_show_float(24, 4, ANGLE_KD, 2, 2);
+			oled_show_float(28, 2, ANGLE_KP, 2, 2);
+			oled_show_float(28, 3, ANGLE_KI, 2, 2);
+			oled_show_float(28, 4, ANGLE_KD, 2, 2);
 
 			break;
 		}
@@ -46,12 +56,12 @@ void Set_Mode_1_Param(uint8_t Num)
 	//数据更改步幅
 	PID_Params_t angle_pid_step = {1.0f, 0.01f, 0.1f};
 	
-	 // 指向要修改的参数的指针
+	 //指向要修改的参数的指针
     float* current_param = NULL;
     float step_value = 0.0f;
-    uint8_t row = 0;  // 数据对应的显示行号
+    uint8_t row = 0;  //数据对应的显示行号
     
-    // 根据选项确定要修改的参数
+    //根据选项确定要修改的参数
     switch (Num)
     {
         case 1:  // Kp
@@ -103,32 +113,30 @@ void Set_Mode_1_Param(uint8_t Num)
 /*--------------------[E] 数据更改 [E]--------------------*/
 
 
-/*--------------------[S] 主要运行函数 [S]--------------------*/
+/*--------------------[S] 交互界面 [S]--------------------*/
 
+/*[模式内菜单子界面]*/
 
-//选项数量
+//参数设置选项数量
 #define OPT_NUM			3
 
-//菜单选项标志位
-static uint8_t mode_flag = 1;
+//参数设置选项光标 标志位
+static uint8_t Param_flag = 1;
 
-int Mode_1_Function(void)
+int Mode_1_Set_Param(void)
 {
-	mode_flag = 1;
+	//参数设置选项光标 标志位重置
+	Param_flag = 1;
 	
+	//显示
 	oled_set_font(OLED_6X8_FONT);  
-	//显示菜单
-	Mode_1_UI(1);
+	Mode_1_Set_Param_UI(1);
 	oled_show_string(0, 2, ">");
 	
 	while(1)
 	{
-		
-		
-		/*--------------------[S] 交互界面 [S]--------------------*/
-		
-		//存储确认键被按下时mode_flag的值的临时变量，默认为无效值0
-		uint8_t mode_flag_temp = 0;
+		//存储确认键被按下时Param_flag的值的临时变量，默认为无效值0
+		uint8_t Param_flag_temp = 0;
 		
 		Key_Tick();
 		KeyNum = Key_GetNum();	
@@ -136,17 +144,99 @@ int Mode_1_Function(void)
 		/*按键解析*/
 		if (KeyNum == KEY_UP)
 		{
-			mode_flag --;
-			if (mode_flag < 1)mode_flag = OPT_NUM;	
+			Param_flag --;
+			if (Param_flag < 1)Param_flag = OPT_NUM;	
 		}
 		else if (KeyNum == KEY_DOWN)
 		{
-			mode_flag ++;
-			if (mode_flag > OPT_NUM)mode_flag = 1;	
+			Param_flag ++;
+			if (Param_flag > OPT_NUM)Param_flag = 1;	
 		}
 		else if (KeyNum == KEY_CONFIRM)
 		{
-			mode_flag_temp = mode_flag;
+			Param_flag_temp = Param_flag;
+		}
+		else if (KeyNum == KEY_BACK)
+		{
+			//返回上一级界面
+			return 0;
+		}
+		
+		/*数据更改模式*/
+		if (Param_flag_temp)
+		{
+			Set_Mode_1_Param(Param_flag_temp);
+		}		
+		
+		/*显示更新*/
+		//判断是否需要更新
+		if (KeyNum == KEY_UP || KeyNum == KEY_DOWN)
+		{
+			switch(Param_flag)
+			{
+				case 1:
+					oled_clear();
+					Mode_1_Set_Param_UI(1);
+					oled_show_string(0, 2, ">");
+				
+					break;
+				
+				case 2:
+					oled_clear();
+					Mode_1_Set_Param_UI(1);
+					oled_show_string(0, 3, ">");
+				
+					break;
+				
+				case 3:
+					oled_clear();
+					Mode_1_Set_Param_UI(1);
+					oled_show_string(0, 4, ">");
+					
+					break;				
+			}
+		}	
+	}
+}
+
+//方便模式内菜单母界面调用
+int Mode_1_Running(void);
+
+/*[模式内菜单母界面]*/
+
+//模式菜单选项光标 标志位
+static uint8_t Mode_Menu_flag = 1;
+
+int Mode_1_Menu(void)
+{
+	//模式菜单选项光标 标志位 重置
+	Mode_Menu_flag  = 1;
+	
+	//显示
+	Mode_1_Menu_UI();
+	oled_show_string(0, 4, ">");
+	
+	while(1)
+	{
+		//存储确认键被按下时Mode_Menu_flag的值的临时变量，默认为无效值0
+		uint8_t Mode_Menu_flag_temp = 0;
+		
+		Key_Tick();
+		KeyNum = Key_GetNum();	
+		
+		if (KeyNum == KEY_UP)
+		{
+			Mode_Menu_flag --;
+			if (Mode_Menu_flag < 1)Mode_Menu_flag = 2;
+		}
+		else if (KeyNum == KEY_DOWN)
+		{
+			Mode_Menu_flag ++;
+			if (Mode_Menu_flag > 2)Mode_Menu_flag = 1;	
+		}
+		else if (KeyNum == KEY_CONFIRM)
+		{
+			Mode_Menu_flag_temp = Mode_Menu_flag;
 		}
 		else if (KeyNum == KEY_BACK)
 		{
@@ -154,55 +244,94 @@ int Mode_1_Function(void)
 			oled_set_font(OLED_8X16_FONT);  
 			Menu_UI(1);
 			oled_show_string(0, 4, ">");
+			
 			return 0;
 		}
 		
-		/*数据更改模式*/
-		if (mode_flag_temp)
+		if (Mode_Menu_flag_temp == 1)
 		{
-			Set_Mode_1_Param(mode_flag_temp);
-		}		
-
+			oled_clear();
+			Mode_1_Running();
+			//返回后重新显示菜单
+			oled_clear();
+			oled_set_font(OLED_8X16_FONT); 
+			Mode_1_Menu_UI();
+			oled_show_string(0, 4, ">");
+		}
+		if (Mode_Menu_flag_temp == 2)
+		{
+			oled_clear();
+			Mode_1_Set_Param();
+			//返回后重新显示菜单
+			oled_clear();
+			oled_set_font(OLED_8X16_FONT); 
+			Mode_1_Menu_UI();
+			oled_show_string(0, 6, ">");
+		}
 		
-		/*菜单显示更新*/
-		//判断是否需要更新
+		
 		if (KeyNum == KEY_UP || KeyNum == KEY_DOWN)
 		{
-			switch(mode_flag)
+			switch(Mode_Menu_flag)
 			{
 				case 1:
-					oled_clear();
-					Mode_1_UI(1);
-					oled_show_string(0, 2, ">");
-				
-					break;
-				
-				case 2:
-					oled_clear();
-					Mode_1_UI(1);
-					oled_show_string(0, 3, ">");
-				
-					break;
-				
-				case 3:
-					oled_clear();
-					Mode_1_UI(1);
+				{
 					oled_show_string(0, 4, ">");
+					oled_show_string(0, 6, " ");
 					
 					break;
+				}
 				
+				case 2:
+				{
+					oled_show_string(0, 4, " ");
+					oled_show_string(0, 6, ">");
+					
+					break;
+				}
 			}
-		}
+		}	
+	}
+	
+	
+}
+/*--------------------[E] 交互界面 [E]--------------------*/
 
-		/*--------------------[E] 交互界面 [E]--------------------*/
+
+/*--------------------[S] 小车运行界面 [S]--------------------*/
+
+/*[模式内菜单子界面]*/
+
+int Mode_1_Running(void)
+{
+	oled_show_string(0, 0, "Running");
+	
+	while(1)
+	{
+		Key_Tick();
+		KeyNum = Key_GetNum();	
 		
-		
-		
-		
-		
-		
-		
-		
+		if (KeyNum == KEY_UP)
+		{
+
+		}
+		else if (KeyNum == KEY_DOWN)
+		{
+
+		}
+		else if (KeyNum == KEY_CONFIRM)
+		{
+
+		}
+		else if (KeyNum == KEY_BACK)
+		{
+			//小车停止......
+			
+			
+			
+			//返回上一级界面
+			return 0;
+		}
 		
 		
 		
@@ -215,5 +344,4 @@ int Mode_1_Function(void)
 		
 	}
 }
-
-/*--------------------[E] 主要运行函数 [E]--------------------*/
+/*--------------------[E] 小车运行界面 [E]--------------------*/

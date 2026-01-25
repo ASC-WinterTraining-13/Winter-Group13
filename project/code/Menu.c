@@ -101,15 +101,55 @@ void Menu_Show(void)
 		
 		/*模式跳转*/
 		//模式1
-		if (menuflag_temp == 1){oled_clear();Mode_1_Function();}
+		if (menuflag_temp == 1)
+		{
+			oled_clear();
+			Mode_1_Menu();
+			//返回后重新显示菜单
+			oled_set_font(OLED_8X16_FONT);  
+            Menu_UI(1);
+            oled_show_string(0, 4, ">");
+		}
 		//模式2
-		else if (menuflag_temp == 2){oled_clear();Mode_2_Function();}
+		else if (menuflag_temp == 2)
+		{
+			oled_clear();
+			Mode_2_Menu();
+			//返回后重新显示菜单
+			oled_set_font(OLED_8X16_FONT);  
+            Menu_UI(1);
+            oled_show_string(0, 6, ">");
+		}
 		//模式3
-		else if (menuflag_temp == 3){oled_clear();Mode_3_Function();}
+		else if (menuflag_temp == 3)
+		{
+			oled_clear();
+			Mode_3_Menu();
+			//返回后重新显示菜单
+			oled_set_font(OLED_8X16_FONT);  
+            Menu_UI(2);
+            oled_show_string(0, 0, ">");
+		}
 		//模式4
-		else if (menuflag_temp == 4){oled_clear();Mode_4_Function();}
+		else if (menuflag_temp == 4)
+		{
+			oled_clear();
+			Mode_4_Menu();
+			//返回后重新显示菜单
+			oled_set_font(OLED_8X16_FONT);  
+            Menu_UI(2);
+            oled_show_string(0, 2, ">");
+		}
 		//模式5
-		else if (menuflag_temp == 5){oled_clear();Mode_5_Function();}	
+		else if (menuflag_temp == 5)
+		{
+			oled_clear();
+			Mode_5_Menu();
+			//返回后重新显示菜单
+			oled_set_font(OLED_8X16_FONT);  
+            Menu_UI(2);
+            oled_show_string(0, 4, ">");
+		}	
 
 		
 		/*菜单显示更新*/
