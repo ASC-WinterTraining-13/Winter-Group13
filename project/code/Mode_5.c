@@ -1,6 +1,6 @@
 #include "zf_device_oled.h"
+#include "zf_device_key.h"
 
-#include "Key.h"
 #include "Menu.h"
 #include "param_config.h"
 #include "param_storage.h"
@@ -40,14 +40,6 @@ void Mode_5_Set_Param_UI(uint8_t Page)
 /*--------------------[E] 菜单样式 [E]--------------------*/
 
 
-//按键值初始为无效值0;返回值1、2、3、4对应（逐飞学习板）E2、E3、E4、E5;功能见宏定义
-static volatile uint8_t KeyNum = 0;
-#define KEY_UP          1
-#define KEY_DOWN        2
-#define KEY_CONFIRM     3
-#define KEY_BACK        4
-
-
 /*--------------------[S] 数据更改 [S]--------------------*/
 
 void Set_Mode_5_Param(uint8_t Num)
@@ -85,23 +77,27 @@ void Set_Mode_5_Param(uint8_t Num)
     oled_show_string(0, row, "=");
     
     while(1)
-    {
-        Key_Tick();
-        KeyNum = Key_GetNum();    
-        
-        
-        if (KeyNum == KEY_UP)
-        {
+    {              
+		/*按键解析*/
+        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
+		{
+			key_clear_state(KEY_UP);
             *current_param += step_value;  // 增加参数
             oled_show_float(28, row, *current_param, 2, 2);  // 更新显示
         }
-        else if (KeyNum == KEY_DOWN)
-        {
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
+		{
+			key_clear_state(KEY_DOWN);
             *current_param -= step_value;  // 减少参数
             oled_show_float(28, row, *current_param, 2, 2);  // 更新显示
         }
-        else if (KeyNum == KEY_CONFIRM || KeyNum == KEY_BACK)
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM) || 
+                 KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
+            if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
+                key_clear_state(KEY_CONFIRM);
+            if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
+                key_clear_state(KEY_BACK);
             // 恢复光标为 ">"            
             oled_show_string(0, row, ">");
             Param_Save();
@@ -134,26 +130,32 @@ int Mode_5_Set_Param(void)
         //存储确认键被按下时Param_flag的值的临时变量，默认为无效值0
         uint8_t Param_flag_temp = 0;
         
-        Key_Tick();
-        KeyNum = Key_GetNum();    
+		//上/下按键是否被按下过
+		uint8_t key_pressed = 0;  
                 
         /*按键解析*/
-        if (KeyNum == KEY_UP)
-        {
+        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
+		{
+			key_pressed = 1;
+			key_clear_state(KEY_UP);
             Param_flag --;
             if (Param_flag < 1)Param_flag = OPT_NUM;    
         }
-        else if (KeyNum == KEY_DOWN)
-        {
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
+		{
+			key_pressed = 1;
+			key_clear_state(KEY_DOWN);
             Param_flag ++;
             if (Param_flag > OPT_NUM)Param_flag = 1;    
         }
-        else if (KeyNum == KEY_CONFIRM)
-        {
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
+		{
+			key_clear_state(KEY_CONFIRM);
             Param_flag_temp = Param_flag;
         }
-        else if (KeyNum == KEY_BACK)
-        {
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
+		{
+			key_clear_state(KEY_BACK);
             //返回上一级界面
             return 0;
         }
@@ -165,8 +167,8 @@ int Mode_5_Set_Param(void)
         }        
         
         /*显示更新*/
-        //判断是否需要更新
-        if (KeyNum == KEY_UP || KeyNum == KEY_DOWN)
+        //判断界面是否需要更新
+        if (key_pressed)
         {
             switch(Param_flag)
             {
@@ -214,30 +216,38 @@ int Mode_5_Menu(void)
         //存储确认键被按下时Mode_Menu_flag的值的临时变量，默认为无效值0
         uint8_t Mode_Menu_flag_temp = 0;
         
-        Key_Tick();
-        KeyNum = Key_GetNum();    
+        //上/下按键是否被按下过
+		uint8_t key_pressed = 0;     
         
-        if (KeyNum == KEY_UP)
-        {
+		/*按键解析*/
+        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
+		{
+			key_pressed = 1;
+			key_clear_state(KEY_UP);
             Mode_Menu_flag --;
             if (Mode_Menu_flag < 1)Mode_Menu_flag = 2;
         }
-        else if (KeyNum == KEY_DOWN)
-        {
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
+		{
+			key_pressed = 1;
+			key_clear_state(KEY_DOWN);
             Mode_Menu_flag ++;
             if (Mode_Menu_flag > 2)Mode_Menu_flag = 1;    
         }
-        else if (KeyNum == KEY_CONFIRM)
-        {
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
+		{
+			key_clear_state(KEY_CONFIRM);
             Mode_Menu_flag_temp = Mode_Menu_flag;
         }
-        else if (KeyNum == KEY_BACK)
-        {
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
+		{
+			key_clear_state(KEY_BACK);
             oled_clear();
             
             return 0;
         }
         
+		/*页面跳转*/
         if (Mode_Menu_flag_temp == 1)
         {
             oled_clear();
@@ -259,8 +269,8 @@ int Mode_5_Menu(void)
             oled_show_string(0, 6, ">");
         }
         
-        
-        if (KeyNum == KEY_UP || KeyNum == KEY_DOWN)
+        /*显示更新*/
+        if (key_pressed)
         {
             switch(Mode_Menu_flag)
             {
@@ -295,31 +305,32 @@ int Mode_5_Running(void)
     oled_show_string(0, 0, "Running");
     
     while(1)
-    {
-        Key_Tick();
-        KeyNum = Key_GetNum();    
+    {  
         
-        if (KeyNum == KEY_UP)
-        {
+        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
+		{
+			key_clear_state(KEY_UP);
+			// 处理上键
+		}
 
-        }
-        else if (KeyNum == KEY_DOWN)
-        {
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
+		{
+			key_clear_state(KEY_DOWN);
+			// 处理下键
+		}
 
-        }
-        else if (KeyNum == KEY_CONFIRM)
-        {
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
+		{
+			key_clear_state(KEY_CONFIRM);
+			// 处理确认键
+		}
 
-        }
-        else if (KeyNum == KEY_BACK)
-        {
-            //小车停止......
-            
-            
-            
-            //返回上一级界面
-            return 0;
-        }
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
+		{
+			key_clear_state(KEY_BACK);
+			// 处理返回键
+			return 0;
+		}
     }
 }
 /*--------------------[E] 小车运行界面 [E]--------------------*/

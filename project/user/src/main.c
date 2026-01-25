@@ -37,8 +37,7 @@
 
 
 #include "zf_common_headfile.h"
-
-#include "zf_device_oled.h"
+#include "zf_driver_pit.h"
 
 #include "Menu.h"
 #include "param_storage.h"
@@ -61,6 +60,9 @@ int main(void)
 	Param_Init();
 	//外设初始化
 	Peripheral_Init();
+	
+	// 初始化10ms定时器用于按键扫描
+    pit_ms_init(TIM6_PIT, 10);
         
     while(1)
     {

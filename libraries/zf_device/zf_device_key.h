@@ -62,12 +62,12 @@
 
 typedef enum
 {
-    KEY_1,
-    KEY_2,
-    KEY_3,
-    KEY_4,
-    KEY_NUMBER,
-}key_index_enum;                                                                // 按键索引 对应上方定义的按键引脚个数 默认定义四个按键
+    KEY_UP,          // E2 上键
+    KEY_DOWN,        // E3 下键
+    KEY_CONFIRM,     // E4 确认键
+    KEY_BACK,        // E5 返回键
+    KEY_NUMBER,      // 按键总数
+}key_index_enum;                                                         // 按键索引 对应上方定义的按键引脚个数 默认定义四个按键
 
 typedef enum
 {

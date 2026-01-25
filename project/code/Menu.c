@@ -1,6 +1,6 @@
 #include "zf_device_oled.h"
+#include "zf_device_key.h"
 
-#include "Key.h"
 #include "Mode_1.h"
 #include "Mode_2.h"
 #include "Mode_3.h"
@@ -17,7 +17,8 @@ void Peripheral_Init(void)
     oled_set_font(OLED_8X16_FONT);    
 	oled_clear();
 	
-	Key_Init();
+	// 按键初始化（10ms扫描周期）
+    key_init(10);
 }
 /*--------------------[E] 外设初始化 [E]--------------------*/
 
@@ -55,13 +56,6 @@ void Menu_UI(uint8_t Page)
 
 /*--------------------[S] 交互界面 [S]--------------------*/
 
-//按键值初始为无效值0;返回值1、2、3、4对应（逐飞学习板）E2、E3、E4、E5;功能见宏定义
-static volatile uint8_t KeyNum = 0;
-#define KEY_UP			1
-#define KEY_DOWN		2
-#define KEY_CONFIRM		3
-#define KEY_BACK		4
-
 //菜单选项标志位
 uint8_t menuflag = 1;
 
@@ -70,32 +64,38 @@ void Menu_Show(void)
 	//显示菜单
 	Menu_UI(1);
 	oled_show_string(0, 4, ">");
-	
+		
 	while(1)
 	{
 		//存储确认键被按下时menuflag的值的临时变量，默认为无效值0
 		uint8_t menuflag_temp = 0;
 		
-		Key_Tick();
-		KeyNum = Key_GetNum();	
+		//上/下按键是否被按下过
+		uint8_t key_pressed = 0;
 				
 		/*按键解析*/
-		if (KeyNum == KEY_UP)
+		if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
 		{
+			key_clear_state(KEY_UP);
+			key_pressed  = 1;
 			menuflag --;
 			if (menuflag < 1)menuflag = 5;	
 		}
-		else if (KeyNum == KEY_DOWN)
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
 		{
+			key_clear_state(KEY_DOWN);
+			key_pressed = 1;
 			menuflag ++;
 			if (menuflag > 5)menuflag = 1;	
 		}
-		else if (KeyNum == KEY_CONFIRM)
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
 		{
+			key_clear_state(KEY_CONFIRM);
 			menuflag_temp = menuflag;
 		}
-		else if (KeyNum == KEY_BACK)
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
 		{
+			key_clear_state(KEY_BACK);
 			//
 		}
 		
@@ -154,8 +154,8 @@ void Menu_Show(void)
 		
 		/*菜单显示更新*/
 		//判断是否需要更新
-		if (KeyNum == KEY_UP || KeyNum == KEY_DOWN)
-		{
+		if (key_pressed)
+		{			
 			switch(menuflag)
 			{
 				case 1:
