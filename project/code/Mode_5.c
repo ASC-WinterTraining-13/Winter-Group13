@@ -93,12 +93,12 @@ void Set_Mode_5_Param(uint8_t Num)
         if (KeyNum == KEY_UP)
         {
             *current_param += step_value;  // 增加参数
-            oled_show_float(24, row, *current_param, 2, 2);  // 更新显示
+            oled_show_float(28, row, *current_param, 2, 2);  // 更新显示
         }
         else if (KeyNum == KEY_DOWN)
         {
             *current_param -= step_value;  // 减少参数
-            oled_show_float(24, row, *current_param, 2, 2);  // 更新显示
+            oled_show_float(28, row, *current_param, 2, 2);  // 更新显示
         }
         else if (KeyNum == KEY_CONFIRM || KeyNum == KEY_BACK)
         {
@@ -119,13 +119,10 @@ void Set_Mode_5_Param(uint8_t Num)
 //参数设置选项数量
 #define OPT_NUM         3
 
-//参数设置选项光标 标志位
-static uint8_t Param_flag = 1;
-
 int Mode_5_Set_Param(void)
 {
-    //参数设置选项光标 标志位重置
-    Param_flag = 1;
+    //参数设置选项光标 标志位
+	static uint8_t Param_flag = 1;
     
     //显示
     oled_set_font(OLED_6X8_FONT);  
@@ -203,13 +200,10 @@ int Mode_5_Running(void);
 
 /*[模式内菜单母界面]*/
 
-//模式菜单选项光标 标志位
-static uint8_t Mode_Menu_flag = 1;
-
 int Mode_5_Menu(void)
 {
-    //模式菜单选项光标 标志位 重置
-    Mode_Menu_flag  = 1;
+    //模式菜单选项光标 标志位
+	static uint8_t Mode_Menu_flag = 1;
 	
 	//显示
 	Mode_5_Menu_UI();
