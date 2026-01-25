@@ -48,7 +48,7 @@
 // 第二步 project->clean  等待下方进度条走完
 
 
-int main(void)       
+int main(void) 
 {
 	//最好别动
     clock_init(SYSTEM_CLOCK_120M);                                              	// 初始化芯片时钟 工作频率为 120MHz

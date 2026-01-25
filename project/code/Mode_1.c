@@ -7,6 +7,7 @@
 
 #include "zf_device_mpu6050.h"
 #include "timer_flag.h"
+#include "mpu6050_Analysis.h"
 
 /*--------------------[S] 菜单样式 [S]--------------------*/
 
@@ -310,12 +311,12 @@ int Mode_1_Running(void)
 {
 	oled_set_font(OLED_6X8_FONT);
     oled_show_string(0, 0, "Running");
-	oled_show_string(0, 1, "GX:");
-	oled_show_string(0, 2, "GY:");
-	oled_show_string(0, 3, "GZ:");
-	oled_show_string(0, 4, "AX:");
-	oled_show_string(0, 5, "AY:");
-	oled_show_string(0, 6, "AZ:");
+	oled_show_string(0, 1, "R :");
+	oled_show_string(0, 2, "Y :");
+	oled_show_string(0, 3, "P :");
+	oled_show_string(0, 4, "GX:");
+	oled_show_string(0, 5, "GY:");
+	oled_show_string(0, 6, "GZ:");
     
     while(1)
     {  
@@ -349,14 +350,16 @@ int Mode_1_Running(void)
 		{
 			mpu6050_get_data();
 			mpu6050_analysis_enable = 0;
+			MPU6050_Analysis();
 		}
+
 		
-		oled_show_int(18, 1, mpu6050_gyro_x, 3);
-		oled_show_int(18, 2, mpu6050_gyro_y, 3);
-		oled_show_int(18, 3, mpu6050_gyro_z, 3);
-		oled_show_int(18, 4, mpu6050_acc_x, 3);
-		oled_show_int(18, 5, mpu6050_acc_y, 3);
-		oled_show_int(18, 6, mpu6050_acc_z, 3);
+		oled_show_float(18, 1, Roll, 3, 3);
+		oled_show_float(18, 2, Yaw, 3, 3);
+		oled_show_float(18, 3, Pitch, 3, 3);
+		oled_show_int(18, 4, mpu6050_gyro_x, 4);
+		oled_show_int(18, 5, mpu6050_gyro_y, 4);
+		oled_show_int(18, 6, mpu6050_gyro_z, 4);
 		
     }
 }
