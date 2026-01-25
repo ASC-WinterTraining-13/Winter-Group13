@@ -5,6 +5,9 @@
 #include "param_config.h"
 #include "param_storage.h"
 
+#include "zf_device_mpu6050.h"
+#include "timer_flag.h"
+
 /*--------------------[S] 菜单样式 [S]--------------------*/
 
 //模式内界面
@@ -305,7 +308,14 @@ int Mode_1_Menu(void)
 
 int Mode_1_Running(void)
 {
+	oled_set_font(OLED_6X8_FONT);
     oled_show_string(0, 0, "Running");
+	oled_show_string(0, 1, "GX:");
+	oled_show_string(0, 2, "GY:");
+	oled_show_string(0, 3, "GZ:");
+	oled_show_string(0, 4, "AX:");
+	oled_show_string(0, 5, "AY:");
+	oled_show_string(0, 6, "AZ:");
     
     while(1)
     {  
@@ -334,6 +344,20 @@ int Mode_1_Running(void)
             // 处理返回键
             return 0;
         }
+		
+		if (mpu6050_analysis_enable)
+		{
+			mpu6050_get_data();
+			mpu6050_analysis_enable = 0;
+		}
+		
+		oled_show_int(18, 1, mpu6050_gyro_x, 3);
+		oled_show_int(18, 2, mpu6050_gyro_y, 3);
+		oled_show_int(18, 3, mpu6050_gyro_z, 3);
+		oled_show_int(18, 4, mpu6050_acc_x, 3);
+		oled_show_int(18, 5, mpu6050_acc_y, 3);
+		oled_show_int(18, 6, mpu6050_acc_z, 3);
+		
     }
 }
 /*--------------------[E] 小车运行界面 [E]--------------------*/

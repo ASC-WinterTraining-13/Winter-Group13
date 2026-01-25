@@ -118,6 +118,7 @@ extern int16 mpu6050_acc_x, mpu6050_acc_y, mpu6050_acc_z;                       
 
 void    mpu6050_get_acc             (void);
 void    mpu6050_get_gyro            (void);
+void 	mpu6050_get_data 			(void);
 float   mpu6050_acc_transition      (int16 acc_value);                          // 将 MPU6050 加速度计数据转换为实际物理数据
 float   mpu6050_gyro_transition     (int16 gyro_value);                         // 将 MPU6050 陀螺仪数据转换为实际物理数据
 uint8   mpu6050_init                (void);

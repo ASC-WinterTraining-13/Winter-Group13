@@ -63,6 +63,7 @@ int main(void)
 	
 	// 初始化10ms定时器用于按键扫描
     pit_ms_init(TIM6_PIT, 10);
+	pit_ms_init(TIM7_PIT, 5);
         
     while(1)
     {
@@ -71,3 +72,5 @@ int main(void)
 
     }
 }
+
+

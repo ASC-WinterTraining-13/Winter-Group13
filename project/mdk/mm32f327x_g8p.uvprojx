@@ -489,6 +489,16 @@
               <FileType>5</FileType>
               <FilePath>..\code\param_storage.h</FilePath>
             </File>
+            <File>
+              <FileName>timer_flag.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\timer_flag.c</FilePath>
+            </File>
+            <File>
+              <FileName>timer_flag.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\timer_flag.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

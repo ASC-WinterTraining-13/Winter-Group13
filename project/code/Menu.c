@@ -1,5 +1,6 @@
 #include "zf_device_oled.h"
 #include "zf_device_key.h"
+#include "zf_device_mpu6050.h"
 
 #include "Mode_1.h"
 #include "Mode_2.h"
@@ -19,6 +20,9 @@ void Peripheral_Init(void)
 	
 	// 按键初始化（10ms扫描周期）
     key_init(10);
+	
+	//mpu6050初始化
+	mpu6050_init();
 }
 /*--------------------[E] 外设初始化 [E]--------------------*/
 
