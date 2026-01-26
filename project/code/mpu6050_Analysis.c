@@ -96,7 +96,7 @@ float Pitch = 0.0f;						//融合后的俯仰角
 
 
 float Roll_Temp = 0.0f;       				// 横滚角 中间处理值（需要保留历史记录）
-//float Yaw_Temp = 0.0f;       				// 偏航角 中间处理值（需要保留历史记录）
+float Yaw_Temp = 0.0f;       				// 偏航角 中间处理值（需要保留历史记录）
 float Pitch_Temp = 0.0f;       				// 俯仰角 中间处理值（需要保留历史记录）
 
 float Roll_Result = 0.0f;       			// 横滚角 最终调用值
@@ -144,7 +144,7 @@ void MPU6050_Analysis(void)
 	
 	//偏航角计算：仅陀螺仪积分（无加速度计校准，会漂移）
 	Yaw      += mpu6050_gyro_z * mpu6050_const_data2;
-
+	
 	// 俯仰角计算
 	PitchAcc  = -atan2(mpu6050_acc_x, mpu6050_acc_z) * mpu6050_const_data1;  				// 俯仰角（绕Y轴）
 	PitchGyro = Pitch + mpu6050_gyro_y * mpu6050_const_data2;  					// 陀螺仪积分
@@ -152,12 +152,12 @@ void MPU6050_Analysis(void)
 	
 	//一阶低通滤波
 	Roll_Temp  = MPU6050_LOW_PASS_FILTER * Roll + (1 - MPU6050_LOW_PASS_FILTER) * Roll_Temp;
-//	Yaw_Temp   = MPU6050_LOW_PASS_FILTER * Yaw + (1 - MPU6050_LOW_PASS_FILTER) * Yaw_Temp;
+	Yaw_Temp   = MPU6050_LOW_PASS_FILTER * Yaw + (1 - MPU6050_LOW_PASS_FILTER) * Yaw_Temp;
 	Pitch_Temp = MPU6050_LOW_PASS_FILTER * Pitch + (1 - MPU6050_LOW_PASS_FILTER) * Pitch_Temp;
 	
 	//输出死区
 	if ( fabs(Roll_Result-Roll_Temp  ) > MPU6050_OUTPUT_DEAD_ZONE ){Roll_Result = Roll_Temp;}
-	if ( fabs(Yaw_Result-Yaw         ) > MPU6050_OUTPUT_DEAD_ZONE ){Yaw_Result = Yaw;}
+	if ( fabs(Yaw_Result-Yaw_Temp    ) > MPU6050_OUTPUT_DEAD_ZONE ){Yaw_Result = Yaw_Temp;}
 	if ( fabs(Pitch_Result-Pitch_Temp) > MPU6050_OUTPUT_DEAD_ZONE ){Pitch_Result = Pitch_Temp;}
 }
 /*--------------------[E] 解算函数 [E]--------------------*/
