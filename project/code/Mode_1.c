@@ -221,7 +221,7 @@ int Mode_1_Menu(void)
         uint8_t Mode_Menu_flag_temp = 0;
         
         //上/下按键是否被按下过
-        uint8_t key_pressed = 0;     
+        uint8_t key_pressed = 0;
         
         /*按键解析*/
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
@@ -236,7 +236,7 @@ int Mode_1_Menu(void)
             key_pressed = 1;
             key_clear_state(KEY_DOWN);
             Mode_Menu_flag ++;
-            if (Mode_Menu_flag > 2)Mode_Menu_flag = 1;    
+            if (Mode_Menu_flag > 2)Mode_Menu_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -335,8 +335,6 @@ int Mode_1_Running(void)
             break;  // 退出整个模式
         }
         
-        //防止刷新过快
-        system_delay_ms(1);
     }
 	
 	oled_show_string(0, 0, "Running");
@@ -381,10 +379,14 @@ int Mode_1_Running(void)
 		oled_show_float(18, 1, Roll_Result, 3, 3);
 		oled_show_float(18, 2, Yaw_Result, 3, 3);
 		oled_show_float(18, 3, Pitch_Result, 3, 3);
-		oled_show_int(18, 4, mpu6050_gyro_x, 4);
+		oled_show_int(18, 4, mpu6050_gyro_x, 4);  
 		oled_show_int(18, 5, mpu6050_gyro_y, 4);
 		oled_show_int(18, 6, mpu6050_gyro_z, 4);
-		
+//		oled_show_int(82, 4, mpu6050_acc_x, 4);
+//		oled_show_int(82, 5, mpu6050_acc_y, 4);
+//		oled_show_int(82, 6, mpu6050_acc_z, 4);
+
+
     }
 }
 /*--------------------[E] 小车运行界面 [E]--------------------*/
