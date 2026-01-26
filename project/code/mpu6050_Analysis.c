@@ -1,4 +1,5 @@
 #include "zf_device_mpu6050.h"
+//#include "zf_device_oled.h"
 
 #include <math.h>
 
@@ -62,10 +63,15 @@ uint8_t MPU6050_Calibration_Check(void)
             // 计算平均值
             gyro_off_x = (float)sum_gx / CALIB_TARGET_SAMPLES;
             gyro_off_y = (float)sum_gy / CALIB_TARGET_SAMPLES;
-            gyro_off_z = (float)sum_gz / CALIB_TARGET_SAMPLES;
-            
+            gyro_off_z = (float)sum_gz / CALIB_TARGET_SAMPLES;       
+			
             // 状态设为完成
             calib_state = CALIB_STATE_DONE;
+			
+			//临时用查看数据
+//			oled_show_float(0, 4, gyro_off_x, 2, 6);
+//			oled_show_float(0, 5, gyro_off_y, 2, 6);
+//			oled_show_float(0, 6, gyro_off_z, 2, 6);
         }
     }
     
@@ -96,6 +102,7 @@ float Pitch_Result= 0.0f;       				// 融合后的横滚角
 
 void MPU6050_Analysis(void)
 {
+	//尝试使用校准的零飘处理
 	 if(calib_state == CALIB_STATE_DONE)
 	 {
 		mpu6050_gyro_x -= gyro_off_x;
@@ -104,14 +111,15 @@ void MPU6050_Analysis(void)
 	 }
 	 else 
 	 {
-		mpu6050_gyro_x += 12;
-		mpu6050_gyro_y -= 6.5;
-		mpu6050_gyro_z += 38;
+		mpu6050_gyro_x += 18.270;
+		mpu6050_gyro_y -= 1.399;
+		mpu6050_gyro_z += 33.729;
 	 }
 	
-	if(-1 < mpu6050_gyro_x && mpu6050_gyro_x < 2){mpu6050_gyro_x = 0;}
-	if(-1 < mpu6050_gyro_y && mpu6050_gyro_y < 2){mpu6050_gyro_y = 0;}
-	if(-1 < mpu6050_gyro_z && mpu6050_gyro_z < 2){mpu6050_gyro_z = 0;}
+	 //死区
+	if(-2 < mpu6050_gyro_x && mpu6050_gyro_x < 2){mpu6050_gyro_x = 0;}
+	if(-2 < mpu6050_gyro_y && mpu6050_gyro_y < 2){mpu6050_gyro_y = 0;}
+	if(-2 < mpu6050_gyro_z && mpu6050_gyro_z < 2){mpu6050_gyro_z = 0;}
 	
 	
 	// 横滚角计算
