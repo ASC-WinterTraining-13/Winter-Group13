@@ -50,19 +50,19 @@
 
 int main(void) 
 {
-	//最好别动
+	// 最好别动
     clock_init(SYSTEM_CLOCK_120M);                                              	// 初始化芯片时钟 工作频率为 120MHz
     debug_init();                                                               	// 初始化默认 Debug UART
 
-	//如果有需要，取消注释，使得flash接下来存储默认值
+	// 如果有需要，取消注释，使得flash接下来存储默认值
 //	Param_Erase();
-	//falsh读取尝试
+	// falsh读取尝试
 	Param_Init();
-	//外设初始化
+	// 外设初始化
 	Peripheral_Init();
 	
-	// 初始化10ms定时器用于按键扫描
-    pit_ms_init(TIM6_PIT, 10);
+	// 初始化定时器，调用代码请查看"isr.c"文件
+    pit_ms_init(TIM6_PIT, 5);
 	pit_ms_init(TIM7_PIT, 5);
         
     while(1)
@@ -72,5 +72,3 @@ int main(void)
 
     }
 }
-
-

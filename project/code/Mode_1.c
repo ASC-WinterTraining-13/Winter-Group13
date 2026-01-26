@@ -8,6 +8,7 @@
 #include "zf_device_mpu6050.h"
 #include "timer_flag.h"
 #include "mpu6050_Analysis.h"
+#include "Encoder.h"
 
 /*--------------------[S] 菜单样式 [S]--------------------*/
 
@@ -150,7 +151,7 @@ int Mode_1_Set_Param(void)
             key_pressed = 1;
             key_clear_state(KEY_DOWN);
             Param_flag ++;
-            if (Param_flag > OPT_NUM)Param_flag = 1;    
+            if (Param_flag > OPT_NUM)Param_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -314,9 +315,11 @@ int Mode_1_Running(void)
 	oled_show_string(0, 1, "R :");
 	oled_show_string(0, 2, "Y :");
 	oled_show_string(0, 3, "P :");
-	oled_show_string(0, 4, "GX:");
-	oled_show_string(0, 5, "GY:");
-	oled_show_string(0, 6, "GZ:");
+//	oled_show_string(0, 4, "GX:");
+//	oled_show_string(0, 5, "GY:");
+//	oled_show_string(0, 6, "GZ:");
+	oled_show_string(0, 4, "En1:");
+	oled_show_string(0, 5, "En2:");
     
 	//校准逻辑
 	MPU6050_Calibration_Start();
@@ -374,18 +377,18 @@ int Mode_1_Running(void)
 			mpu6050_analysis_enable = 0;
 			MPU6050_Analysis();
 		}
-
 		
-		oled_show_float(18, 1, Roll_Result, 3, 3);
-		oled_show_float(18, 2, Yaw_Result, 3, 3);
+		oled_show_float(18, 1, Roll_Result , 3, 3);
+		oled_show_float(18, 2, Yaw_Result  , 3, 3);
 		oled_show_float(18, 3, Pitch_Result, 3, 3);
-		oled_show_int(18, 4, mpu6050_gyro_x, 4);  
-		oled_show_int(18, 5, mpu6050_gyro_y, 4);
-		oled_show_int(18, 6, mpu6050_gyro_z, 4);
+//		oled_show_int(18, 4, mpu6050_gyro_x, 4);  
+//		oled_show_int(18, 5, mpu6050_gyro_y, 4);
+//		oled_show_int(18, 6, mpu6050_gyro_z, 4);
 //		oled_show_int(82, 4, mpu6050_acc_x, 4);
 //		oled_show_int(82, 5, mpu6050_acc_y, 4);
 //		oled_show_int(82, 6, mpu6050_acc_z, 4);
-
+		oled_show_int(24, 4, Encoder1_Count, 4);
+		oled_show_int(24, 5, Encoder2_Count, 4);
 
     }
 }
