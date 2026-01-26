@@ -207,7 +207,7 @@ const float MPU6050_SAMPLE_DT = 0.005f;
 //弧度转角度
 const float mpu6050_const_data1 = (1.0f / 3.14159f) * 180.0f;
 //陀螺仪积分系数
-const float mpu6050_const_data2 = (1.0f / 32768.0f) * 2000.0f * 0.005f;
+const float mpu6050_const_data2 = (1.0f / 32768.0f) * 2000.0f;
 
 void MPU6050_Analysis(void)
 {
@@ -244,8 +244,8 @@ void MPU6050_Analysis(void)
 	
 	
     // 计算陀螺仪角速度（转换为 °/s）
-    float gyro_roll_rate = (float)mpu6050_gyro_x / 32768.0f * 2000.0f;
-    float gyro_pitch_rate = (float)mpu6050_gyro_y / 32768.0f * 2000.0f;
+    float gyro_roll_rate  = (float)mpu6050_gyro_x * mpu6050_const_data2;
+    float gyro_pitch_rate = (float)mpu6050_gyro_y * mpu6050_const_data2;
 	
 	//横滚角加速度计计算
 	RollAcc   = atan2f((float)mpu6050_acc_y, (float)mpu6050_acc_z) * mpu6050_const_data1;
@@ -255,23 +255,23 @@ void MPU6050_Analysis(void)
 #if USE_KALMAN_FILTER
     // 卡尔曼滤波模式（Roll/Pitch轴）
     // 动态调整R_measure（根据加速度计状态）
-    kf_roll.R_measure = Get_Dynamic_Rmeasure(mpu6050_acc_x, mpu6050_acc_y, mpu6050_acc_z);
+    kf_roll.R_measure  = Get_Dynamic_Rmeasure(mpu6050_acc_x, mpu6050_acc_y, mpu6050_acc_z);
     kf_pitch.R_measure = kf_roll.R_measure;
     
     // 卡尔曼滤波计算
-    Roll = Kalman_Calculate(&kf_roll, RollAcc, gyro_roll_rate, MPU6050_SAMPLE_DT);
+    Roll  = Kalman_Calculate(&kf_roll, RollAcc, gyro_roll_rate, MPU6050_SAMPLE_DT);
     Pitch = Kalman_Calculate(&kf_pitch, PitchAcc, gyro_pitch_rate, MPU6050_SAMPLE_DT);
 #else
     // 互补滤波模式
-	RollGyro  = Roll + mpu6050_gyro_x * mpu6050_const_data2;
+	RollGyro  = Roll + mpu6050_gyro_x * mpu6050_const_data2 * MPU6050_SAMPLE_DT;
 	Roll      = 0.005 * RollAcc + (1 - 0.005) * RollGyro;
 	
-	PitchGyro = Pitch + mpu6050_gyro_y * mpu6050_const_data2;
+	PitchGyro = Pitch + mpu6050_gyro_y * mpu6050_const_data2 * MPU6050_SAMPLE_DT;
 	Pitch     = 0.005 * PitchAcc + (1 - 0.005) * PitchGyro;
 #endif
 	
 	//偏航角计算：仅陀螺仪积分（无加速度计校准，会漂移）
-	Yaw      += (float)mpu6050_gyro_z * mpu6050_const_data2;
+	Yaw      += (float)mpu6050_gyro_z * mpu6050_const_data2 * MPU6050_SAMPLE_DT;
 	
 	//一阶低通滤波
 	Roll_Temp  = MPU6050_LOW_PASS_FILTER * Roll + (1 - MPU6050_LOW_PASS_FILTER) * Roll_Temp;
