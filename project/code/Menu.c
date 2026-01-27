@@ -1,13 +1,14 @@
 #include "zf_device_oled.h"
 #include "zf_device_key.h"
 #include "zf_device_mpu6050.h"
-#include "Encoder.h"
 
 #include "Mode_1.h"
 #include "Mode_2.h"
 #include "Mode_3.h"
 #include "Mode_4.h"
 #include "Mode_5.h"
+#include "zf_device_bluetooth_ch04.h"
+#include "Encoder.h"
 
 /*--------------------[S] 外设初始化 [S]--------------------*/
 
@@ -28,6 +29,8 @@ void Peripheral_Init(void)
 	/* 编码器初始化*/
 	Encoder_Init();
 	
+	/*CH-04蓝牙模块初始化*/
+	bluetooth_ch04_init();
 }
 /*--------------------[E] 外设初始化 [E]--------------------*/
 

@@ -288,11 +288,12 @@ void UART6_IRQHandler (void)
         UART6->ICR |= 0x00000001;                                               // 清除中断标志位
     }
     if(UART6->ISR & 0x00000002)                                                 // 串口接收缓冲中断
-    {
-        wireless_module_uart_handler();
+    {      
         // 此处编写用户代码
+		
         // 务必读取数据或者关闭中断 否则会一直触发串口接收中断
-
+		wireless_module_uart_handler();
+		
         // 此处编写用户代码
         UART6->ICR |= 0x00000002;                                               // 清除中断标志位
     }
