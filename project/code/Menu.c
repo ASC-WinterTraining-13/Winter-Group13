@@ -243,6 +243,12 @@ void Menu_Show(void)
 					oled_show_string(0, 4, ">");
 				
 					break;
+				case 6:
+					oled_clear();
+					Menu_UI(2);
+					oled_show_string(0, 6, ">");
+				
+					break;
 			}
 		}
 	

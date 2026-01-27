@@ -337,7 +337,7 @@ int Mode_1_Running(void)
         
     }
 	
-	oled_show_string(0, 0, "Running");
+	oled_show_string(0, 0, "Run ");
 	
     while(1)
     {  
@@ -386,6 +386,7 @@ int Mode_1_Running(void)
 		
         if (Run_Flag)
 		{
+			oled_show_string(0, 0, "Run ");
 			//PID
 			Angle_PID.Actual = Angle_Result;
 			PID_Update(&Angle_PID);
@@ -405,6 +406,7 @@ int Mode_1_Running(void)
 		}
 		else
 		{
+			oled_show_string(0, 0, "STOP");
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
