@@ -315,8 +315,8 @@ int Mode_1_Running(void)
 //	oled_show_string(0, 4, "GX:");
 //	oled_show_string(0, 5, "GY:");
 //	oled_show_string(0, 6, "GZ:");
-	oled_show_string(0, 4, "En1:");
-	oled_show_string(0, 5, "En2:");
+//	oled_show_string(0, 4, "En1:");
+//	oled_show_string(0, 5, "En2:");
     
 	//校准逻辑
 	MPU6050_Calibration_Start();
@@ -412,7 +412,6 @@ int Mode_1_Running(void)
 			motor_SetPWM(2, 0);
 		}
 		
-		
 		if (mpu6050_analysis_enable)
 		{
 			mpu6050_get_data();
@@ -435,8 +434,8 @@ int Mode_1_Running(void)
 //		oled_show_int(82, 4, mpu6050_acc_x, 4);
 //		oled_show_int(82, 5, mpu6050_acc_y, 4);
 //		oled_show_int(82, 6, mpu6050_acc_z, 4);
-		oled_show_int(24, 4, Encoder1_Count, 4);
-		oled_show_int(24, 5, Encoder2_Count, 4);
+//		oled_show_int(24, 4, Encoder1_Count, 4);
+//		oled_show_int(24, 5, Encoder2_Count, 4);
 
     }
 }

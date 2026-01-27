@@ -4,6 +4,8 @@
 
 // 启停标志位
 uint8_t Run_Flag = 0;
+//// (由于蓝牙模块的使用)显示更新标志位
+//uint8_t oled_Refresh = 0;
 //PWM输出
 int16_t LeftPWM = 0;		//左轮PWM
 int16_t RightPWM = 0;		//右轮PWM

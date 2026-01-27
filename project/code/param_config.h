@@ -35,7 +35,9 @@ extern const float PID_STEPS[5][3];
 
 // 启停标志位
 extern uint8_t Run_Flag;
-//PWM输出
+//// (由于蓝牙模块的使用)显示更新标志位
+//extern uint8_t oled_Refresh;
+// PWM输出
 extern int16_t LeftPWM;			//左轮PWM
 extern int16_t RightPWM;		//右轮PWM
 extern int16_t AvePWM;			//平均PWM

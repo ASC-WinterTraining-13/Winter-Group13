@@ -154,6 +154,8 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 //        printf("Unknown command: %s\r\n", tag);
 //        bluetooth_ch04_send_string("[ERROR_COMMAND]");
 //    }
+//// (由于蓝牙模块的使用)显示更新标志位
+//	oled_Refresh = 1;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
