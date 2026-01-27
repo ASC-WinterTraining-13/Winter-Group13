@@ -7,6 +7,8 @@
 #include "Mode_3.h"
 #include "Mode_4.h"
 #include "Mode_5.h"
+#include "Core_Param.h"
+
 #include "param_config.h"
 #include "zf_device_bluetooth_ch04.h"
 #include "Encoder.h"
@@ -59,6 +61,7 @@ void Menu_UI(uint8_t Page)
 			oled_show_string(2, 0, " Mode_3");
 			oled_show_string(2, 2, " Mode_4");
 			oled_show_string(2, 4, " Mode_5");
+			oled_show_string(2, 6, " Core_Param");
 			
 			break;
 		}
@@ -92,14 +95,14 @@ void Menu_Show(void)
 			key_clear_state(KEY_UP);
 			key_pressed  = 1;
 			menuflag --;
-			if (menuflag < 1)menuflag = 5;	
+			if (menuflag < 1)menuflag = 6;	
 		}
 		else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
 		{
 			key_clear_state(KEY_DOWN);
 			key_pressed = 1;
 			menuflag ++;
-			if (menuflag > 5)menuflag = 1;	
+			if (menuflag > 6)menuflag = 1;	
 		}
 		else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
 		{
@@ -182,6 +185,21 @@ void Menu_Show(void)
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);
             oled_show_string(0, 4, ">");
+		}	
+		//核心参数更改界面
+		// 模式5
+		else if (menuflag_temp == 6)
+		{
+			oled_clear();
+			Core_Param_Menu();
+			
+			// 从模式返回后运行
+			// 启停标志位置0
+			Run_Flag = 0;
+			// 返回后重新显示菜单
+			oled_set_font(OLED_8X16_FONT);  
+            Menu_UI(2);
+            oled_show_string(0, 6, ">");
 		}	
 
 		

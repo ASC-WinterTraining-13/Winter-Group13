@@ -25,11 +25,18 @@
 //定义PID
 //角度环
 extern PID_t Angle_PID;
+extern PID_t TEMP_888_FUNC_2_PID;
+extern PID_t TEMP_888_FUNC_3_PID;
+extern PID_t TEMP_888_FUNC_4_PID;
+extern PID_t TEMP_888_FUNC_5_PID;
+
+//步长值
+extern const float PID_STEPS[5][3];
 
 // 启停标志位
 extern uint8_t Run_Flag;
 //PWM输出
-extern int16_t LeftPWM;		//左轮PWM
+extern int16_t LeftPWM;			//左轮PWM
 extern int16_t RightPWM;		//右轮PWM
 extern int16_t AvePWM;			//平均PWM
 extern int16_t DifPWM;			//差分PWM

@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "param_config.h"
+#include "param_storage.h"
+
 // ========== 蓝牙接收缓冲区 ==========
 static uint8 bluetooth_rx_buffer[100];
 static uint32 bluetooth_rx_length = 0;
@@ -67,27 +70,13 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         
         if(name != NULL && action != NULL)
         {
-            if(strcmp(name, "1") == 0 && strcmp(action, "up") == 0)
+            if(strcmp(name, "ON") == 0 && strcmp(action, "down") == 0)
             {
-                // 按键1按下
-                printf("Key 1 UP\r\n");
-                // oled_show_string(4, 1, "Key 1 UP        ");  // 如果需要显示
+				Run_Flag = 1;
             }
-            else if(strcmp(name, "1") == 0 && strcmp(action, "down") == 0)
+            else if(strcmp(name, "OF") == 0 && strcmp(action, "down") == 0)
             {
-                // 按键1释放
-                printf("Key 1 DOWN\r\n");
-                // oled_show_string(4, 1, "Key 1 DOWN      ");
-            }
-            else if(strcmp(name, "2") == 0 && strcmp(action, "up") == 0)
-            {
-                // 按键2按下
-                printf("Key 2 UP\r\n");
-            }
-            else if(strcmp(name, "2") == 0 && strcmp(action, "down") == 0)
-            {
-                // 按键2释放
-                printf("Key 2 DOWN\r\n");
+                Run_Flag = 0;
             }
         }
     }
@@ -100,20 +89,25 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         
         if(name != NULL && value != NULL)
         {
-            if(strcmp(name, "1") == 0)
+            if(strcmp(name, "KP") == 0)
             {
-                // 滑杆1 - 整数值
-                int_value = (uint8)atoi(value);
-                printf("slider 1 value: %d\r\n", int_value);
-                // 可以用于控制LED亮度、电机速度等
+				float_value = (float)atof(value);
+				ANGLE_KP = float_value;
             }
-            else if(strcmp(name, "2") == 0)
+            else if(strcmp(name, "KI") == 0)
             {
-                // 滑杆2 - 浮点值
-                float_value = (float)atof(value);
-                printf("slider 2 value: %.2f\r\n", float_value);
+//              printf("slider 2 value: %.2f\r\n", float_value);
+				float_value = (float)atof(value);
+				ANGLE_KI = float_value;
+            }
+			else if(strcmp(name, "KD") == 0)
+            {
+				float_value = (float)atof(value);
+				ANGLE_KD = float_value;
             }
         }
+
+		Param_Save();
     }
     
     // ========== 摇杆事件处理 ==========
@@ -128,38 +122,38 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         // 右摇杆纵向值
         rv = (int8)atoi(strtok(NULL, ","));
         
-        printf("Joystick: LH=%d, LV=%d, RH=%d, RV=%d\r\n", lh, lv, rh, rv);
-        // 例如：可用于控制机器人方向
+//        printf("Joystick: LH=%d, LV=%d, RH=%d, RV=%d\r\n", lh, lv, rh, rv);
+//        // 例如：可用于控制机器人方向
     }
     
-    // ========== 其他自定义命令处理 ==========
-    else if(strcmp(tag, "LED") == 0)
-    {
-        action = strtok(NULL, ",");
-        
-        if(action != NULL)
-        {
-            if(strcmp(action, "ON") == 0)
-            {
-                printf("LED ON\r\n");
-                // gpio_set_level(LED_PIN, 1);
-                bluetooth_ch04_send_string("[LED_ON_OK]");
-            }
-            else if(strcmp(action, "OFF") == 0)
-            {
-                printf("LED OFF\r\n");
-                // gpio_set_level(LED_PIN, 0);
-                bluetooth_ch04_send_string("[LED_OFF_OK]");
-            }
-        }
-    }
-    
-    // ========== 未知命令 ==========
-    else
-    {
-        printf("Unknown command: %s\r\n", tag);
-        bluetooth_ch04_send_string("[ERROR_COMMAND]");
-    }
+//    // ========== 其他自定义命令处理 ==========
+//    else if(strcmp(tag, "LED") == 0)
+//    {
+//        action = strtok(NULL, ",");
+//        
+//        if(action != NULL)
+//        {
+//            if(strcmp(action, "ON") == 0)
+//            {
+//                printf("LED ON\r\n");
+//                // gpio_set_level(LED_PIN, 1);
+//                bluetooth_ch04_send_string("[LED_ON_OK]");
+//            }
+//            else if(strcmp(action, "OFF") == 0)
+//            {
+//                printf("LED OFF\r\n");
+//                // gpio_set_level(LED_PIN, 0);
+//                bluetooth_ch04_send_string("[LED_OFF_OK]");
+//            }
+//        }
+//    }
+//    
+//    // ========== 未知命令 ==========
+//    else
+//    {
+//        printf("Unknown command: %s\r\n", tag);
+//        bluetooth_ch04_send_string("[ERROR_COMMAND]");
+//    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -182,13 +176,13 @@ void bluetooth_ch04_handle_receive (void)
             // 确保字符串以 null 结尾
             bluetooth_rx_buffer[bluetooth_rx_length] = '\0';
             
-            // 调试输出：显示原始接收数据
-            printf("BT RX: [");
-            for(uint32 i = 0; i < bluetooth_rx_length; i++)
-            {
-                printf("%c", bluetooth_rx_buffer[i]);
-            }
-            printf("]\r\n");
+//            // 调试输出：显示原始接收数据
+//            printf("BT RX: [");
+//            for(uint32 i = 0; i < bluetooth_rx_length; i++)
+//            {
+//                printf("%c", bluetooth_rx_buffer[i]);
+//            }
+//            printf("]\r\n");
             
             // 处理数据
             bluetooth_ch04_process_data(bluetooth_rx_buffer, bluetooth_rx_length);

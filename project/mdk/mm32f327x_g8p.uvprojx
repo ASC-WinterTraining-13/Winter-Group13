@@ -470,24 +470,14 @@
               <FilePath>..\code\Mode_5.h</FilePath>
             </File>
             <File>
-              <FileName>param_config.c</FileName>
+              <FileName>Core_Param.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\code\param_config.c</FilePath>
+              <FilePath>..\code\Core_Param.c</FilePath>
             </File>
             <File>
-              <FileName>param_config.h</FileName>
+              <FileName>Core_Param.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\code\param_config.h</FilePath>
-            </File>
-            <File>
-              <FileName>param_storage.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\param_storage.c</FilePath>
-            </File>
-            <File>
-              <FileName>param_storage.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\param_storage.h</FilePath>
+              <FilePath>..\code\Core_Param.h</FilePath>
             </File>
             <File>
               <FileName>timer_flag.c</FileName>
@@ -508,6 +498,16 @@
               <FileName>mpu6050_Analysis.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\code\mpu6050_Analysis.h</FilePath>
+            </File>
+            <File>
+              <FileName>Encoder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\Encoder.c</FilePath>
+            </File>
+            <File>
+              <FileName>Encoder.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\Encoder.h</FilePath>
             </File>
             <File>
               <FileName>motor.c</FileName>
@@ -540,16 +540,6 @@
               <FilePath>..\code\zf_device_bluetooth_ch04.h</FilePath>
             </File>
             <File>
-              <FileName>Encoder.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\Encoder.c</FilePath>
-            </File>
-            <File>
-              <FileName>Encoder.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\Encoder.h</FilePath>
-            </File>
-            <File>
               <FileName>PID.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\PID.c</FilePath>
@@ -558,6 +548,26 @@
               <FileName>PID.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\code\PID.h</FilePath>
+            </File>
+            <File>
+              <FileName>param_config.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\param_config.c</FilePath>
+            </File>
+            <File>
+              <FileName>param_config.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\param_config.h</FilePath>
+            </File>
+            <File>
+              <FileName>param_storage.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\param_storage.c</FilePath>
+            </File>
+            <File>
+              <FileName>param_storage.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\param_storage.h</FilePath>
             </File>
           </Files>
         </Group>

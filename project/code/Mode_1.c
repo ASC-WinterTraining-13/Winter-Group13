@@ -2,7 +2,6 @@
 #include "zf_device_key.h"
 #include "zf_device_mpu6050.h"
 
-#include "Menu.h"
 #include "param_config.h"
 #include "param_storage.h"
 #include "timer_flag.h"
@@ -27,7 +26,8 @@ void Mode_1_Menu_UI(void)
 //模式内参数设置界面
 void Mode_1_Set_Param_UI(uint8_t Page)
 {
-    switch(Page){
+    switch(Page)
+	{
         
         //第一页
         case 1:
@@ -52,9 +52,6 @@ void Mode_1_Set_Param_UI(uint8_t Page)
 
 void Set_Mode_1_Param(uint8_t Num)
 {
-    //数据更改步幅
-    PID_t angle_pid_step = {1.0f, 0.01f, 0.1f};
-    
     //指向要修改的参数的指针
     float* current_param = NULL;
     float step_value = 0.0f;
@@ -65,19 +62,19 @@ void Set_Mode_1_Param(uint8_t Num)
     {
         case 1:  // Kp
             current_param = &ANGLE_KP;
-            step_value = angle_pid_step.Kp;
+            step_value = PID_STEPS[0][0];
             row = 2;
             break;
             
         case 2:  // Ki
             current_param = &ANGLE_KI;
-            step_value = angle_pid_step.Ki;
+            step_value = PID_STEPS[0][1];
             row = 3;
             break;
             
         case 3:  // Kd
             current_param = &ANGLE_KD;
-            step_value = angle_pid_step.Kd;
+            step_value = PID_STEPS[0][2];
             row = 4;
             break;
     }
@@ -251,9 +248,6 @@ int Mode_1_Menu(void)
         {
             key_clear_state(KEY_BACK);
             oled_clear();
-            oled_set_font(OLED_8X16_FONT);  
-            Menu_UI(1);
-            oled_show_string(0, 4, ">");
             
             return 0;
         }
@@ -269,7 +263,7 @@ int Mode_1_Menu(void)
             Mode_1_Menu_UI();
             oled_show_string(0, 4, ">");
         }
-        if (Mode_Menu_flag_temp == 2)
+        else if (Mode_Menu_flag_temp == 2)
         {
             oled_clear();
             Mode_1_Set_Param();
@@ -365,7 +359,7 @@ int Mode_1_Running(void)
             key_clear_state(KEY_CONFIRM);
             // 处理确认键
 			
-//			Run_Flag = 0;
+			Run_Flag = !Run_Flag;
         }
 
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
@@ -381,6 +375,8 @@ int Mode_1_Running(void)
             return 0;
         }
 		
+		/*蓝牙模块*/
+		bluetooth_ch04_handle_receive();	
 		
 		//失控
 		if (Angle_Result < - 50 || 50 < Angle_Result)

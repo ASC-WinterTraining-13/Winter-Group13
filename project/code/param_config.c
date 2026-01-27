@@ -19,3 +19,28 @@ PID_t Angle_PID = {
 	.OutMax = 10000,
 	.OutMin = -10000,
 };
+
+PID_t TEMP_888_FUNC_2_PID = {	
+	
+};
+
+PID_t TEMP_888_FUNC_3_PID = {	
+	
+};
+
+PID_t TEMP_888_FUNC_4_PID = {	
+	
+};
+
+PID_t TEMP_888_FUNC_5_PID = {	
+	
+};
+
+//pid更改步长值
+const float PID_STEPS[5][3] = {
+    {1.0f, 0.01f, 0.1f},   	// Angle_PID：Kp=1.0, Ki=0.01, Kd=0.1
+    {0.5f, 0.02f, 0.05f}, 	// ?????_PID：Kp=0.5, Ki=0.02, Kd=0.05
+    {0.2f, 0.005f, 0.2f},  	// ?????_PID：Kp=0.2, Ki=0.005, Kd=0.2
+    {0.8f, 0.015f, 0.1f},  	// ?????_PID：Kp=0.8, Ki=0.015, Kd=0.1
+    {0.3f, 0.01f, 0.15f}   	// ?????_PID：Kp=0.3, Ki=0.01, Kd=0.15
+};

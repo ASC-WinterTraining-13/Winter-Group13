@@ -1,7 +1,6 @@
 #include "zf_device_oled.h"
 #include "zf_device_key.h"
 
-#include "Menu.h"
 #include "param_config.h"
 #include "param_storage.h"
 
@@ -19,7 +18,8 @@ void Mode_2_Menu_UI(void)
 //模式内参数设置界面
 void Mode_2_Set_Param_UI(uint8_t Page)
 {
-    switch(Page){
+    switch(Page)
+	{
         
         //第一页
         case 1:
@@ -29,9 +29,9 @@ void Mode_2_Set_Param_UI(uint8_t Page)
             oled_show_string(2, 2, " Kp:");
             oled_show_string(2, 3, " Ki:");
             oled_show_string(2, 4, " Kd:");
-            oled_show_float(28, 2, MODE2_KP, 2, 2);
-            oled_show_float(28, 3, MODE2_KI, 2, 2);
-            oled_show_float(28, 4, MODE2_KD, 2, 2);
+            oled_show_float(28, 2, TEMP_888_FUNC_2_KP, 2, 2);
+            oled_show_float(28, 3, TEMP_888_FUNC_2_KI, 2, 2);
+            oled_show_float(28, 4, TEMP_888_FUNC_2_KD, 2, 2);
 
             break;
         }
@@ -44,8 +44,6 @@ void Mode_2_Set_Param_UI(uint8_t Page)
 
 void Set_Mode_2_Param(uint8_t Num)
 {
-    //数据更改步幅
-    PID_t mode_2_pid_step = {1.0f, 0.01f, 0.1f};
     
     //指向要修改的参数的指针
     float* current_param = NULL;
@@ -56,20 +54,20 @@ void Set_Mode_2_Param(uint8_t Num)
     switch (Num)
     {
         case 1:  // Kp
-            current_param = &MODE2_KP;
-            step_value = mode_2_pid_step.Kp;
+            current_param = &TEMP_888_FUNC_2_KP;
+            step_value = PID_STEPS[1][0];
             row = 2;
             break;
             
         case 2:  // Ki
-            current_param = &MODE2_KI;
-            step_value = mode_2_pid_step.Ki;
+            current_param = &TEMP_888_FUNC_2_KI;
+            step_value = PID_STEPS[1][1];
             row = 3;
             break;
             
         case 3:  // Kd
-            current_param = &MODE2_KD;
-            step_value = mode_2_pid_step.Kd;
+            current_param = &TEMP_888_FUNC_2_KD;
+            step_value = PID_STEPS[1][2];
             row = 4;
             break;
     }
@@ -243,9 +241,6 @@ int Mode_2_Menu(void)
         {
             key_clear_state(KEY_BACK);
             oled_clear();
-            oled_set_font(OLED_8X16_FONT);  
-            Menu_UI(1);
-            oled_show_string(0, 6, ">");
             
             return 0;
         }

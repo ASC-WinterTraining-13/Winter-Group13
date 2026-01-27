@@ -6,17 +6,17 @@ static const float DEFAULT_PARAMS[15] = {
     // angle_pid (索引 0-2)
     80.0f, 0.0f, 2.0f,
     
-    // mode_2_pid (索引 3-5)
-    5.0f, 0.1f, 0.0f,
+    // 2_pid (索引 3-5)
+    5.0f, 0.0f, 0.0f,
     
-    // mode_3_pid (索引 6-8)
-    10.0f, 0.05f, 1.0f,
+    // 3_pid (索引 6-8)
+    10.0f, 0.0f, 0.0f,
     
-    // mode_4_pid (索引 9-11)
-    15.0f, 0.2f, 0.5f,
+    // 4_pid (索引 9-11)
+    15.0f, 0.0f, 0.0f,
     
-    // mode_5_pid (索引 12-14)
-    20.0f, 0.15f, 0.8f
+    // 5_pid (索引 12-14)
+    20.0f, 0.0f, 0.0f
 };
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -40,14 +40,8 @@ void Param_Init(void)
 {
     if(flash_check(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE))  // 返回1 = 有数据
     {
-        // 从Flash读取到缓冲区
-		
-		//角度环pid
+        // 从Flash读取到缓冲区		
         flash_read_page_to_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
-		Angle_PID.Kp = ANGLE_KP;
-		Angle_PID.Ki = ANGLE_KI;
-		Angle_PID.Kd = ANGLE_KD;
-		
     }
     else  // 返回0 = 没有数据（首次使用）
     {
@@ -55,8 +49,32 @@ void Param_Init(void)
         load_default();
         
         // 写入Flash
-        flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
+        flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);		
     }
+		//角度环pid
+		Angle_PID.Kp = ANGLE_KP;
+		Angle_PID.Ki = ANGLE_KI;
+		Angle_PID.Kd = ANGLE_KD;
+		
+		//2
+		TEMP_888_FUNC_2_PID.Kp = TEMP_888_FUNC_2_KP;
+        TEMP_888_FUNC_2_PID.Ki = TEMP_888_FUNC_2_KI;
+        TEMP_888_FUNC_2_PID.Kd = TEMP_888_FUNC_2_KD;
+		
+		//3
+		TEMP_888_FUNC_3_PID.Kp = TEMP_888_FUNC_3_KP;
+        TEMP_888_FUNC_3_PID.Ki = TEMP_888_FUNC_3_KI;
+        TEMP_888_FUNC_3_PID.Kd = TEMP_888_FUNC_3_KD;
+		
+		//4
+		TEMP_888_FUNC_4_PID.Kp = TEMP_888_FUNC_4_KP;
+        TEMP_888_FUNC_4_PID.Ki = TEMP_888_FUNC_4_KI;
+        TEMP_888_FUNC_4_PID.Kd = TEMP_888_FUNC_4_KD;
+		
+		//5
+		TEMP_888_FUNC_5_PID.Kp = TEMP_888_FUNC_5_KP;
+        TEMP_888_FUNC_5_PID.Ki = TEMP_888_FUNC_5_KI;
+        TEMP_888_FUNC_5_PID.Kd = TEMP_888_FUNC_5_KD;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
