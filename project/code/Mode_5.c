@@ -45,7 +45,7 @@ void Mode_5_Set_Param_UI(uint8_t Page)
 void Set_Mode_5_Param(uint8_t Num)
 {
     //数据更改步幅
-    PID_Params_t mode_5_pid_step = {1.0f, 0.01f, 0.1f};
+    PID_t mode_5_pid_step = {1.0f, 0.01f, 0.1f};
     
     //指向要修改的参数的指针
     float* current_param = NULL;
@@ -57,19 +57,19 @@ void Set_Mode_5_Param(uint8_t Num)
     {
         case 1:  // Kp
             current_param = &MODE5_KP;
-            step_value = mode_5_pid_step.kp;
+            step_value = mode_5_pid_step.Kp;
             row = 2;
             break;
             
         case 2:  // Ki
             current_param = &MODE5_KI;
-            step_value = mode_5_pid_step.ki;
+            step_value = mode_5_pid_step.Ki;
             row = 3;
             break;
             
         case 3:  // Kd
             current_param = &MODE5_KD;
-            step_value = mode_5_pid_step.kd;
+            step_value = mode_5_pid_step.Kd;
             row = 4;
             break;
     }
@@ -329,6 +329,10 @@ int Mode_5_Running(void)
 		{
 			key_clear_state(KEY_BACK);
 			// 处理返回键
+			
+			// 启停标志位置0
+			Run_Flag = 0;
+			
 			return 0;
 		}
     }

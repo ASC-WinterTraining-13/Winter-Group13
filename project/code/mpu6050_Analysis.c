@@ -5,6 +5,8 @@
 
 #include "timer_flag.h"
 
+//Angle选择;1-Pitch，0-Roll
+#define USE_PITCH_AS_ANGLE	1
 
 /*--------------------[S] 校准函数 [S]--------------------*/
 
@@ -211,6 +213,8 @@ float Roll_Result = 0.0f;       				// 横滚角 最终调用值
 float Yaw_Result = 0.0f;       					// 偏航角 最终调用值
 float Pitch_Result = 0.0f;       				// 俯仰角 最终调用值
 
+float Angle_Result = 0.0f;						// 倾斜角 最终调用值
+
 // 低通滤波系数（0.2 = 强滤波，0.5 = 中等，0.8 = 弱滤波）
 #define MPU6050_LOW_PASS_FILTER 0.3f
 // 输出死区系数
@@ -286,7 +290,7 @@ void MPU6050_Analysis(void)
 #endif
 	
 	// 偏航角计算：仅陀螺仪积分（无加速度计校准，会漂移）
-	Yaw      += (float)mpu6050_gyro_z * mpu6050_const_data2 * MPU6050_SAMPLE_DT;
+	Yaw       += (float)mpu6050_gyro_z * mpu6050_const_data2 * MPU6050_SAMPLE_DT;
 	
 	// 一阶低通滤波
 	Roll_Temp  = MPU6050_LOW_PASS_FILTER * Roll + (1 - MPU6050_LOW_PASS_FILTER) * Roll_Temp;
@@ -297,5 +301,11 @@ void MPU6050_Analysis(void)
 	if ( fabs(Roll_Result-Roll_Temp  ) > MPU6050_OUTPUT_DEAD_ZONE ){Roll_Result = Roll_Temp;}
 	if ( fabs(Yaw_Result-Yaw_Temp    ) > MPU6050_OUTPUT_DEAD_ZONE ){Yaw_Result = Yaw_Temp;}
 	if ( fabs(Pitch_Result-Pitch_Temp) > MPU6050_OUTPUT_DEAD_ZONE ){Pitch_Result = Pitch_Temp;}
+	
+	#if USE_PITCH_AS_ANGLE
+		Angle_Result = Pitch_Result;
+	#else
+		Angle_Result = Roll_Result;
+	#endif
 }
 /*--------------------[E] 解算函数 [E]--------------------*/

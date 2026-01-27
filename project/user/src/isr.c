@@ -36,8 +36,9 @@
 #include "isr.h"
 #include "timer_flag.h"
 #include "Encoder.h"
+#include "param_config.h"
 
-uint16_t Time_Count = 0;
+uint16_t TIM_Time_Count = 0;
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     TIM1 的定时器更新中断服务函数 启动 .s 文件定义 不允许修改函数名称
@@ -107,11 +108,11 @@ void TIM6_IRQHandler (void)
 {
 	// 此处编写用户代码	
 	
-	Time_Count ++;
+	TIM_Time_Count ++;
 	
-	if (Time_Count >= 2)
+	if (TIM_Time_Count >= 2)
 	{
-		Time_Count = 0;
+		TIM_Time_Count = 0;
 		key_scanner();
 	}
     
@@ -129,6 +130,8 @@ void TIM7_IRQHandler (void)
 {
     // 此处编写用户代码
 	
+	//调控周期计时器
+	Time_Count1 ++;
 	// MPU6050 分析使能（每5ms置1）
     mpu6050_analysis_enable = 1;
 	

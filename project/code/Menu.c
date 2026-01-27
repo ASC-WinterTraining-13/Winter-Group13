@@ -7,6 +7,7 @@
 #include "Mode_3.h"
 #include "Mode_4.h"
 #include "Mode_5.h"
+#include "param_config.h"
 #include "zf_device_bluetooth_ch04.h"
 #include "Encoder.h"
 
@@ -117,7 +118,11 @@ void Menu_Show(void)
 		{
 			oled_clear();
 			Mode_1_Menu();
-			// 返回后重新显示菜单
+			
+			// 从模式返回后运行
+			// 启停标志位置0
+			Run_Flag = 0;
+			// 返回后重新显示菜单			
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(1);
             oled_show_string(0, 4, ">");
@@ -127,6 +132,10 @@ void Menu_Show(void)
 		{
 			oled_clear();
 			Mode_2_Menu();
+			
+			// 从模式返回后运行
+			// 启停标志位置0
+			Run_Flag = 0;
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(1);
@@ -137,6 +146,10 @@ void Menu_Show(void)
 		{
 			oled_clear();
 			Mode_3_Menu();
+			
+			// 从模式返回后运行
+			// 启停标志位置0
+			Run_Flag = 0;
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);
@@ -147,6 +160,10 @@ void Menu_Show(void)
 		{
 			oled_clear();
 			Mode_4_Menu();
+			
+			// 从模式返回后运行
+			// 启停标志位置0
+			Run_Flag = 0;
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);
@@ -157,6 +174,10 @@ void Menu_Show(void)
 		{
 			oled_clear();
 			Mode_5_Menu();
+			
+			// 从模式返回后运行
+			// 启停标志位置0
+			Run_Flag = 0;
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);

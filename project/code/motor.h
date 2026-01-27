@@ -4,7 +4,7 @@
 #include "zf_common_typedef.h"
 
 void motor_Init(void);
-// 有效值-10000~10000
+// motor_id取1或2;PWM有效值-10000~10000
 void motor_SetPWM(uint8_t motor_id, int PWM);
 
 #endif

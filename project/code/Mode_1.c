@@ -1,14 +1,17 @@
 #include "zf_device_oled.h"
 #include "zf_device_key.h"
+#include "zf_device_mpu6050.h"
 
 #include "Menu.h"
 #include "param_config.h"
 #include "param_storage.h"
-
-#include "zf_device_mpu6050.h"
 #include "timer_flag.h"
 #include "mpu6050_Analysis.h"
+#include "motor.h"
 #include "Encoder.h"
+#include "bluetooth_ch04_example.h"
+#include "zf_device_bluetooth_ch04.h"
+#include "PID.h"
 
 /*--------------------[S] 菜单样式 [S]--------------------*/
 
@@ -50,7 +53,7 @@ void Mode_1_Set_Param_UI(uint8_t Page)
 void Set_Mode_1_Param(uint8_t Num)
 {
     //数据更改步幅
-    PID_Params_t angle_pid_step = {1.0f, 0.01f, 0.1f};
+    PID_t angle_pid_step = {1.0f, 0.01f, 0.1f};
     
     //指向要修改的参数的指针
     float* current_param = NULL;
@@ -62,19 +65,19 @@ void Set_Mode_1_Param(uint8_t Num)
     {
         case 1:  // Kp
             current_param = &ANGLE_KP;
-            step_value = angle_pid_step.kp;
+            step_value = angle_pid_step.Kp;
             row = 2;
             break;
             
         case 2:  // Ki
             current_param = &ANGLE_KI;
-            step_value = angle_pid_step.ki;
+            step_value = angle_pid_step.Ki;
             row = 3;
             break;
             
         case 3:  // Kd
             current_param = &ANGLE_KD;
-            step_value = angle_pid_step.kd;
+            step_value = angle_pid_step.Kd;
             row = 4;
             break;
     }
@@ -344,7 +347,13 @@ int Mode_1_Running(void)
 	
     while(1)
     {  
-		
+		//强制停止（电机）运行
+		if (Angle_Result < - 50 || 50 < Angle_Result)
+		{
+			Run_Flag = 0;
+			motor_SetPWM(1, 0);
+			motor_SetPWM(2, 0);
+		}
         
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
         {
@@ -368,6 +377,12 @@ int Mode_1_Running(void)
         {
             key_clear_state(KEY_BACK);
             // 处理返回键
+			
+			// 启停标志位置0
+			Run_Flag = 0;
+			motor_SetPWM(1, 0);
+			motor_SetPWM(2, 0);
+			
             return 0;
         }
 		
@@ -378,10 +393,16 @@ int Mode_1_Running(void)
 			MPU6050_Analysis();
 		}
 		
+		if (Time_Count1 >= 5)//50ms调控周期
+		{
+			Time_Count1 = 0;
+			
+		}
+		
 		oled_show_float(18, 1, Roll_Result , 3, 3);
 		oled_show_float(18, 2, Yaw_Result  , 3, 3);
 		oled_show_float(18, 3, Pitch_Result, 3, 3);
-//		oled_show_int(18, 4, mpu6050_gyro_x, 4);  
+//		oled_show_int(18, 4, mpu6050_gyro_x, 4);
 //		oled_show_int(18, 5, mpu6050_gyro_y, 4);
 //		oled_show_int(18, 6, mpu6050_gyro_z, 4);
 //		oled_show_int(82, 4, mpu6050_acc_x, 4);
