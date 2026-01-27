@@ -1,4 +1,5 @@
 #include "param_storage.h"
+#include "param_config.h"
 
 // 默认参数值（首次使用或恢复出厂设置时使用）
 static const float DEFAULT_PARAMS[15] = {
@@ -40,7 +41,13 @@ void Param_Init(void)
     if(flash_check(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE))  // 返回1 = 有数据
     {
         // 从Flash读取到缓冲区
+		
+		//角度环pid
         flash_read_page_to_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
+		Angle_PID.Kp = ANGLE_KP;
+		Angle_PID.Ki = ANGLE_KI;
+		Angle_PID.Kd = ANGLE_KD;
+		
     }
     else  // 返回0 = 没有数据（首次使用）
     {

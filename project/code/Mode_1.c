@@ -347,14 +347,7 @@ int Mode_1_Running(void)
 	
     while(1)
     {  
-		//强制停止（电机）运行
-		if (Angle_Result < - 50 || 50 < Angle_Result)
-		{
-			Run_Flag = 0;
-			motor_SetPWM(1, 0);
-			motor_SetPWM(2, 0);
-		}
-        
+		/* 按键处理*/
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
         {
             key_clear_state(KEY_UP);
@@ -371,6 +364,8 @@ int Mode_1_Running(void)
         {
             key_clear_state(KEY_CONFIRM);
             // 处理确认键
+			
+//			Run_Flag = 0;
         }
 
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
@@ -385,6 +380,40 @@ int Mode_1_Running(void)
 			
             return 0;
         }
+		
+		
+		//失控
+		if (Angle_Result < - 50 || 50 < Angle_Result)
+		{
+			Run_Flag = 0;
+		}
+		
+        if (Run_Flag)
+		{
+			//PID
+			Angle_PID.Actual = Angle_Result;
+			PID_Update(&Angle_PID);
+			AvePWM = Angle_PID.Out;
+			
+			//输出换算
+			LeftPWM  = AvePWM + DifPWM / 2;
+			RightPWM = AvePWM - DifPWM / 2;
+			
+			//输出限幅
+			if (LeftPWM > 10000){LeftPWM = 10000;}  else if (LeftPWM < -10000){LeftPWM = -10000;}
+			if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
+			
+			//设置PWM
+			motor_SetPWM(1, LeftPWM);
+			motor_SetPWM(2, RightPWM);
+		}
+		else
+		{
+			//强制停止（电机）运行
+			motor_SetPWM(1, 0);
+			motor_SetPWM(2, 0);
+		}
+		
 		
 		if (mpu6050_analysis_enable)
 		{
