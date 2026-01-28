@@ -12,6 +12,7 @@
 #include "param_config.h"
 #include "zf_device_bluetooth_ch04.h"
 #include "Encoder.h"
+#include "motor.h"
 
 /*--------------------[S] 外设初始化 [S]--------------------*/
 
@@ -34,6 +35,9 @@ void Peripheral_Init(void)
 	
 	/*CH-04蓝牙模块初始化*/
 	bluetooth_ch04_init();
+	
+	/*电机初始化*/
+	motor_Init();
 }
 /*--------------------[E] 外设初始化 [E]--------------------*/
 

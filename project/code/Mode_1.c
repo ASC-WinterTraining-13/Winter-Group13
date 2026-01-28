@@ -308,9 +308,15 @@ int Mode_1_Running(void)
 {
 	oled_set_font(OLED_6X8_FONT);
 
-	oled_show_string(0, 1, "R :");
-	oled_show_string(0, 2, "Y :");
-	oled_show_string(0, 3, "P :");
+//	oled_show_string(0, 1, "R :");
+//	oled_show_string(0, 2, "Y :");
+//	oled_show_string(0, 3, "P :");
+	oled_show_string(0, 1, "P:");
+	oled_show_string(0, 2, "I:");
+	oled_show_string(0, 3, "D:");
+	oled_show_string(0, 4, "T:");
+	oled_show_string(0, 5, "A:");
+	oled_show_string(0, 6, "O:");
 //	oled_show_string(0, 4, "GX:");
 //	oled_show_string(0, 5, "GY:");
 //	oled_show_string(0, 6, "GZ:");
@@ -386,17 +392,17 @@ int Mode_1_Running(void)
         if (Run_Flag)
 		{
 			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 4)//5ms Time_Count1++
+			if (Time_Count1 > 5)// 5 * 10 ms调控周期
 			{
 				Time_Count1 = 0;
 				//PID
 				Angle_PID.Actual = Angle_Result;
 				PID_Update(&Angle_PID);
-				AvePWM = Angle_PID.Out;
+				AvePWM = - Angle_PID.Out;
 				
 				//输出换算
-				LeftPWM  = AvePWM + DifPWM / 2;
-				RightPWM = AvePWM - DifPWM / 2;
+				LeftPWM  = AvePWM ;//+ DifPWM / 2;
+				RightPWM = AvePWM ;//- DifPWM / 2;
 				
 				//输出限幅
 				if (LeftPWM > 10000){LeftPWM = 10000;}  else if (LeftPWM < -10000){LeftPWM = -10000;}
@@ -406,7 +412,6 @@ int Mode_1_Running(void)
 				motor_SetPWM(1, LeftPWM);
 				motor_SetPWM(2, RightPWM);
 			}
-				
 		}
 		else
 		{
@@ -416,6 +421,7 @@ int Mode_1_Running(void)
 			motor_SetPWM(2, 0);
 		}
 		
+		//调用mpu6050数据接收与解析
 		if (mpu6050_analysis_enable)
 		{
 			mpu6050_get_data();
@@ -423,15 +429,15 @@ int Mode_1_Running(void)
 			MPU6050_Analysis();
 		}
 		
-		if (Time_Count1 >= 5)//50ms调控周期
-		{
-			Time_Count1 = 0;
-			
-		}
-		
-		oled_show_float(18, 1, Roll_Result , 3, 3);
-		oled_show_float(18, 2, Yaw_Result  , 3, 3);
-		oled_show_float(18, 3, Pitch_Result, 3, 3);
+//		oled_show_float(18, 1, Roll_Result , 3, 3);
+//		oled_show_float(18, 2, Yaw_Result  , 3, 3);
+//		oled_show_float(18, 3, Pitch_Result, 3, 3);
+		oled_show_float(12, 1, ANGLE_KP, 5, 2);
+		oled_show_float(12, 2, ANGLE_KI, 3, 2);
+		oled_show_float(12, 3, ANGLE_KD, 3, 2);
+		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
+		oled_show_float(12, 5, Angle_PID.Actual, 3, 2);
+		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
 //		oled_show_int(18, 4, mpu6050_gyro_x, 4);
 //		oled_show_int(18, 5, mpu6050_gyro_y, 4);
 //		oled_show_int(18, 6, mpu6050_gyro_z, 4);

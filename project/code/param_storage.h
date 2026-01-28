@@ -61,5 +61,6 @@
 void Param_Init(void);     // 初始化参数系统（main函数启动时调用）
 void Param_Save(void);     // 保存参数到Flash（退出修改时调用）
 void Param_Erase(void);
+void Param_SyncToPID(void);
 
 #endif

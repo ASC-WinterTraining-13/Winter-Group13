@@ -20,8 +20,8 @@ uint16_t Time_Count1 = 0;
 //定义PID
 //角度环
 PID_t Angle_PID = {
-	.OutMax = 10000,
-	.OutMin = -10000,
+	.OutMax = 9000,
+	.OutMin = -9000,
 };
 
 PID_t TEMP_888_FUNC_2_PID = {	

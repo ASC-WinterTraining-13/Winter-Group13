@@ -96,3 +96,31 @@ void Param_Erase(void)
 {
     flash_erase_page(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
 }
+
+void Param_SyncToPID(void)
+{
+    //角度环pid
+    Angle_PID.Kp = ANGLE_KP;
+    Angle_PID.Ki = ANGLE_KI;
+    Angle_PID.Kd = ANGLE_KD;
+    
+    //2
+    TEMP_888_FUNC_2_PID.Kp = TEMP_888_FUNC_2_KP;
+    TEMP_888_FUNC_2_PID.Ki = TEMP_888_FUNC_2_KI;
+    TEMP_888_FUNC_2_PID.Kd = TEMP_888_FUNC_2_KD;
+    
+    //3
+    TEMP_888_FUNC_3_PID.Kp = TEMP_888_FUNC_3_KP;
+    TEMP_888_FUNC_3_PID.Ki = TEMP_888_FUNC_3_KI;
+    TEMP_888_FUNC_3_PID.Kd = TEMP_888_FUNC_3_KD;
+    
+//    //4
+//    TEMP_888_FUNC_4_PID.Kp = TEMP_888_FUNC_4_KP;
+//    TEMP_888_FUNC_4_PID.Ki = TEMP_888_FUNC_4_KI;
+//    TEMP_888_FUNC_4_PID.Kd = TEMP_888_FUNC_4_KD;
+//    
+//    //5
+//    TEMP_888_FUNC_5_PID.Kp = TEMP_888_FUNC_5_KP;
+//    TEMP_888_FUNC_5_PID.Ki = TEMP_888_FUNC_5_KI;
+//    TEMP_888_FUNC_5_PID.Kd = TEMP_888_FUNC_5_KD;
+}

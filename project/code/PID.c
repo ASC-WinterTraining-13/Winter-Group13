@@ -26,13 +26,22 @@ void PID_Update(PID_t *p)
 		p->ErrorInt = 0;			//误差积分直接归0
 	}
 	
+	// 积分限幅
+	if(p->ErrorInt>=p->OutMax/2)p->ErrorInt=p->OutMax/2.f;
+	if(p->ErrorInt<=p->OutMin/2)p->ErrorInt=p->OutMin/2.f;
+	
+	
 	/*PID计算*/
 	/*使用位置式PID公式，计算得到输出值*/
 	p->Out = p->Kp * p->Error0
 		   + p->Ki * p->ErrorInt
 		   + p->Kd * (p->Error0 - p->Error1);
 	
-	/*输出限幅*/
+	//输出限幅	
 	if (p->Out > p->OutMax) {p->Out = p->OutMax;}	//限制输出值最大为结构体指定的OutMax
 	if (p->Out < p->OutMin) {p->Out = p->OutMin;}	//限制输出值最小为结构体指定的OutMin
 }
+
+
+
+
