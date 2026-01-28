@@ -4,7 +4,6 @@
 
 #include "param_config.h"
 #include "param_storage.h"
-#include "timer_flag.h"
 #include "mpu6050_Analysis.h"
 #include "motor.h"
 #include "Encoder.h"
@@ -387,22 +386,27 @@ int Mode_1_Running(void)
         if (Run_Flag)
 		{
 			oled_show_string(0, 0, "Run ");
-			//PID
-			Angle_PID.Actual = Angle_Result;
-			PID_Update(&Angle_PID);
-			AvePWM = Angle_PID.Out;
-			
-			//输出换算
-			LeftPWM  = AvePWM + DifPWM / 2;
-			RightPWM = AvePWM - DifPWM / 2;
-			
-			//输出限幅
-			if (LeftPWM > 10000){LeftPWM = 10000;}  else if (LeftPWM < -10000){LeftPWM = -10000;}
-			if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
-			
-			//设置PWM
-			motor_SetPWM(1, LeftPWM);
-			motor_SetPWM(2, RightPWM);
+			if (Time_Count1 > 4)//5ms Time_Count1++
+			{
+				Time_Count1 = 0;
+				//PID
+				Angle_PID.Actual = Angle_Result;
+				PID_Update(&Angle_PID);
+				AvePWM = Angle_PID.Out;
+				
+				//输出换算
+				LeftPWM  = AvePWM + DifPWM / 2;
+				RightPWM = AvePWM - DifPWM / 2;
+				
+				//输出限幅
+				if (LeftPWM > 10000){LeftPWM = 10000;}  else if (LeftPWM < -10000){LeftPWM = -10000;}
+				if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
+				
+				//设置PWM
+				motor_SetPWM(1, LeftPWM);
+				motor_SetPWM(2, RightPWM);
+			}
+				
 		}
 		else
 		{

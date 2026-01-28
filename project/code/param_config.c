@@ -4,6 +4,8 @@
 
 // 启停标志位
 uint8_t Run_Flag = 0;
+// MPU6050 分析使能标志
+volatile uint8_t mpu6050_analysis_enable = 0;
 //// (由于蓝牙模块的使用)显示更新标志位
 //uint8_t oled_Refresh = 0;
 //PWM输出

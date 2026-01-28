@@ -3,7 +3,7 @@
 
 #include <math.h>
 
-#include "timer_flag.h"
+#include "param_config.h"
 
 //Angle选择;1-Pitch，0-Roll
 #define USE_PITCH_AS_ANGLE	1

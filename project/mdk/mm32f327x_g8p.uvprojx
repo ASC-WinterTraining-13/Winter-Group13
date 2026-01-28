@@ -480,16 +480,6 @@
               <FilePath>..\code\Core_Param.h</FilePath>
             </File>
             <File>
-              <FileName>timer_flag.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\timer_flag.c</FilePath>
-            </File>
-            <File>
-              <FileName>timer_flag.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\timer_flag.h</FilePath>
-            </File>
-            <File>
               <FileName>mpu6050_Analysis.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\mpu6050_Analysis.c</FilePath>

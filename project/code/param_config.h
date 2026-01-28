@@ -35,6 +35,8 @@ extern const float PID_STEPS[5][3];
 
 // 启停标志位
 extern uint8_t Run_Flag;
+// MPU6050 分析使能标志
+extern volatile uint8_t mpu6050_analysis_enable;
 //// (由于蓝牙模块的使用)显示更新标志位
 //extern uint8_t oled_Refresh;
 // PWM输出
