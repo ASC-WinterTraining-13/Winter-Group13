@@ -106,6 +106,7 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 				ANGLE_KD = float_value;
             }
 			Param_SyncToPID();//同步pid到计算变量
+			
         }
 
     }

@@ -144,7 +144,7 @@ void Menu_Show(void)
 			// 启停标志位置0
 			Run_Flag = 0;
 			// 返回后重新显示菜单
-			oled_set_font(OLED_8X16_FONT);  
+			oled_set_font(OLED_8X16_FONT);
             Menu_UI(1);
             oled_show_string(0, 6, ">");
 		}

@@ -36,7 +36,7 @@ void Mode_1_Set_Param_UI(uint8_t Page)
             oled_show_string(2, 2, " Kp:");
             oled_show_string(2, 3, " Ki:");
             oled_show_string(2, 4, " Kd:");
-            oled_show_float(28, 2, ANGLE_KP, 2, 2);
+            oled_show_float(28, 2, ANGLE_KP, 3, 2);
             oled_show_float(28, 3, ANGLE_KI, 2, 2);
             oled_show_float(28, 4, ANGLE_KD, 2, 2);
 
@@ -363,7 +363,7 @@ int Mode_1_Running(void)
         {
             key_clear_state(KEY_CONFIRM);
             // 处理确认键
-			
+			Param_Save();
 			Run_Flag = !Run_Flag;
         }
 
