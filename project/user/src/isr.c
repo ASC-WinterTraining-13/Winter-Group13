@@ -110,13 +110,13 @@ void TIM6_IRQHandler (void)
 	
 	TIM_Time_Count ++;
 	
-	if (TIM_Time_Count >= 2)
+	if (TIM_Time_Count >= 5)
 	{
 		TIM_Time_Count = 0;
-		key_scanner();
+		Encoder_Tick();
 	}
     
-	Encoder_Tick();
+	key_scanner();
 	
     // 此处编写用户代码
     TIM6->SR &= ~TIM6->SR;                                                      // 清空中断状态
