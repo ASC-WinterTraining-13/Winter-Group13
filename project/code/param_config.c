@@ -26,19 +26,22 @@ uint16_t Time_Count2 = 0;
 PID_t Angle_PID = {
 	.OutMax = 9000,
 	.OutMin = -9000,
-	.IntSepThresh = 6,
+	.IntSepThresh = 6,		//积分分离阈值
+	.OutOffset = 0,			//输出偏移
 };
 //速度环
 PID_t Speed_PID = {	
 	.OutMax = 20,
 	.OutMin = -20,
-	.IntSepThresh = 20,
+	.IntSepThresh = 20,		//积分分离阈值
+	.OutOffset = 0,			//输出偏移
 };
-
+//转向环
 PID_t Turn_PID = {	
 	.OutMax = 5000,
 	.OutMin = -5000,
-	.IntSepThresh = 5000,
+	.IntSepThresh = 5000,	//积分分离阈值
+	.OutOffset = 0,			//输出偏移
 };
 
 PID_t TEMP_888_FUNC_4_PID = {	

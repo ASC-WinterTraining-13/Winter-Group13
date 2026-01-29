@@ -6,11 +6,12 @@
 // PID计算参数重置
 void PID_Init(PID_t *p)
 {
-	p->Target = 0;
-	p->Actual = 0;
-	p->Out = 0;
-	p->Error0 = 0;
-	p->Error1 = 0;
+	p->Target   = 0;
+	p->Actual   = 0;
+	p->Actual1  = 0;
+	p->Out      = 0;
+	p->Error0   = 0;
+	p->Error1   = 0;
 	p->ErrorInt = 0;
 	
 }
@@ -48,9 +49,14 @@ void PID_Update(PID_t *p)
 		p->ErrorInt = 0;			//误差积分直接归0
 	}
 	
+	// 输出偏移
+	if (p->Out > 0) {p->Out +=  p->OutOffset;}
+	if (p->Out < 0) {p->Out -=  p->OutOffset;}
+	
+	
 	// 积分限幅（注意限幅被改大）
-	if(p->ErrorInt>=p->OutMax/4)p->ErrorInt=p->OutMax/4.0f;
-	if(p->ErrorInt<=p->OutMin/4)p->ErrorInt=p->OutMin/4.0f;
+	if (p->ErrorInt >= p->OutMax/4) {p->ErrorInt = p->OutMax / 4.0f;}
+	if (p->ErrorInt <= p->OutMin/4) {p->ErrorInt = p->OutMin / 4.0f;}
 	
 	
 	
@@ -60,10 +66,13 @@ void PID_Update(PID_t *p)
 	p->Out = p->Kp * p->Error0
 		   + p->Ki * p->ErrorInt
 		   + p->Kd * (p->Error0 - p->Error1);
+//		   - p->Kd * (p->Actual - p->Actual1);//微分先行
 	
 	//输出限幅	
 	if (p->Out > p->OutMax) {p->Out = p->OutMax;}	//限制输出值最大为结构体指定的OutMax
 	if (p->Out < p->OutMin) {p->Out = p->OutMin;}	//限制输出值最小为结构体指定的OutMin
+	
+	p->Actual1 = p->Actual;//微分先行使用
 }
 
 
