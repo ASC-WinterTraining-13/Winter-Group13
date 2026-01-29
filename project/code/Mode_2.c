@@ -317,7 +317,7 @@ int Mode_2_Running(void)
 	oled_show_string(0, 6, "O:");
 
     
-	// mpu6050零飘校准逻辑（此时请保存静止）
+	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
 	while(1)  // 校准循环
     {
@@ -395,7 +395,7 @@ int Mode_2_Running(void)
 		{
 			// PID调控
 			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 2)// 2 * 5 ms调控周期
+			if (Time_Count1 > 2)// 2 * 5 ms调控周期（角度环）
 			{
 				Time_Count1 = 0;
 				//PID
@@ -419,29 +419,27 @@ int Mode_2_Running(void)
 				motor_SetPWM(1, LeftPWM);
 				motor_SetPWM(2, RightPWM);
 			}
-			
-			if (Time_Count2 > 10)// 10 * 5 ms调控周期
-			{
-				Time_Count2 = 0;
-				
-				LeftSpeed  = Get_Encoder1() / 11.0 / 0.05 / 9.2766;
-				RightSpeed = Get_Encoder2() / 11.0 / 0.05 / 9.2766;
-				
-				AveSpeed = (LeftSpeed + RightSpeed) / 2.0;
-				DifSpeed = LeftSpeed - RightSpeed;
-				
-				if (Run_Flag)
-				{
-					Speed_PID.Actual = AveSpeed;
-					PID_Update(&Speed_PID);
-					Angle_PID.Target = Speed_PID.Out;
-					
-					
-				}
-			}
-			
-			
 		}
+			
+		if (Time_Count2 > 10)// 10 * 5 ms调控周期（速度环+转向环）
+		{
+			Time_Count2 = 0;
+			
+			LeftSpeed  = Get_Encoder1() / 11.0 / 0.05 / 9.2766;
+			RightSpeed = Get_Encoder2() / 11.0 / 0.05 / 9.2766;
+			
+			AveSpeed = (LeftSpeed + RightSpeed) / 2.0;
+			DifSpeed = LeftSpeed - RightSpeed;
+			
+			if (Run_Flag)
+			{
+				//速度环
+				Speed_PID.Actual = AveSpeed;
+				PID_Update(&Speed_PID);
+				Angle_PID.Target = Speed_PID.Out;
+			}
+		}
+			
 		else
 		{
 			oled_show_string(0, 0, "STOP");

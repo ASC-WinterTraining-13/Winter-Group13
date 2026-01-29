@@ -9,7 +9,7 @@ static const float DEFAULT_PARAMS[15] = {
     // Speed_PID (索引 3-5)
     0.0f, 0.0f, 0.0f,
     
-    // 3_pid (索引 6-8)
+    // Turn_pid (索引 6-8)
     0.0f, 0.0f, 0.0f,
     
     // 4_pid (索引 9-11)
@@ -51,20 +51,20 @@ void Param_Init(void)
         // 写入Flash
         flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);		
     }
-		//角度环pid
+		// 角度环pid
 		Angle_PID.Kp = ANGLE_KP;
 		Angle_PID.Ki = ANGLE_KI;
 		Angle_PID.Kd = ANGLE_KD;
 		
-		//速度环pid
+		// 速度环pid
 		Speed_PID.Kp = SPEED_KP;
         Speed_PID.Ki = SPEED_KI;
         Speed_PID.Kd = SPEED_KD;
 		
-		//3
-		TEMP_888_FUNC_3_PID.Kp = TEMP_888_FUNC_3_KP;
-        TEMP_888_FUNC_3_PID.Ki = TEMP_888_FUNC_3_KI;
-        TEMP_888_FUNC_3_PID.Kd = TEMP_888_FUNC_3_KD;
+		// 转向环pid
+		Turn_PID.Kp = TURN_KP;
+        Turn_PID.Ki = TURN_KI;
+        Turn_PID.Kd = TURN_KD;
 		
 		//4
 		TEMP_888_FUNC_4_PID.Kp = TEMP_888_FUNC_4_KP;
@@ -99,20 +99,20 @@ void Param_Erase(void)
 
 void Param_SyncToPID(void)
 {
-    //角度环pid
+    // 角度环pid
     Angle_PID.Kp = ANGLE_KP;
     Angle_PID.Ki = ANGLE_KI;
     Angle_PID.Kd = ANGLE_KD;
     
-    //速度环pid
+    // 速度环pid
     Speed_PID.Kp = SPEED_KP;
     Speed_PID.Ki = SPEED_KI;
     Speed_PID.Kd = SPEED_KD;
     
-    //3
-    TEMP_888_FUNC_3_PID.Kp = TEMP_888_FUNC_3_KP;
-    TEMP_888_FUNC_3_PID.Ki = TEMP_888_FUNC_3_KI;
-    TEMP_888_FUNC_3_PID.Kd = TEMP_888_FUNC_3_KD;
+    // 转向环pid
+    Turn_PID.Kp = TURN_KP;
+    Turn_PID.Ki = TURN_KI;
+    Turn_PID.Kd = TURN_KD;
     
 //    //4
 //    TEMP_888_FUNC_4_PID.Kp = TEMP_888_FUNC_4_KP;

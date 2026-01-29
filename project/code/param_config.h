@@ -25,7 +25,7 @@
 //定义PID
 extern PID_t Angle_PID;					//角度环
 extern PID_t Speed_PID;					//速度环
-extern PID_t TEMP_888_FUNC_3_PID;
+extern PID_t Turn_PID;
 extern PID_t TEMP_888_FUNC_4_PID;
 extern PID_t TEMP_888_FUNC_5_PID;
 

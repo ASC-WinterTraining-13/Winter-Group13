@@ -8,17 +8,17 @@
 #define PARAM_FLASH_PAGE        (3)
 
 //===== 五组PID参数在 flash_union_buffer[] 中的索引 =====
-// angle_pid (0-2)
+// Angle_PID (0-2)
 #define FLASH_ANGLE_KP      0
 #define FLASH_ANGLE_KI      1
 #define FLASH_ANGLE_KD      2
 
-// mode_2_pid (3-5)
+// Speed_PID (3-5)
 #define FLASH_2_KP      3
 #define FLASH_2_KI      4
 #define FLASH_2_KD      5
 
-// mode_3_pid (6-8)
+// Turn_PID (6-8)
 #define FLASH_3_KP      6
 #define FLASH_3_KI      7
 #define FLASH_3_KD      8
@@ -45,9 +45,9 @@
 #define SPEED_KI    flash_union_buffer[FLASH_2_KI].float_type
 #define SPEED_KD    flash_union_buffer[FLASH_2_KD].float_type
 		
-#define TEMP_888_FUNC_3_KP    flash_union_buffer[FLASH_3_KP].float_type
-#define TEMP_888_FUNC_3_KI    flash_union_buffer[FLASH_3_KI].float_type
-#define TEMP_888_FUNC_3_KD    flash_union_buffer[FLASH_3_KD].float_type
+#define TURN_KP    flash_union_buffer[FLASH_3_KP].float_type
+#define TURN_KI    flash_union_buffer[FLASH_3_KI].float_type
+#define TURN_KD    flash_union_buffer[FLASH_3_KD].float_type
 		
 #define TEMP_888_FUNC_4_KP    flash_union_buffer[FLASH_4_KP].float_type
 #define TEMP_888_FUNC_4_KI    flash_union_buffer[FLASH_4_KI].float_type

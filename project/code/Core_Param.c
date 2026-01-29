@@ -18,7 +18,7 @@ void Core_Param_UI(uint8_t Page)
 			oled_show_string(0, 1, "===");
 			oled_show_string(2, 2, " Angle");
 			oled_show_string(2, 3, " Speed");
-			oled_show_string(2, 4, " ?????");
+			oled_show_string(2, 4, " Turn ");
 			oled_show_string(2, 5, " ?????");
 			oled_show_string(2, 6, " ?????");
 			
@@ -192,23 +192,23 @@ int Set_Core_Param(uint8_t PID_Num)
             switch(PID_Num)
 			{
 				case 1:
-					Set_Core_Param_PID(Param_flag_temp, &Angle_PID,PID_Num);
+					Set_Core_Param_PID(Param_flag_temp, &Angle_PID, PID_Num);
 					break;
 				
 				case 2:
-					Set_Core_Param_PID(Param_flag_temp, &Speed_PID,PID_Num);
+					Set_Core_Param_PID(Param_flag_temp, &Speed_PID, PID_Num);
 					break;
 								
 				case 3:
-					Set_Core_Param_PID(Param_flag_temp, &TEMP_888_FUNC_3_PID,PID_Num);
+					Set_Core_Param_PID(Param_flag_temp, &Turn_PID, PID_Num);
 					break;			
 				
 				case 4:
-					Set_Core_Param_PID(Param_flag_temp, &TEMP_888_FUNC_4_PID,PID_Num);
+					Set_Core_Param_PID(Param_flag_temp, &TEMP_888_FUNC_4_PID, PID_Num);
 					break;			
 				
 				case 5:
-					Set_Core_Param_PID(Param_flag_temp, &TEMP_888_FUNC_5_PID,PID_Num);
+					Set_Core_Param_PID(Param_flag_temp, &TEMP_888_FUNC_5_PID, PID_Num);
 					break;
 				
 			}
@@ -292,8 +292,8 @@ int Core_Param_Menu(void)
 					break;
 				
 				case 3:
-					oled_show_string(0, 0, "?????_PID");
-					Core_Param_Show_PID_Num_UI(&TEMP_888_FUNC_3_PID);
+					oled_show_string(0, 0, "Turn_PID");
+					Core_Param_Show_PID_Num_UI(&Turn_PID);
 					break;
 				
 				case 4:

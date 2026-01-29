@@ -323,7 +323,7 @@ int Mode_1_Running(void)
 //	oled_show_string(0, 4, "En1:");
 //	oled_show_string(0, 5, "En2:");
     
-	// mpu6050零飘校准逻辑（此时请保存静止）
+	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
 	while(1)  // 校准循环
     {
@@ -399,7 +399,7 @@ int Mode_1_Running(void)
 		{
 			// PID调控
 			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 2)// 2 * 5 ms调控周期
+			if (Time_Count1 > 2)// 2 * 5 ms调控周期（角度环）
 			{
 				Time_Count1 = 0;
 				//PID

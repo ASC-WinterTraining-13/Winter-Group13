@@ -112,7 +112,6 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
             }
             else if(strcmp(name, "S_I") == 0)
             {
-//              printf("slider 2 value: %.2f\r\n", float_value);
 				float_value = (float)atof(value);
 				SPEED_KI = float_value;
             }
@@ -120,6 +119,21 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
             {
 				float_value = (float)atof(value);
 				SPEED_KD = float_value;
+            }
+			else if(strcmp(name, "T_P") == 0)
+            {
+				float_value = (float)atof(value);
+				TURN_KP = float_value;
+            }
+            else if(strcmp(name, "T_I") == 0)
+            {
+				float_value = (float)atof(value);
+				TURN_KI = float_value;
+            }
+			else if(strcmp(name, "T_D") == 0)
+            {
+				float_value = (float)atof(value);
+				TURN_KD = float_value;
             }
 			Param_SyncToPID();//同步pid到计算变量
 			
@@ -139,8 +153,15 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         // 右摇杆纵向值
         rv = (int8)atoi(strtok(NULL, ","));
 		
-		Angle_PID.Target = lv / 10;//控制目标角度在-10~10
-		DifPWM = rh * 50;		   //控制差分PWM在-5000~5000
+//		// 角度环测试摇杆
+//		Angle_PID.Target = lv / 10;		//控制目标角度在-10~10
+		//
+		// 速度环测试摇杆
+		Speed_PID.Target = lv / 25.0;	//控制目标速度
+		//
+		DifPWM = rh * 50;		   		//控制差分PWM在-5000~5000
+		// 转向环测试摇杆
+		Turn_PID.Target = rh / 25.0;		
         
 //        printf("Joystick: LH=%d, LV=%d, RH=%d, RV=%d\r\n", lh, lv, rh, rv);
 //        // 例如：可用于控制机器人方向
