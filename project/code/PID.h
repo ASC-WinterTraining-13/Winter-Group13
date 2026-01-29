@@ -12,10 +12,12 @@ typedef struct {
 	
 	float Error0;
 	float Error1;
-	float ErrorInt;
+	float ErrorInt; 	//误差累积（积分）
 	
 	float OutMax;		//输出最大值
 	float OutMin;		//输出最小值
+	
+	float IntSepThresh;  //积分分离阈值（误差大于阈值 不积分/积分清零）
 } PID_t;
 
 void PID_Update(PID_t *p);

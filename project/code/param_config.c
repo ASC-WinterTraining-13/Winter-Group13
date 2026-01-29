@@ -22,6 +22,7 @@ uint16_t Time_Count1 = 0;
 PID_t Angle_PID = {
 	.OutMax = 9000,
 	.OutMin = -9000,
+	.IntSepThresh = 6,
 };
 
 PID_t TEMP_888_FUNC_2_PID = {	

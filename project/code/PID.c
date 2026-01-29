@@ -1,5 +1,6 @@
 #include "PID.h"
 
+#include "math.h"
 // 基于江协的PID教程编写
 
 // PID计算参数重置
@@ -21,6 +22,19 @@ void PID_Update(PID_t *p)
 	p->Error1 = p->Error0;					//获取上次误差
 	p->Error0 = p->Target - p->Actual;		//获取本次误差，目标值减实际值，即为误差值
 	
+	
+	float C;
+	/*积分分离*/
+	if ( fabs(p->Error0) < p->IntSepThresh )
+	{
+		C = 1.0f;
+	}
+	else
+	{
+		C = 0.0f;
+	}
+	
+	
 	/*外环误差积分（累加）*/
 	/*如果Ki不为0，才进行误差积分，这样做的目的是便于调试*/
 	/*因为在调试时，我们可能先把Ki设置为0，这时积分项无作用，误差消除不了，误差积分会积累到很大的值*/
@@ -34,9 +48,11 @@ void PID_Update(PID_t *p)
 		p->ErrorInt = 0;			//误差积分直接归0
 	}
 	
-	// 积分限幅
-	if(p->ErrorInt>=p->OutMax/2)p->ErrorInt=p->OutMax/2.f;
-	if(p->ErrorInt<=p->OutMin/2)p->ErrorInt=p->OutMin/2.f;
+	// 积分限幅（注意限幅被改大）
+	if(p->ErrorInt>=p->OutMax/4)p->ErrorInt=p->OutMax/4.f;
+	if(p->ErrorInt<=p->OutMin/4)p->ErrorInt=p->OutMin/4.f;
+	
+	
 	
 	
 	/*PID计算*/

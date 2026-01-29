@@ -407,11 +407,11 @@ int Mode_1_Running(void)
 				RightPWM = AvePWM ;//- DifPWM / 2;
 				
 //				//输出偏移
-//				if (LeftPWM  > 300){LeftPWM += 1000;} else if (LeftPWM  < -300){LeftPWM -= 1000;}
-//				if (RightPWM > 300){RightPWM += 1000;}else if (RightPWM < -300){RightPWM -= 1000;} 			
+				if (LeftPWM  > 200){LeftPWM += 900;} else if (LeftPWM  < -200){LeftPWM -= 900;}
+				if (RightPWM > 200){RightPWM += 900;}else if (RightPWM < -200){RightPWM -= 900;} 			
 				
 				//输出限幅
-				if (LeftPWM > 10000){LeftPWM = 10000;}  else if (LeftPWM < -10000){LeftPWM = -10000;}
+				if (LeftPWM  > 10000){LeftPWM = 10000;} else if (LeftPWM < -10000){LeftPWM = -10000;}
 				if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
 				
 				//设置PWM
