@@ -109,6 +109,7 @@ void TIM6_IRQHandler (void)
 	
 	TIM_Time_Count ++;
 	
+	
 	if (TIM_Time_Count >= 5)
 	{
 		TIM_Time_Count = 0;
@@ -131,6 +132,7 @@ void TIM7_IRQHandler (void)
 	
 	//调控周期计时器
 	Time_Count1 ++;
+	Time_Count2 ++;
 	// MPU6050 分析使能（每5ms置1）
     mpu6050_analysis_enable = 1;
 	

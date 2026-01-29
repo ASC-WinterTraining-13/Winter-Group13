@@ -323,18 +323,18 @@ int Mode_1_Running(void)
 //	oled_show_string(0, 4, "En1:");
 //	oled_show_string(0, 5, "En2:");
     
-	//校准逻辑
+	// mpu6050零飘校准逻辑（此时请保存静止）
 	MPU6050_Calibration_Start();
 	while(1)  // 校准循环
     {
         if (MPU6050_Calibration_Check() == 0)  // 校准完成
         {
-            break;  //跳出校准循环，往下执行
+            break;  // 跳出校准循环，往下执行
         }
         
-        //可以考虑在这里操作OLED
+        // 可以考虑在这里操作OLED
         
-        //强制校准退出
+        // 强制校准退出
         if(KEY_SHORT_PRESS == key_get_state(KEY_BACK)) {
             key_clear_state(KEY_BACK);
             break;  // 退出整个模式
@@ -343,29 +343,33 @@ int Mode_1_Running(void)
     }
 	
 	oled_show_string(0, 0, "Run ");
+	// 清零pid积分等参数
+	PID_Init(&Angle_PID);
 	
     while(1)
     {  
 		/* 按键处理*/
-        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
-        {
-            key_clear_state(KEY_UP);
-            // 处理上键
-        }
+//        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
+//        {
+//            key_clear_state(KEY_UP);
+//            // 处理上键
+//        }
 
-        else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
-        {
-            key_clear_state(KEY_DOWN);
-            // 处理下键
-        }
+//        else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
+//        {
+//            key_clear_state(KEY_DOWN);
+//            // 处理下键
+//        }
 
-        else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
+//        else 
+		if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
             key_clear_state(KEY_CONFIRM);
             // 处理确认键
 			Param_Save();
 			//清零pid积分等参数
 			PID_Init(&Angle_PID);
+			//更改启动状态
 			Run_Flag = !Run_Flag;
         }
 
@@ -393,8 +397,9 @@ int Mode_1_Running(void)
 		
         if (Run_Flag)
 		{
+			// PID调控
 			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 2)// 2 * 10 ms调控周期
+			if (Time_Count1 > 2)// 2 * 5 ms调控周期
 			{
 				Time_Count1 = 0;
 				//PID
@@ -403,8 +408,8 @@ int Mode_1_Running(void)
 				AvePWM = - Angle_PID.Out;
 				
 				//输出换算
-				LeftPWM  = AvePWM ;//+ DifPWM / 2;
-				RightPWM = AvePWM ;//- DifPWM / 2;
+				LeftPWM  = AvePWM + DifPWM / 2;
+				RightPWM = AvePWM - DifPWM / 2;
 				
 //				//输出偏移
 				if (LeftPWM  > 200){LeftPWM += 900;} else if (LeftPWM  < -200){LeftPWM -= 900;}
@@ -417,7 +422,8 @@ int Mode_1_Running(void)
 				//设置PWM
 				motor_SetPWM(1, LeftPWM);
 				motor_SetPWM(2, RightPWM);
-			}
+			}			
+			
 		}
 		else
 		{
@@ -434,6 +440,8 @@ int Mode_1_Running(void)
 			mpu6050_analysis_enable = 0;
 			MPU6050_Analysis();
 		}
+		
+		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
 		
 //		oled_show_float(18, 1, Roll_Result , 3, 3);
 //		oled_show_float(18, 2, Yaw_Result  , 3, 3);

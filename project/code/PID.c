@@ -49,8 +49,8 @@ void PID_Update(PID_t *p)
 	}
 	
 	// 积分限幅（注意限幅被改大）
-	if(p->ErrorInt>=p->OutMax/4)p->ErrorInt=p->OutMax/4.f;
-	if(p->ErrorInt<=p->OutMin/4)p->ErrorInt=p->OutMin/4.f;
+	if(p->ErrorInt>=p->OutMax/4)p->ErrorInt=p->OutMax/4.0f;
+	if(p->ErrorInt<=p->OutMin/4)p->ErrorInt=p->OutMin/4.0f;
 	
 	
 	

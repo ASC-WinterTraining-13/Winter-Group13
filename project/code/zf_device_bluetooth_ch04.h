@@ -70,5 +70,6 @@ void        bluetooth_ch04_clear_rx_flag       (void);
 void        bluetooth_ch04_uart_callback       (void);
 void        bluetooth_ch04_dma_rx_handler      (void);
 uint8       bluetooth_ch04_init                (void);
+uint32 bluetooth_ch04_printf(const char *format, ...);
 
 #endif

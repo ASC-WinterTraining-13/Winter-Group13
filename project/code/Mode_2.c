@@ -1,8 +1,15 @@
 #include "zf_device_oled.h"
 #include "zf_device_key.h"
+#include "zf_device_mpu6050.h"
 
 #include "param_config.h"
 #include "param_storage.h"
+#include "mpu6050_Analysis.h"
+#include "motor.h"
+#include "Encoder.h"
+#include "bluetooth_ch04_example.h"
+#include "zf_device_bluetooth_ch04.h"
+#include "PID.h"
 
 /*--------------------[S] 菜单样式 [S]--------------------*/
 
@@ -29,9 +36,9 @@ void Mode_2_Set_Param_UI(uint8_t Page)
             oled_show_string(2, 2, " Kp:");
             oled_show_string(2, 3, " Ki:");
             oled_show_string(2, 4, " Kd:");
-            oled_show_float(28, 2, TEMP_888_FUNC_2_KP, 2, 2);
-            oled_show_float(28, 3, TEMP_888_FUNC_2_KI, 2, 2);
-            oled_show_float(28, 4, TEMP_888_FUNC_2_KD, 2, 2);
+            oled_show_float(28, 2, SPEED_KP, 2, 2);
+            oled_show_float(28, 3, SPEED_KI, 2, 2);
+            oled_show_float(28, 4, SPEED_KD, 2, 2);
 
             break;
         }
@@ -54,19 +61,19 @@ void Set_Mode_2_Param(uint8_t Num)
     switch (Num)
     {
         case 1:  // Kp
-            current_param = &TEMP_888_FUNC_2_KP;
+            current_param = &SPEED_KP;
             step_value = PID_STEPS[1][0];
             row = 2;
             break;
             
         case 2:  // Ki
-            current_param = &TEMP_888_FUNC_2_KI;
+            current_param = &SPEED_KI;
             step_value = PID_STEPS[1][1];
             row = 3;
             break;
             
         case 3:  // Kd
-            current_param = &TEMP_888_FUNC_2_KD;
+            current_param = &SPEED_KD;
             step_value = PID_STEPS[1][2];
             row = 4;
             break;
@@ -300,27 +307,66 @@ int Mode_2_Menu(void)
 
 int Mode_2_Running(void)
 {
-    oled_show_string(0, 0, "Running");
+	oled_set_font(OLED_6X8_FONT);
+
+	oled_show_string(0, 1, "P:");
+	oled_show_string(0, 2, "I:");
+	oled_show_string(0, 3, "D:");
+	oled_show_string(0, 4, "T:");
+	oled_show_string(0, 5, "A:");
+	oled_show_string(0, 6, "O:");
+
     
+	// mpu6050零飘校准逻辑（此时请保存静止）
+	MPU6050_Calibration_Start();
+	while(1)  // 校准循环
+    {
+        if (MPU6050_Calibration_Check() == 0)  // 校准完成
+        {
+            break;  //跳出校准循环，往下执行
+        }
+        
+        //可以考虑在这里操作OLED
+        
+        //强制校准退出
+        if(KEY_SHORT_PRESS == key_get_state(KEY_BACK)) {
+            key_clear_state(KEY_BACK);
+            break;  // 退出整个模式
+        }
+        
+    }
+	
+	oled_show_string(0, 0, "Run ");
+	// 清零pid积分等参数
+	PID_Init(&Angle_PID);
+	PID_Init(&Speed_PID);
+	
     while(1)
     {  
-        
-        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
-        {
-            key_clear_state(KEY_UP);
-            // 处理上键
-        }
+		/* 按键处理*/
+//        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
+//        {
+//            key_clear_state(KEY_UP);
+//            // 处理上键
+//        }
 
-        else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
-        {
-            key_clear_state(KEY_DOWN);
-            // 处理下键
-        }
+//        else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
+//        {
+//            key_clear_state(KEY_DOWN);
+//            // 处理下键
+//        }
 
-        else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
+//        else 
+		if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
             key_clear_state(KEY_CONFIRM);
             // 处理确认键
+			Param_Save();
+			//清零pid积分等参数
+			PID_Init(&Angle_PID);
+			PID_Init(&Speed_PID);
+			//更改启动状态
+			Run_Flag = !Run_Flag;
         }
 
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
@@ -330,9 +376,105 @@ int Mode_2_Running(void)
 			
 			// 启停标志位置0
 			Run_Flag = 0;
+			motor_SetPWM(1, 0);
+			motor_SetPWM(2, 0);
 			
             return 0;
         }
+		
+		/*蓝牙模块*/
+		bluetooth_ch04_handle_receive();	
+		
+		//失控
+		if (Angle_Result < - 50 || 50 < Angle_Result)
+		{
+			Run_Flag = 0;
+		}
+		
+        if (Run_Flag)
+		{
+			// PID调控
+			oled_show_string(0, 0, "Run ");
+			if (Time_Count1 > 2)// 2 * 5 ms调控周期
+			{
+				Time_Count1 = 0;
+				//PID
+				Angle_PID.Actual = Angle_Result;
+				PID_Update(&Angle_PID);
+				AvePWM = - Angle_PID.Out;
+				
+				//输出换算
+				LeftPWM  = AvePWM + DifPWM / 2;
+				RightPWM = AvePWM - DifPWM / 2;
+				
+//				//输出偏移
+				if (LeftPWM  > 200){LeftPWM += 900;} else if (LeftPWM  < -200){LeftPWM -= 900;}
+				if (RightPWM > 200){RightPWM += 900;}else if (RightPWM < -200){RightPWM -= 900;} 			
+				
+				//输出限幅
+				if (LeftPWM  > 10000){LeftPWM = 10000;} else if (LeftPWM < -10000){LeftPWM = -10000;}
+				if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
+				
+				//设置PWM
+				motor_SetPWM(1, LeftPWM);
+				motor_SetPWM(2, RightPWM);
+			}
+			
+			if (Time_Count2 > 10)// 10 * 5 ms调控周期
+			{
+				Time_Count2 = 0;
+				
+				LeftSpeed  = Get_Encoder1() / 11.0 / 0.05 / 9.2766;
+				RightSpeed = Get_Encoder2() / 11.0 / 0.05 / 9.2766;
+				
+				AveSpeed = (LeftSpeed + RightSpeed) / 2.0;
+				DifSpeed = LeftSpeed - RightSpeed;
+				
+				if (Run_Flag)
+				{
+					Speed_PID.Actual = AveSpeed;
+					PID_Update(&Speed_PID);
+					Angle_PID.Target = Speed_PID.Out;
+					
+					
+				}
+			}
+			
+			
+		}
+		else
+		{
+			oled_show_string(0, 0, "STOP");
+			//强制停止（电机）运行
+			motor_SetPWM(1, 0);
+			motor_SetPWM(2, 0);
+		}
+		
+		//调用mpu6050数据接收与解析
+		if (mpu6050_analysis_enable)
+		{
+			mpu6050_get_data();
+			mpu6050_analysis_enable = 0;
+			MPU6050_Analysis();
+		}
+		
+//		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
+
+		oled_show_float(12, 1, ANGLE_KP, 5, 1);
+		oled_show_float(12, 2, ANGLE_KI, 3, 2);
+		oled_show_float(12, 3, ANGLE_KD, 3, 1);
+		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
+		oled_show_float(12, 5, Angle_Result, 3, 2);
+		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
+		
+		oled_show_float(72, 1, SPEED_KP, 5, 1);
+		oled_show_float(72, 2, SPEED_KI, 3, 2);
+		oled_show_float(72, 3, SPEED_KD, 3, 1);
+		oled_show_float(72, 4, Speed_PID.Target, 3, 2);
+		oled_show_float(72, 5, AveSpeed, 3, 2);
+		oled_show_float(72, 6, Speed_PID.Out, 5, 2);
+
+
     }
 }
 /*--------------------[E] 小车运行界面 [E]--------------------*/

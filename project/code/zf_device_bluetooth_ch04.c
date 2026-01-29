@@ -46,6 +46,9 @@
 
 #include "zf_device_bluetooth_ch04.h"
 
+#include <stdarg.h>
+
+
 static  fifo_struct     bluetooth_ch04_fifo;
 static  uint8           bluetooth_ch04_buffer[BLUETOOTH_CH04_BUFFER_SIZE];      // 数据存放数组
 static  uint8           bluetooth_ch04_data = 0;                                // 临时数据变量
@@ -256,4 +259,46 @@ uint8 bluetooth_ch04_init (void)
     uart_rx_interrupt(BLUETOOTH_CH04_INDEX, 1);
     
     return return_state;
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     蓝牙极简版格式化输出（仅保留核心功能）
+// 参数说明     format          格式化字符串（同printf）
+// 参数说明     ...             可变参数（数字、字符串等）
+// 返回参数     uint32          发送的字节数（失败返回0）
+// 使用示例     bluetooth_ch04_printf("温度：%.2f，计数：%d\n", 25.5f, 123);
+//-------------------------------------------------------------------------------------------------------------------
+uint32 bluetooth_ch04_printf(const char *format, ...)
+{
+    // 1. 定义临时缓冲区存储格式化后的内容（大小可根据需求调整）
+    char temp_buf[256] = {0};
+    
+    // 2. 检查格式化字符串是否为空（不用断言，直接返回错误）
+    if(format == NULL)
+    {
+        return 0;
+    }
+    
+    // 3. 处理可变参数，格式化内容到缓冲区
+    va_list args;
+    va_start(args, format);
+    // vsnprintf：安全格式化，避免缓冲区溢出
+    int len = vsnprintf(temp_buf, sizeof(temp_buf) - 1, format, args);
+    va_end(args);
+    
+    // 4. 格式化失败/缓冲区不足时返回0
+    if(len <= 0 || len >= (int)sizeof(temp_buf) - 1)
+    {
+        return 0;
+    }
+    
+    // 5. 通过蓝牙发送格式化后的字符串
+    uint32 i = 0;
+    while(temp_buf[i] != '\0')
+    {
+        uart_write_byte(BLUETOOTH_CH04_INDEX, (uint8)temp_buf[i]);
+        i++;
+    }
+    
+    return (uint32)len;
 }

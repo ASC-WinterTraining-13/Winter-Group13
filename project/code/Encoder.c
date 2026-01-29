@@ -31,6 +31,7 @@ void Encoder_Init(void)
 //	encoder_clear_count(TIM4_ENCODER);
 //}
 
+// 获取电机1(左)计数值
 int Get_Encoder1(void)
 {
 	int16_t temp;
@@ -39,6 +40,7 @@ int Get_Encoder1(void)
 	return temp;
 }
 
+// 获取电机2(右)计数值
 int Get_Encoder2(void)
 {
 	int16_t temp;

@@ -3,20 +3,20 @@
 
 // 默认参数值（首次使用或恢复出厂设置时使用）
 static const float DEFAULT_PARAMS[15] = {
-    // angle_pid (索引 0-2)
-    80.0f, 0.0f, 2.0f,
+    // Angle_PID(索引 0-2)
+    193.0f, 5.6f, 499.0f,
     
-    // 2_pid (索引 3-5)
-    5.0f, 0.0f, 0.0f,
+    // Speed_PID (索引 3-5)
+    0.0f, 0.0f, 0.0f,
     
     // 3_pid (索引 6-8)
-    10.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f,
     
     // 4_pid (索引 9-11)
-    15.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 0.0f,
     
     // 5_pid (索引 12-14)
-    20.0f, 0.0f, 0.0f
+    0.0f, 0.0f, 0.0f
 };
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -56,10 +56,10 @@ void Param_Init(void)
 		Angle_PID.Ki = ANGLE_KI;
 		Angle_PID.Kd = ANGLE_KD;
 		
-		//2
-		TEMP_888_FUNC_2_PID.Kp = TEMP_888_FUNC_2_KP;
-        TEMP_888_FUNC_2_PID.Ki = TEMP_888_FUNC_2_KI;
-        TEMP_888_FUNC_2_PID.Kd = TEMP_888_FUNC_2_KD;
+		//速度环pid
+		Speed_PID.Kp = SPEED_KP;
+        Speed_PID.Ki = SPEED_KI;
+        Speed_PID.Kd = SPEED_KD;
 		
 		//3
 		TEMP_888_FUNC_3_PID.Kp = TEMP_888_FUNC_3_KP;
@@ -104,10 +104,10 @@ void Param_SyncToPID(void)
     Angle_PID.Ki = ANGLE_KI;
     Angle_PID.Kd = ANGLE_KD;
     
-    //2
-    TEMP_888_FUNC_2_PID.Kp = TEMP_888_FUNC_2_KP;
-    TEMP_888_FUNC_2_PID.Ki = TEMP_888_FUNC_2_KI;
-    TEMP_888_FUNC_2_PID.Kd = TEMP_888_FUNC_2_KD;
+    //速度环pid
+    Speed_PID.Kp = SPEED_KP;
+    Speed_PID.Ki = SPEED_KI;
+    Speed_PID.Kd = SPEED_KD;
     
     //3
     TEMP_888_FUNC_3_PID.Kp = TEMP_888_FUNC_3_KP;

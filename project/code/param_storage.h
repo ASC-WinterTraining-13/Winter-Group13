@@ -41,9 +41,9 @@
 #define ANGLE_KI    flash_union_buffer[FLASH_ANGLE_KI].float_type
 #define ANGLE_KD    flash_union_buffer[FLASH_ANGLE_KD].float_type
 
-#define TEMP_888_FUNC_2_KP    flash_union_buffer[FLASH_2_KP].float_type
-#define TEMP_888_FUNC_2_KI    flash_union_buffer[FLASH_2_KI].float_type
-#define TEMP_888_FUNC_2_KD    flash_union_buffer[FLASH_2_KD].float_type
+#define SPEED_KP    flash_union_buffer[FLASH_2_KP].float_type
+#define SPEED_KI    flash_union_buffer[FLASH_2_KI].float_type
+#define SPEED_KD    flash_union_buffer[FLASH_2_KD].float_type
 		
 #define TEMP_888_FUNC_3_KP    flash_union_buffer[FLASH_3_KP].float_type
 #define TEMP_888_FUNC_3_KI    flash_union_buffer[FLASH_3_KI].float_type

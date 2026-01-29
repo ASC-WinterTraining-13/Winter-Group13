@@ -33,13 +33,13 @@ static uint32 bluetooth_rx_length = 0;
 void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 {
     // 局部变量声明
-    char *tag;
-    char *name;
-    char *action;
-    char *value;
-    int8 lh, lv, rh, rv;
-    uint8 int_value;
-    float float_value;
+    char *tag;				//标签
+    char *name;				//名称
+    char *action;			//（按键up/down）状态
+    char *value;			//值
+    int8 lh, lv, rh, rv;	//摇杆解析
+    uint8 int_value;		//解析值
+    float float_value;		//解析值
     
     // 创建可修改的副本（strtok 会修改原字符串）
     static char parse_buffer[100];
@@ -105,6 +105,22 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 				float_value = (float)atof(value);
 				ANGLE_KD = float_value;
             }
+			else if(strcmp(name, "S_P") == 0)
+            {
+				float_value = (float)atof(value);
+				SPEED_KP = float_value;
+            }
+            else if(strcmp(name, "S_I") == 0)
+            {
+//              printf("slider 2 value: %.2f\r\n", float_value);
+				float_value = (float)atof(value);
+				SPEED_KI = float_value;
+            }
+			else if(strcmp(name, "S_D") == 0)
+            {
+				float_value = (float)atof(value);
+				SPEED_KD = float_value;
+            }
 			Param_SyncToPID();//同步pid到计算变量
 			
         }
@@ -122,6 +138,9 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         rh = (int8)atoi(strtok(NULL, ","));
         // 右摇杆纵向值
         rv = (int8)atoi(strtok(NULL, ","));
+		
+		Angle_PID.Target = lv / 10;//控制目标角度在-10~10
+		DifPWM = rh * 50;		   //控制差分PWM在-5000~5000
         
 //        printf("Joystick: LH=%d, LV=%d, RH=%d, RV=%d\r\n", lh, lv, rh, rv);
 //        // 例如：可用于控制机器人方向
@@ -157,6 +176,7 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 //    }
 //// (由于蓝牙模块的使用)显示更新标志位
 //	oled_Refresh = 1;
+	
 }
 
 //-------------------------------------------------------------------------------------------------------------------
