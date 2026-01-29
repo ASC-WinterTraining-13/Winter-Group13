@@ -112,7 +112,7 @@ void TIM6_IRQHandler (void)
 	if (TIM_Time_Count >= 5)
 	{
 		TIM_Time_Count = 0;
-		Encoder_Tick();
+//		Encoder_Tick();
 	}
     
 	key_scanner();

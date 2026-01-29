@@ -364,6 +364,8 @@ int Mode_1_Running(void)
             key_clear_state(KEY_CONFIRM);
             // 处理确认键
 			Param_Save();
+			//清零pid积分等参数
+			PID_Init(&Angle_PID);
 			Run_Flag = !Run_Flag;
         }
 
@@ -392,7 +394,7 @@ int Mode_1_Running(void)
         if (Run_Flag)
 		{
 			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 5)// 5 * 10 ms调控周期
+			if (Time_Count1 > 2)// 2 * 10 ms调控周期
 			{
 				Time_Count1 = 0;
 				//PID
@@ -404,9 +406,9 @@ int Mode_1_Running(void)
 				LeftPWM  = AvePWM ;//+ DifPWM / 2;
 				RightPWM = AvePWM ;//- DifPWM / 2;
 				
-				//输出偏移
-				if (LeftPWM  > 300){LeftPWM += 1100;} else if (LeftPWM  < -300){LeftPWM -= 1100;}
-				if (RightPWM > 300){RightPWM += 1100;}else if (RightPWM < -300){RightPWM -= 1100;} 			
+//				//输出偏移
+//				if (LeftPWM  > 300){LeftPWM += 1000;} else if (LeftPWM  < -300){LeftPWM -= 1000;}
+//				if (RightPWM > 300){RightPWM += 1000;}else if (RightPWM < -300){RightPWM -= 1000;} 			
 				
 				//输出限幅
 				if (LeftPWM > 10000){LeftPWM = 10000;}  else if (LeftPWM < -10000){LeftPWM = -10000;}
@@ -440,7 +442,7 @@ int Mode_1_Running(void)
 		oled_show_float(12, 2, ANGLE_KI, 3, 2);
 		oled_show_float(12, 3, ANGLE_KD, 3, 2);
 		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
-		oled_show_float(12, 5, Angle_PID.Actual, 3, 2);
+		oled_show_float(12, 5, Angle_Result, 3, 2);
 		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
 //		oled_show_int(18, 4, mpu6050_gyro_x, 4);
 //		oled_show_int(18, 5, mpu6050_gyro_y, 4);

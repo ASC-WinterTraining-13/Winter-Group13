@@ -15,18 +15,34 @@ void Encoder_Init(void)
     encoder_clear_count(TIM4_ENCODER); // 初始清零
 }
 
-//计数值
-int16_t Encoder1_Count = 0;
-int16_t Encoder2_Count = 0;
+////计数值
+//int16_t Encoder1_Count = 0;
+//int16_t Encoder2_Count = 0;
 
-// 编码器读取及清空
-void Encoder_Tick(void)
+//// 编码器读取及清空
+//void Encoder_Tick(void)
+//{
+//	//读取
+//	Encoder1_Count = encoder_get_count(TIM3_ENCODER); 
+//	Encoder2_Count = encoder_get_count(TIM4_ENCODER); 
+//	
+//	//计数清零
+//	encoder_clear_count(TIM3_ENCODER);
+//	encoder_clear_count(TIM4_ENCODER);
+//}
+
+int Get_Encoder1(void)
 {
-	//读取
-	Encoder1_Count = encoder_get_count(TIM3_ENCODER); 
-	Encoder2_Count = encoder_get_count(TIM4_ENCODER); 
-	
-	//计数清零
+	int16_t temp;
+	temp = encoder_get_count(TIM3_ENCODER); 
 	encoder_clear_count(TIM3_ENCODER);
+	return temp;
+}
+
+int Get_Encoder2(void)
+{
+	int16_t temp;
+	temp = encoder_get_count(TIM4_ENCODER); 
 	encoder_clear_count(TIM4_ENCODER);
+	return temp;
 }

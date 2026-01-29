@@ -2,11 +2,19 @@
 
 // 基于江协的PID教程编写
 
-/**
-  * 函    数：PID计算及结构体变量值更新
-  * 参    数：PID_t * 指定结构体的地址
-  * 返 回 值：无
-  */
+// PID计算参数重置
+void PID_Init(PID_t *p)
+{
+	p->Target = 0;
+	p->Actual = 0;
+	p->Out = 0;
+	p->Error0 = 0;
+	p->Error1 = 0;
+	p->ErrorInt = 0;
+	
+}
+
+//PID计算及结构体变量值更新
 void PID_Update(PID_t *p)
 {
 	/*获取本次误差和上次误差*/

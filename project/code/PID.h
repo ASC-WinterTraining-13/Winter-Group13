@@ -19,5 +19,6 @@ typedef struct {
 } PID_t;
 
 void PID_Update(PID_t *p);
+void PID_Init(PID_t *p);
 
 #endif
