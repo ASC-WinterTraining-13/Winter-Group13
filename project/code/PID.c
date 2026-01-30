@@ -85,7 +85,6 @@ void Balance_PID_Contorl(void)
 	}
 	
 	// 角度环PID计算
-	Angle_PID.Target = 0.0f;
 	Angle_PID.Actual = Angle_Result;
 	PID_Update(&Angle_PID);
 	
@@ -96,13 +95,10 @@ void Balance_PID_Contorl(void)
 	AveSpeed = (LeftSpeed + RightSpeed) / 2.0;		//平均速度
 	DifSpeed = LeftSpeed - RightSpeed;				//差分速度
 	
-	Speed_PID.Target = 0.0f;
 	Speed_PID.Actual = AveSpeed;
 	PID_Update(&Speed_PID);	
 	
 	AvePWM = - Angle_PID.Out + Speed_PID.Out; 
-	
-	DifPWM = 0;//暂时屏蔽
 	
 	// 输出换算
 	LeftPWM  = AvePWM + DifPWM / 2;
@@ -116,4 +112,12 @@ void Balance_PID_Contorl(void)
 	motor_SetPWM(1, LeftPWM);
 	motor_SetPWM(2, RightPWM);
 	
+}
+
+void Turn_PID_Control(void)
+{
+	//转向环
+	Turn_PID.Actual = DifSpeed;
+	PID_Update(&Turn_PID);
+	DifPWM = Turn_PID.Out;
 }

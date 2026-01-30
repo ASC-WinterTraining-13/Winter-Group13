@@ -157,7 +157,7 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 //		Angle_PID.Target = lv / 10;		//控制目标角度在-10~10
 		//
 		// 速度环测试摇杆
-		Speed_PID.Target = lv / 25.0;	//控制目标速度
+		Speed_PID.Target = lv / 2.0;	//控制目标速度
 		//
 		DifPWM = rh * 50;		   		//控制差分PWM在-5000~5000
 		// 转向环测试摇杆

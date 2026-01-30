@@ -395,58 +395,15 @@ int Mode_3_Running(void)
 		{
 			// PID调控
 			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 2)// 2 * 5 ms调控周期（角度环）
-			{
-				Time_Count1 = 0;
-				//PID
-				Angle_PID.Actual = Angle_Result;
-				PID_Update(&Angle_PID);
-				AvePWM = - Angle_PID.Out;
-				
-				//输出换算
-				LeftPWM  = AvePWM + DifPWM / 2;
-				RightPWM = AvePWM - DifPWM / 2;
-				
-//				//输出偏移
-				if (LeftPWM  > 200){LeftPWM += 900;} else if (LeftPWM  < -200){LeftPWM -= 900;}
-				if (RightPWM > 200){RightPWM += 900;}else if (RightPWM < -200){RightPWM -= 900;} 			
-				
-				//输出限幅
-				if (LeftPWM  > 10000){LeftPWM = 10000;} else if (LeftPWM < -10000){LeftPWM = -10000;}
-				if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
-				
-				//设置PWM
-				motor_SetPWM(1, LeftPWM);
-				motor_SetPWM(2, RightPWM);
-			}
+
 		}
 			
 		if (Time_Count2 > 10)// 10 * 5 ms调控周期（速度环+转向环）
 		{
-			Time_Count2 = 0;
-			
-			LeftSpeed  = Get_Encoder1() / 11.0 / 0.05 / 9.2766;
-			RightSpeed = Get_Encoder2() / 11.0 / 0.05 / 9.2766;
-			
-			AveSpeed = (LeftSpeed + RightSpeed) / 2.0;
-			DifSpeed = LeftSpeed - RightSpeed;
-			
+			Time_Count2 = 0;		
 			if (Run_Flag)
 			{
-				//速度环
-				Speed_PID.Actual = AveSpeed;
-				PID_Update(&Speed_PID);
-				Angle_PID.Target = Speed_PID.Out;
-				
-				//转向环
-				Turn_PID.Actual = DifSpeed;
-				PID_Update(&Turn_PID);
-				DifPWM = Turn_PID.Out;
 			}
-			
-			
-			
-			
 		}
 			
 		else
@@ -467,26 +424,26 @@ int Mode_3_Running(void)
 		
 		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Turn_PID.Target , DifSpeed);
 
-		oled_show_float(12, 1, ANGLE_KP, 5, 1);
-		oled_show_float(12, 2, ANGLE_KI, 3, 2);
-		oled_show_float(12, 3, ANGLE_KD, 3, 1);
-		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
-		oled_show_float(12, 5, Angle_Result, 3, 2);
-		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
+//		oled_show_float(12, 1, ANGLE_KP, 5, 1);
+//		oled_show_float(12, 2, ANGLE_KI, 3, 2);
+//		oled_show_float(12, 3, ANGLE_KD, 3, 1);
+//		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
+//		oled_show_float(12, 5, Angle_Result, 3, 2);
+//		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
+//		
+//		oled_show_float(50, 1, SPEED_KP, 5, 1);
+//		oled_show_float(50, 2, SPEED_KI, 3, 2);
+//		oled_show_float(50, 3, SPEED_KD, 3, 1);
+//		oled_show_float(50, 4, Speed_PID.Target, 3, 2);
+//		oled_show_float(50, 5, AveSpeed, 3, 2);
+//		oled_show_float(50, 6, Speed_PID.Out, 5, 2);
 		
-		oled_show_float(50, 1, SPEED_KP, 5, 1);
-		oled_show_float(50, 2, SPEED_KI, 3, 2);
-		oled_show_float(50, 3, SPEED_KD, 3, 1);
-		oled_show_float(50, 4, Speed_PID.Target, 3, 2);
-		oled_show_float(50, 5, AveSpeed, 3, 2);
-		oled_show_float(50, 6, Speed_PID.Out, 5, 2);
-		
-		oled_show_float(88, 1, TURN_KP, 5, 1);
-		oled_show_float(88, 2, TURN_KI, 3, 2);
-		oled_show_float(88, 3, TURN_KD, 3, 1);
-		oled_show_float(88, 4, Turn_PID.Target, 3, 2);
-		oled_show_float(88, 5, DifSpeed, 3, 2);
-		oled_show_float(88, 6, Turn_PID.Out, 5, 2);
+		oled_show_float(12, 1, TURN_KP, 5, 1);
+		oled_show_float(12, 2, TURN_KI, 3, 2);
+		oled_show_float(12, 3, TURN_KD, 3, 1);
+		oled_show_float(12, 4, Turn_PID.Target, 3, 2);
+		oled_show_float(12, 5, DifSpeed, 3, 2);
+		oled_show_float(12, 6, Turn_PID.Out, 5, 2);
 
 
     }

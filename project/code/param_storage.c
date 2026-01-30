@@ -4,10 +4,10 @@
 // 默认参数值（首次使用或恢复出厂设置时使用）
 static const float DEFAULT_PARAMS[15] = {
     // Angle_PID(索引 0-2)
-    193.0f, 5.6f, 499.0f,
+    374.0f, 0.0f, 437.0f,
     
     // Speed_PID (索引 3-5)
-    0.0f, 0.0f, 0.0f,
+    -23.2f, 0.04f, 0.0f,
     
     // Turn_pid (索引 6-8)
     0.0f, 0.0f, 0.0f,

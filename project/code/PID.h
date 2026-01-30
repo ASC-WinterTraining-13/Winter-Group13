@@ -31,5 +31,6 @@ void PID_Update				(PID_t *p);
 void PID_Init				(PID_t *p);
 
 void Balance_PID_Contorl	(void);
+void Turn_PID_Control		(void);
 
 #endif

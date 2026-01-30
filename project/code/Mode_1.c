@@ -284,8 +284,7 @@ int Mode_1_Menu(void)
                     oled_show_string(0, 6, " ");
                     
                     break;
-                }
-                
+                }               
                 case 2:
                 {
                     oled_show_string(0, 4, " ");
@@ -404,12 +403,14 @@ int Mode_1_Running(void)
 		}
 		
 		// 速度计算
-		if (Time_Count2 > 40)// 40 * 5 ms调控周期
+		if (Time_Count2 > 20)// 20 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
-			
-			LeftSpeed  = Get_Encoder1();
-			RightSpeed = Get_Encoder2();			
+
+			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
+			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;			
+			Pre_LeftSpeed = LeftSpeed;
+			Pre_RightSpeed = RightSpeed;
 		}
 		
         if (Run_Flag)
@@ -429,9 +430,6 @@ int Mode_1_Running(void)
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 		}
-		
-		
-
 			
 		
 		//调用mpu6050数据接收与解析
@@ -444,7 +442,6 @@ int Mode_1_Running(void)
 		
 //		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
 		
-
 		oled_show_float(12, 1, ANGLE_KP, 5, 1);
 		oled_show_float(12, 2, ANGLE_KI, 3, 2);
 		oled_show_float(12, 3, ANGLE_KD, 5, 1);

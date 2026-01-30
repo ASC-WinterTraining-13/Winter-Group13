@@ -341,8 +341,9 @@ int Mode_2_Running(void)
 	// 清零pid积分等参数
 	PID_Init(&Angle_PID);
 	PID_Init(&Speed_PID);
+	PID_Init(&Turn_PID);
 	
-    while(1)
+     while(1)
     {  
 		/* 按键处理*/
 //        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
@@ -379,6 +380,7 @@ int Mode_2_Running(void)
 			Run_Flag = 0;
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			Param_Save();
 			
             return 0;
         }
@@ -386,68 +388,44 @@ int Mode_2_Running(void)
 		/*蓝牙模块*/
 		bluetooth_ch04_handle_receive();	
 		
-		//失控
+		//失控保护
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
 			Run_Flag = 0;
-		}
-		
-        if (Run_Flag)
-		{
-			// PID调控
-			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 2)// 2 * 5 ms调控周期（角度环）
-			{
-				Time_Count1 = 0;
-				//PID
-				Angle_PID.Actual = Angle_Result;
-				PID_Update(&Angle_PID);
-				AvePWM = - Angle_PID.Out;
-				
-				//输出换算
-				LeftPWM  = AvePWM + DifPWM / 2;
-				RightPWM = AvePWM - DifPWM / 2;
-				
-//				//输出偏移
-				if (LeftPWM  > 200){LeftPWM += 900;} else if (LeftPWM  < -200){LeftPWM -= 900;}
-				if (RightPWM > 200){RightPWM += 900;}else if (RightPWM < -200){RightPWM -= 900;} 			
-				
-				//输出限幅
-				if (LeftPWM  > 10000){LeftPWM = 10000;} else if (LeftPWM < -10000){LeftPWM = -10000;}
-				if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
-				
-				//设置PWM
-				motor_SetPWM(1, LeftPWM);
-				motor_SetPWM(2, RightPWM);
-			}
-		}
-			
-		if (Time_Count2 > 10)// 10 * 5 ms调控周期（速度环+转向环）
-		{
-			Time_Count2 = 0;
-			
-			LeftSpeed  = Get_Encoder1() / 11.0 / 0.05 / 9.2766;
-			RightSpeed = Get_Encoder2() / 11.0 / 0.05 / 9.2766;
-			
-			AveSpeed = (LeftSpeed + RightSpeed) / 2.0;
-			DifSpeed = LeftSpeed - RightSpeed;
-			
-			if (Run_Flag)
-			{
-				//速度环
-				Speed_PID.Actual = AveSpeed;
-				PID_Update(&Speed_PID);
-				Angle_PID.Target = Speed_PID.Out;
-			}
-		}
-			
-		else
-		{
-			oled_show_string(0, 0, "STOP");
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 		}
+		
+		// 速度计算
+		if (Time_Count2 > 20)// 20 * 5 ms调控周期
+		{
+			Time_Count2 = 0;
+			
+			LeftSpeed  = Get_Encoder1();
+			RightSpeed = Get_Encoder2();			
+			
+			if (Run_Flag) {Turn_PID_Control();}
+		}
+		
+        if (Run_Flag)
+		{			
+			oled_show_string(0, 0, "Run ");
+			if (Time_Count1 > 2)// 2 * 5 ms调控周期
+			{
+				Time_Count1 = 0;
+				// PID调控
+				Balance_PID_Contorl();
+			}			
+			
+		}
+		else
+		{
+			oled_show_string(0, 0, "STOP");
+			motor_SetPWM(1, 0);
+			motor_SetPWM(2, 0);
+		}
+			
 		
 		//调用mpu6050数据接收与解析
 		if (mpu6050_analysis_enable)
@@ -458,21 +436,27 @@ int Mode_2_Running(void)
 		}
 		
 //		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
-
-		oled_show_float(12, 1, ANGLE_KP, 5, 1);
-		oled_show_float(12, 2, ANGLE_KI, 3, 2);
-		oled_show_float(12, 3, ANGLE_KD, 3, 1);
-		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
-		oled_show_float(12, 5, Angle_Result, 3, 2);
-		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
 		
-		oled_show_float(72, 1, SPEED_KP, 5, 1);
-		oled_show_float(72, 2, SPEED_KI, 3, 2);
-		oled_show_float(72, 3, SPEED_KD, 3, 1);
-		oled_show_float(72, 4, Speed_PID.Target, 3, 2);
-		oled_show_float(72, 5, AveSpeed, 3, 2);
-		oled_show_float(72, 6, Speed_PID.Out, 5, 2);
-
+//		oled_show_float(12, 1, ANGLE_KP, 5, 1);
+//		oled_show_float(12, 2, ANGLE_KI, 3, 2);
+//		oled_show_float(12, 3, ANGLE_KD, 5, 1);
+//		oled_show_float(76, 1, SPEED_KP, 5, 1);
+//		oled_show_float(76, 2, SPEED_KI, 3, 2);
+//		oled_show_float(76, 3, SPEED_KD, 5, 2);
+		oled_show_float(12, 1, TURN_KP, 5, 1);
+		oled_show_float(12, 2, TURN_KI, 5, 1);
+		oled_show_float(12, 3, TURN_KD, 5, 1);
+		
+		
+//		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
+//		oled_show_float(12, 5, Angle_Result, 3, 2);
+//		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
+//		oled_show_float(76, 4, Speed_PID.Target, 3, 2);
+//		oled_show_float(76, 5, Speed_PID.Actual, 3, 2);
+//		oled_show_float(76, 6, Speed_PID.Out, 5, 2);
+		oled_show_float(12, 4, Turn_PID.Target, 3, 2);
+		oled_show_float(12, 5, DifSpeed, 3, 2);
+		oled_show_float(12, 6, Turn_PID.Out, 5, 2);
 
     }
 }
