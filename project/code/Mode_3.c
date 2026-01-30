@@ -36,9 +36,9 @@ void Mode_3_Set_Param_UI(uint8_t Page)
             oled_show_string(2, 2, " Kp:");
             oled_show_string(2, 3, " Ki:");
             oled_show_string(2, 4, " Kd:");
-            oled_show_float(28, 2, TURN_KP, 2, 2);
-            oled_show_float(28, 3, TURN_KI, 2, 2);
-            oled_show_float(28, 4, TURN_KD, 2, 2);
+            oled_show_float(28, 2, SPEED_KP, 2, 2);
+            oled_show_float(28, 3, SPEED_KI, 2, 2);
+            oled_show_float(28, 4, SPEED_KD, 2, 2);
 
             break;
         }
@@ -61,20 +61,20 @@ void Set_Mode_3_Param(uint8_t Num)
     switch (Num)
     {
         case 1:  // Kp
-            current_param = &TURN_KP;
-            step_value = PID_STEPS[2][0];
+            current_param = &SPEED_KP;
+            step_value = PID_STEPS[1][0];
             row = 2;
             break;
             
         case 2:  // Ki
-            current_param = &TURN_KI;
-            step_value = PID_STEPS[2][1];
+            current_param = &SPEED_KI;
+            step_value = PID_STEPS[1][1];
             row = 3;
             break;
             
         case 3:  // Kd
-            current_param = &TURN_KD;
-            step_value = PID_STEPS[2][2];
+            current_param = &SPEED_KD;
+            step_value = PID_STEPS[1][2];
             row = 4;
             break;
     }
@@ -315,8 +315,9 @@ int Mode_3_Running(void)
 	oled_show_string(0, 4, "T:");
 	oled_show_string(0, 5, "A:");
 	oled_show_string(0, 6, "O:");
-
-    
+	
+	oled_show_string(0, 0, "Cali");
+  
 	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
 	while(1)  // 校准循环
@@ -324,21 +325,23 @@ int Mode_3_Running(void)
         if (MPU6050_Calibration_Check() == 0)  // 校准完成
         {
             break;  //跳出校准循环，往下执行
-        }      
+        }
+        
         //可以考虑在这里操作OLED
         
         //强制校准退出
         if(KEY_SHORT_PRESS == key_get_state(KEY_BACK)) {
             key_clear_state(KEY_BACK);
             break;  // 退出整个模式
-        }       
+        }
+        
     }
 	
 	oled_show_string(0, 0, "Run ");
 	// 清零pid积分等参数
+	PID_Init(&Rate_PID);
 	PID_Init(&Angle_PID);
 	PID_Init(&Speed_PID);
-	PID_Init(&Turn_PID);
 	
     while(1)
     {  
@@ -362,9 +365,9 @@ int Mode_3_Running(void)
             // 处理确认键
 			Param_Save();
 			//清零pid积分等参数
+			PID_Init(&Rate_PID);
 			PID_Init(&Angle_PID);
 			PID_Init(&Speed_PID);
-			PID_Init(&Turn_PID);
 			//更改启动状态
 			Run_Flag = !Run_Flag;
         }
@@ -437,16 +440,7 @@ int Mode_3_Running(void)
 				Speed_PID.Actual = AveSpeed;
 				PID_Update(&Speed_PID);
 				Angle_PID.Target = Speed_PID.Out;
-				
-				//转向环
-				Turn_PID.Actual = DifSpeed;
-				PID_Update(&Turn_PID);
-				DifPWM = Turn_PID.Out;
 			}
-			
-			
-			
-			
 		}
 			
 		else
@@ -465,7 +459,7 @@ int Mode_3_Running(void)
 			MPU6050_Analysis();
 		}
 		
-		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Turn_PID.Target , DifSpeed);
+//		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
 
 		oled_show_float(12, 1, ANGLE_KP, 5, 1);
 		oled_show_float(12, 2, ANGLE_KI, 3, 2);
@@ -474,19 +468,12 @@ int Mode_3_Running(void)
 		oled_show_float(12, 5, Angle_Result, 3, 2);
 		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
 		
-		oled_show_float(50, 1, SPEED_KP, 5, 1);
-		oled_show_float(50, 2, SPEED_KI, 3, 2);
-		oled_show_float(50, 3, SPEED_KD, 3, 1);
-		oled_show_float(50, 4, Speed_PID.Target, 3, 2);
-		oled_show_float(50, 5, AveSpeed, 3, 2);
-		oled_show_float(50, 6, Speed_PID.Out, 5, 2);
-		
-		oled_show_float(88, 1, TURN_KP, 5, 1);
-		oled_show_float(88, 2, TURN_KI, 3, 2);
-		oled_show_float(88, 3, TURN_KD, 3, 1);
-		oled_show_float(88, 4, Turn_PID.Target, 3, 2);
-		oled_show_float(88, 5, DifSpeed, 3, 2);
-		oled_show_float(88, 6, Turn_PID.Out, 5, 2);
+		oled_show_float(72, 1, SPEED_KP, 5, 1);
+		oled_show_float(72, 2, SPEED_KI, 3, 2);
+		oled_show_float(72, 3, SPEED_KD, 3, 1);
+		oled_show_float(72, 4, Speed_PID.Target, 3, 2);
+		oled_show_float(72, 5, AveSpeed, 3, 2);
+		oled_show_float(72, 6, Speed_PID.Out, 5, 2);
 
 
     }

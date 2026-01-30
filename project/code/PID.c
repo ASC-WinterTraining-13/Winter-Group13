@@ -43,6 +43,9 @@ void PID_Update(PID_t *p)
 	if (p->Ki != 0)					//如果Ki不为0
 	{
 		p->ErrorInt += p->Error0;	//进行误差积分
+		// 积分限幅
+		if (p->ErrorInt > p->ErrorIntMax) p->ErrorInt = p->ErrorIntMax;
+		if (p->ErrorInt > p->ErrorIntMin) p->ErrorInt = p->ErrorIntMin;	
 	}
 	else							//否则
 	{
@@ -51,15 +54,7 @@ void PID_Update(PID_t *p)
 	
 	// 输出偏移
 	if (p->Out > 0) {p->Out +=  p->OutOffset;}
-	if (p->Out < 0) {p->Out -=  p->OutOffset;}
-	
-	
-	// 积分限幅（注意限幅被改大）
-	if (p->ErrorInt >= p->OutMax/4) {p->ErrorInt = p->OutMax / 4.0f;}
-	if (p->ErrorInt <= p->OutMin/4) {p->ErrorInt = p->OutMin / 4.0f;}
-	
-	
-	
+	if (p->Out < 0) {p->Out -=  p->OutOffset;}	
 	
 	/*PID计算*/
 	/*使用位置式PID公式，计算得到输出值*/

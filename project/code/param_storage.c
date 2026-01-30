@@ -66,10 +66,10 @@ void Param_Init(void)
         Turn_PID.Ki = TURN_KI;
         Turn_PID.Kd = TURN_KD;
 		
-		//4
-		TEMP_888_FUNC_4_PID.Kp = TEMP_888_FUNC_4_KP;
-        TEMP_888_FUNC_4_PID.Ki = TEMP_888_FUNC_4_KI;
-        TEMP_888_FUNC_4_PID.Kd = TEMP_888_FUNC_4_KD;
+		// 角速度环pid
+		Rate_PID.Kp = RATE_KP;
+        Rate_PID.Ki = RATE_KI;
+        Rate_PID.Kd = RATE_KD;
 		
 		//5
 		TEMP_888_FUNC_5_PID.Kp = TEMP_888_FUNC_5_KP;
@@ -114,10 +114,10 @@ void Param_SyncToPID(void)
     Turn_PID.Ki = TURN_KI;
     Turn_PID.Kd = TURN_KD;
     
-//    //4
-//    TEMP_888_FUNC_4_PID.Kp = TEMP_888_FUNC_4_KP;
-//    TEMP_888_FUNC_4_PID.Ki = TEMP_888_FUNC_4_KI;
-//    TEMP_888_FUNC_4_PID.Kd = TEMP_888_FUNC_4_KD;
+    // 角速度环pid
+    Rate_PID.Kp = RATE_KP;
+    Rate_PID.Ki = RATE_KI;
+    Rate_PID.Kd = RATE_KD;
 //    
 //    //5
 //    TEMP_888_FUNC_5_PID.Kp = TEMP_888_FUNC_5_KP;

@@ -36,9 +36,9 @@ void Mode_1_Set_Param_UI(uint8_t Page)
             oled_show_string(2, 2, " Kp:");
             oled_show_string(2, 3, " Ki:");
             oled_show_string(2, 4, " Kd:");
-            oled_show_float(28, 2, ANGLE_KP, 3, 2);
-            oled_show_float(28, 3, ANGLE_KI, 2, 2);
-            oled_show_float(28, 4, ANGLE_KD, 2, 2);
+            oled_show_float(28, 2, RATE_KP, 3, 2);
+            oled_show_float(28, 3, RATE_KI, 2, 2);
+            oled_show_float(28, 4, RATE_KD, 2, 2);
 
             break;
         }
@@ -60,19 +60,19 @@ void Set_Mode_1_Param(uint8_t Num)
     switch (Num)
     {
         case 1:  // Kp
-            current_param = &ANGLE_KP;
+            current_param = &RATE_KP;
             step_value = PID_STEPS[0][0];
             row = 2;
             break;
             
         case 2:  // Ki
-            current_param = &ANGLE_KI;
+            current_param = &RATE_KI;
             step_value = PID_STEPS[0][1];
             row = 3;
             break;
             
         case 3:  // Kd
-            current_param = &ANGLE_KD;
+            current_param = &RATE_KD;
             step_value = PID_STEPS[0][2];
             row = 4;
             break;
@@ -308,20 +308,14 @@ int Mode_1_Running(void)
 {
 	oled_set_font(OLED_6X8_FONT);
 
-//	oled_show_string(0, 1, "R :");
-//	oled_show_string(0, 2, "Y :");
-//	oled_show_string(0, 3, "P :");
 	oled_show_string(0, 1, "P:");
 	oled_show_string(0, 2, "I:");
 	oled_show_string(0, 3, "D:");
 	oled_show_string(0, 4, "T:");
 	oled_show_string(0, 5, "A:");
 	oled_show_string(0, 6, "O:");
-//	oled_show_string(0, 4, "GX:");
-//	oled_show_string(0, 5, "GY:");
-//	oled_show_string(0, 6, "GZ:");
-//	oled_show_string(0, 4, "En1:");
-//	oled_show_string(0, 5, "En2:");
+
+	oled_show_string(0, 0, "Cali");
     
 	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
@@ -344,7 +338,7 @@ int Mode_1_Running(void)
 	
 	oled_show_string(0, 0, "Run ");
 	// 清零pid积分等参数
-	PID_Init(&Angle_PID);
+	PID_Init(&Rate_PID);
 	
     while(1)
     {  
@@ -368,7 +362,7 @@ int Mode_1_Running(void)
             // 处理确认键
 			Param_Save();
 			//清零pid积分等参数
-			PID_Init(&Angle_PID);
+			PID_Init(&Rate_PID);
 			//更改启动状态
 			Run_Flag = !Run_Flag;
         }
@@ -399,21 +393,17 @@ int Mode_1_Running(void)
 		{
 			// PID调控
 			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 2)// 2 * 5 ms调控周期（角度环）
+			if (Time_Count1 > 2)// 2 * 5 ms调控周期（角速度环）
 			{
 				Time_Count1 = 0;
 				//PID
-				Angle_PID.Actual = Angle_Result;
-				PID_Update(&Angle_PID);
-				AvePWM = - Angle_PID.Out;
+				Turn_PID.Actual = gyro_pitch_rate;
+				PID_Update(&Turn_PID);
+				AvePWM = - Turn_PID.Out;
 				
 				//输出换算
 				LeftPWM  = AvePWM + DifPWM / 2;
-				RightPWM = AvePWM - DifPWM / 2;
-				
-//				//输出偏移
-				if (LeftPWM  > 200){LeftPWM += 900;} else if (LeftPWM  < -200){LeftPWM -= 900;}
-				if (RightPWM > 200){RightPWM += 900;}else if (RightPWM < -200){RightPWM -= 900;} 			
+				RightPWM = AvePWM - DifPWM / 2;	
 				
 				//输出限幅
 				if (LeftPWM  > 10000){LeftPWM = 10000;} else if (LeftPWM < -10000){LeftPWM = -10000;}
@@ -443,23 +433,14 @@ int Mode_1_Running(void)
 		
 		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
 		
-//		oled_show_float(18, 1, Roll_Result , 3, 3);
-//		oled_show_float(18, 2, Yaw_Result  , 3, 3);
-//		oled_show_float(18, 3, Pitch_Result, 3, 3);
+
 		oled_show_float(12, 1, ANGLE_KP, 5, 2);
 		oled_show_float(12, 2, ANGLE_KI, 3, 2);
 		oled_show_float(12, 3, ANGLE_KD, 3, 2);
 		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
 		oled_show_float(12, 5, Angle_Result, 3, 2);
 		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
-//		oled_show_int(18, 4, mpu6050_gyro_x, 4);
-//		oled_show_int(18, 5, mpu6050_gyro_y, 4);
-//		oled_show_int(18, 6, mpu6050_gyro_z, 4);
-//		oled_show_int(82, 4, mpu6050_acc_x, 4);
-//		oled_show_int(82, 5, mpu6050_acc_y, 4);
-//		oled_show_int(82, 6, mpu6050_acc_z, 4);
-//		oled_show_int(24, 4, Encoder1_Count, 4);
-//		oled_show_int(24, 5, Encoder2_Count, 4);
+
 
     }
 }

@@ -70,7 +70,7 @@ uint8_t MPU6050_Calibration_Check(void)
             // 校准状态设为完成
             calib_state = CALIB_STATE_DONE;
 			
-			// 临时性查看校准系数数据
+//			// 临时性查看校准系数数据
 //			oled_show_float(0, 4, gyro_off_x, 2, 6);
 //			oled_show_float(0, 5, gyro_off_y, 2, 6);
 //			oled_show_float(0, 6, gyro_off_z, 2, 6);
@@ -215,6 +215,8 @@ float Pitch_Result = 0.0f;       				// 俯仰角 最终调用值
 
 float Angle_Result = 0.0f;						// 倾斜角 最终调用值
 
+float gyro_pitch_rate = 0.0f;					// pitch角速度
+
 // 低通滤波系数（0.2 = 强滤波，0.5 = 中等，0.8 = 弱滤波）
 #define MPU6050_LOW_PASS_FILTER 0.3f
 // 输出死区系数
@@ -251,9 +253,9 @@ void MPU6050_Analysis(void)
 	else 
 	// 使用固定值修正原始数据
 	{
-		mpu6050_gyro_x += 18.270;
-		mpu6050_gyro_y -= 1.399;
-		mpu6050_gyro_z += 33.729;
+		mpu6050_gyro_x += 65.2574;
+		mpu6050_gyro_y += 1.2424;
+		mpu6050_gyro_z -= 4.2224;
 	}
 	
 	// 输入死区
@@ -264,7 +266,7 @@ void MPU6050_Analysis(void)
 	
     // 计算陀螺仪角速度（转换为 °/s）
     float gyro_roll_rate  = (float)mpu6050_gyro_x * mpu6050_const_data2;
-    float gyro_pitch_rate = (float)mpu6050_gyro_y * mpu6050_const_data2;
+    gyro_pitch_rate = (float)mpu6050_gyro_y * mpu6050_const_data2;
 	
 	// 横滚角加速度计计算
 	RollAcc   = atan2f((float)mpu6050_acc_y, (float)mpu6050_acc_z) * mpu6050_const_data1;

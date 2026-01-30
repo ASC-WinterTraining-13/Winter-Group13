@@ -79,7 +79,7 @@
 #define MPU6050_DEV_ADDR            ( 0xD0 >> 1)                                // IIC写入时的地址字节数据，+1为读取
 
 #define MPU6050_SMPLRT_DIV          ( 0x19 )                                    // 陀螺仪采样率，典型值：0x07(125Hz)
-#define MPU6050_CONFIG              ( 0x1A )                                    // 低通滤波频率，典型值：0x06(5Hz)
+#define MPU6050_CONFIG              ( 0x12 )                                    // 低通滤波频率，典型值：0x06(5Hz)
 #define MPU6050_GYRO_CONFIG         ( 0x1B )                                    // 陀螺仪自检及测量范围，典型值：0x18(不自检，2000deg/s)
 #define MPU6050_ACCEL_CONFIG        ( 0x1C )                                    // 加速计自检、测量范围及高通滤波频率，典型值：0x01(不自检，2G，5Hz)
 #define MPU6050_INT_PIN_CFG         ( 0x37 )                                    // 设置6050辅助I2C为直通模式寄存器

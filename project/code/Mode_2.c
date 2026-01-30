@@ -36,9 +36,9 @@ void Mode_2_Set_Param_UI(uint8_t Page)
             oled_show_string(2, 2, " Kp:");
             oled_show_string(2, 3, " Ki:");
             oled_show_string(2, 4, " Kd:");
-            oled_show_float(28, 2, SPEED_KP, 2, 2);
-            oled_show_float(28, 3, SPEED_KI, 2, 2);
-            oled_show_float(28, 4, SPEED_KD, 2, 2);
+            oled_show_float(28, 2, ANGLE_KP, 3, 2);
+            oled_show_float(28, 3, ANGLE_KI, 2, 2);
+            oled_show_float(28, 4, ANGLE_KD, 2, 2);
 
             break;
         }
@@ -51,7 +51,6 @@ void Mode_2_Set_Param_UI(uint8_t Page)
 
 void Set_Mode_2_Param(uint8_t Num)
 {
-    
     //指向要修改的参数的指针
     float* current_param = NULL;
     float step_value = 0.0f;
@@ -61,20 +60,20 @@ void Set_Mode_2_Param(uint8_t Num)
     switch (Num)
     {
         case 1:  // Kp
-            current_param = &SPEED_KP;
-            step_value = PID_STEPS[1][0];
+            current_param = &ANGLE_KP;
+            step_value = PID_STEPS[0][0];
             row = 2;
             break;
             
         case 2:  // Ki
-            current_param = &SPEED_KI;
-            step_value = PID_STEPS[1][1];
+            current_param = &ANGLE_KI;
+            step_value = PID_STEPS[0][1];
             row = 3;
             break;
             
         case 3:  // Kd
-            current_param = &SPEED_KD;
-            step_value = PID_STEPS[1][2];
+            current_param = &ANGLE_KD;
+            step_value = PID_STEPS[0][2];
             row = 4;
             break;
     }
@@ -151,7 +150,7 @@ int Mode_2_Set_Param(void)
             key_pressed = 1;
             key_clear_state(KEY_DOWN);
             Param_flag ++;
-            if (Param_flag > OPT_NUM)Param_flag = 1;    
+            if (Param_flag > OPT_NUM)Param_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -222,7 +221,7 @@ int Mode_2_Menu(void)
         uint8_t Mode_Menu_flag_temp = 0;
         
         //上/下按键是否被按下过
-        uint8_t key_pressed = 0;     
+        uint8_t key_pressed = 0;
         
         /*按键解析*/
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
@@ -237,7 +236,7 @@ int Mode_2_Menu(void)
             key_pressed = 1;
             key_clear_state(KEY_DOWN);
             Mode_Menu_flag ++;
-            if (Mode_Menu_flag > 2)Mode_Menu_flag = 1;    
+            if (Mode_Menu_flag > 2)Mode_Menu_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -263,7 +262,7 @@ int Mode_2_Menu(void)
             Mode_2_Menu_UI();
             oled_show_string(0, 4, ">");
         }
-        if (Mode_Menu_flag_temp == 2)
+        else if (Mode_Menu_flag_temp == 2)
         {
             oled_clear();
             Mode_2_Set_Param();
@@ -309,13 +308,15 @@ int Mode_2_Running(void)
 {
 	oled_set_font(OLED_6X8_FONT);
 
+
 	oled_show_string(0, 1, "P:");
 	oled_show_string(0, 2, "I:");
 	oled_show_string(0, 3, "D:");
 	oled_show_string(0, 4, "T:");
 	oled_show_string(0, 5, "A:");
 	oled_show_string(0, 6, "O:");
-
+	
+	oled_show_string(0, 0, "Cali");
     
 	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
@@ -323,12 +324,12 @@ int Mode_2_Running(void)
     {
         if (MPU6050_Calibration_Check() == 0)  // 校准完成
         {
-            break;  //跳出校准循环，往下执行
+            break;  // 跳出校准循环，往下执行
         }
         
-        //可以考虑在这里操作OLED
+        // 可以考虑在这里操作OLED
         
-        //强制校准退出
+        // 强制校准退出
         if(KEY_SHORT_PRESS == key_get_state(KEY_BACK)) {
             key_clear_state(KEY_BACK);
             break;  // 退出整个模式
@@ -338,8 +339,8 @@ int Mode_2_Running(void)
 	
 	oled_show_string(0, 0, "Run ");
 	// 清零pid积分等参数
+	PID_Init(&Rate_PID);
 	PID_Init(&Angle_PID);
-	PID_Init(&Speed_PID);
 	
     while(1)
     {  
@@ -363,8 +364,8 @@ int Mode_2_Running(void)
             // 处理确认键
 			Param_Save();
 			//清零pid积分等参数
+			PID_Init(&Rate_PID);
 			PID_Init(&Angle_PID);
-			PID_Init(&Speed_PID);
 			//更改启动状态
 			Run_Flag = !Run_Flag;
         }
@@ -418,28 +419,9 @@ int Mode_2_Running(void)
 				//设置PWM
 				motor_SetPWM(1, LeftPWM);
 				motor_SetPWM(2, RightPWM);
-			}
+			}			
+			
 		}
-			
-		if (Time_Count2 > 10)// 10 * 5 ms调控周期（速度环+转向环）
-		{
-			Time_Count2 = 0;
-			
-			LeftSpeed  = Get_Encoder1() / 11.0 / 0.05 / 9.2766;
-			RightSpeed = Get_Encoder2() / 11.0 / 0.05 / 9.2766;
-			
-			AveSpeed = (LeftSpeed + RightSpeed) / 2.0;
-			DifSpeed = LeftSpeed - RightSpeed;
-			
-			if (Run_Flag)
-			{
-				//速度环
-				Speed_PID.Actual = AveSpeed;
-				PID_Update(&Speed_PID);
-				Angle_PID.Target = Speed_PID.Out;
-			}
-		}
-			
 		else
 		{
 			oled_show_string(0, 0, "STOP");
@@ -456,22 +438,25 @@ int Mode_2_Running(void)
 			MPU6050_Analysis();
 		}
 		
-//		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
-
-		oled_show_float(12, 1, ANGLE_KP, 5, 1);
+		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
+		
+//		oled_show_float(18, 1, Roll_Result , 3, 3);
+//		oled_show_float(18, 2, Yaw_Result  , 3, 3);
+//		oled_show_float(18, 3, Pitch_Result, 3, 3);
+		oled_show_float(12, 1, ANGLE_KP, 5, 2);
 		oled_show_float(12, 2, ANGLE_KI, 3, 2);
-		oled_show_float(12, 3, ANGLE_KD, 3, 1);
+		oled_show_float(12, 3, ANGLE_KD, 3, 2);
 		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
 		oled_show_float(12, 5, Angle_Result, 3, 2);
 		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
-		
-		oled_show_float(72, 1, SPEED_KP, 5, 1);
-		oled_show_float(72, 2, SPEED_KI, 3, 2);
-		oled_show_float(72, 3, SPEED_KD, 3, 1);
-		oled_show_float(72, 4, Speed_PID.Target, 3, 2);
-		oled_show_float(72, 5, AveSpeed, 3, 2);
-		oled_show_float(72, 6, Speed_PID.Out, 5, 2);
-
+//		oled_show_int(18, 4, mpu6050_gyro_x, 4);
+//		oled_show_int(18, 5, mpu6050_gyro_y, 4);
+//		oled_show_int(18, 6, mpu6050_gyro_z, 4);
+//		oled_show_int(82, 4, mpu6050_acc_x, 4);
+//		oled_show_int(82, 5, mpu6050_acc_y, 4);
+//		oled_show_int(82, 6, mpu6050_acc_z, 4);
+//		oled_show_int(24, 4, Encoder1_Count, 4);
+//		oled_show_int(24, 5, Encoder2_Count, 4);
 
     }
 }
