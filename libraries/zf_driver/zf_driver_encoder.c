@@ -65,7 +65,7 @@ int16 encoder_get_count (encoder_index_enum encoder_n)
     }
     if(0xFF == encoder_dir_pin[encoder_n])
     {
-        result /= 4;
+        
     }
     else
     {

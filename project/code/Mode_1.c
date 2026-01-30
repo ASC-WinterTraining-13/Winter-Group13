@@ -323,21 +323,23 @@ int Mode_1_Running(void)
 //	oled_show_string(0, 4, "En1:");
 //	oled_show_string(0, 5, "En2:");
     
+	oled_show_string(0, 0, "Cali");
+	
 	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
-	while(1)  // 校准循环
+	while(1)  // 零飘校准循环
     {
-        if (MPU6050_Calibration_Check() == 0)  // 校准完成
+        if (MPU6050_Calibration_Check() == 0)  // 零飘校准完成
         {
-            break;  // 跳出校准循环，往下执行
+            break;  // 跳出零飘校准循环，往下执行
         }
         
         // 可以考虑在这里操作OLED
         
-        // 强制校准退出
+        // 强制零飘校准退出
         if(KEY_SHORT_PRESS == key_get_state(KEY_BACK)) {
             key_clear_state(KEY_BACK);
-            break;  // 退出整个模式
+            break;  // 退出零飘校准模式
         }
         
     }
@@ -345,6 +347,7 @@ int Mode_1_Running(void)
 	oled_show_string(0, 0, "Run ");
 	// 清零pid积分等参数
 	PID_Init(&Angle_PID);
+	PID_Init(&Speed_PID);
 	
     while(1)
     {  
@@ -369,6 +372,7 @@ int Mode_1_Running(void)
 			Param_Save();
 			//清零pid积分等参数
 			PID_Init(&Angle_PID);
+			PID_Init(&Speed_PID);
 			//更改启动状态
 			Run_Flag = !Run_Flag;
         }
@@ -382,6 +386,7 @@ int Mode_1_Running(void)
 			Run_Flag = 0;
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			Param_Save();
 			
             return 0;
         }
@@ -389,49 +394,45 @@ int Mode_1_Running(void)
 		/*蓝牙模块*/
 		bluetooth_ch04_handle_receive();	
 		
-		//失控
+		//失控保护
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
 			Run_Flag = 0;
+			//强制停止（电机）运行
+			motor_SetPWM(1, 0);
+			motor_SetPWM(2, 0);
+		}
+		
+		// 速度计算
+		if (Time_Count2 > 40)// 40 * 5 ms调控周期
+		{
+			Time_Count2 = 0;
+			
+			LeftSpeed  = Get_Encoder1();
+			RightSpeed = Get_Encoder2();			
 		}
 		
         if (Run_Flag)
-		{
-			// PID调控
+		{			
 			oled_show_string(0, 0, "Run ");
-			if (Time_Count1 > 2)// 2 * 5 ms调控周期（角度环）
+			if (Time_Count1 > 2)// 2 * 5 ms调控周期
 			{
 				Time_Count1 = 0;
-				//PID
-				Angle_PID.Actual = Angle_Result;
-				PID_Update(&Angle_PID);
-				AvePWM = - Angle_PID.Out;
-				
-				//输出换算
-				LeftPWM  = AvePWM + DifPWM / 2;
-				RightPWM = AvePWM - DifPWM / 2;
-				
-//				//输出偏移
-				if (LeftPWM  > 200){LeftPWM += 900;} else if (LeftPWM  < -200){LeftPWM -= 900;}
-				if (RightPWM > 200){RightPWM += 900;}else if (RightPWM < -200){RightPWM -= 900;} 			
-				
-				//输出限幅
-				if (LeftPWM  > 10000){LeftPWM = 10000;} else if (LeftPWM < -10000){LeftPWM = -10000;}
-				if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
-				
-				//设置PWM
-				motor_SetPWM(1, LeftPWM);
-				motor_SetPWM(2, RightPWM);
+				// PID调控
+				Balance_PID_Contorl();
 			}			
 			
 		}
 		else
 		{
 			oled_show_string(0, 0, "STOP");
-			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 		}
+		
+		
+
+			
 		
 		//调用mpu6050数据接收与解析
 		if (mpu6050_analysis_enable)
@@ -441,25 +442,22 @@ int Mode_1_Running(void)
 			MPU6050_Analysis();
 		}
 		
-		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
+//		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
 		
-//		oled_show_float(18, 1, Roll_Result , 3, 3);
-//		oled_show_float(18, 2, Yaw_Result  , 3, 3);
-//		oled_show_float(18, 3, Pitch_Result, 3, 3);
-		oled_show_float(12, 1, ANGLE_KP, 5, 2);
+
+		oled_show_float(12, 1, ANGLE_KP, 5, 1);
 		oled_show_float(12, 2, ANGLE_KI, 3, 2);
-		oled_show_float(12, 3, ANGLE_KD, 3, 2);
+		oled_show_float(12, 3, ANGLE_KD, 5, 1);
+		oled_show_float(76, 1, SPEED_KP, 5, 1);
+		oled_show_float(76, 2, SPEED_KI, 3, 2);
+		oled_show_float(76, 3, SPEED_KD, 5, 2);
+		
 		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
 		oled_show_float(12, 5, Angle_Result, 3, 2);
 		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
-//		oled_show_int(18, 4, mpu6050_gyro_x, 4);
-//		oled_show_int(18, 5, mpu6050_gyro_y, 4);
-//		oled_show_int(18, 6, mpu6050_gyro_z, 4);
-//		oled_show_int(82, 4, mpu6050_acc_x, 4);
-//		oled_show_int(82, 5, mpu6050_acc_y, 4);
-//		oled_show_int(82, 6, mpu6050_acc_z, 4);
-//		oled_show_int(24, 4, Encoder1_Count, 4);
-//		oled_show_int(24, 5, Encoder2_Count, 4);
+		oled_show_float(76, 4, Speed_PID.Target, 3, 2);
+		oled_show_float(76, 5, Speed_PID.Actual, 3, 2);
+		oled_show_float(76, 6, Speed_PID.Out, 5, 2);
 
     }
 }

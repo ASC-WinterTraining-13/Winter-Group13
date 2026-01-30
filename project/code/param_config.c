@@ -14,7 +14,7 @@ int16_t RightPWM = 0;		//右轮PWM
 int16_t	AvePWM   = 0;			//平均PWM
 int16_t DifPWM   = 0;			//差分PWM
 
-float LeftSpeed, RightSpeed;
+int16_t LeftSpeed, RightSpeed;
 float AveSpeed, DifSpeed;
 
 // 调控周期计时器
@@ -26,19 +26,28 @@ uint16_t Time_Count2 = 0;
 PID_t Angle_PID = {
 	.OutMax = 9000,
 	.OutMin = -9000,
-	.IntSepThresh = 6,
+	.IntSepThresh = 6,			//积分分离阈值（（误差大于阈值 不积分/积分清零）
+	.ErrorIntMax = 4000,			//积分限幅
+	.ErrorIntMin = 4000,			//积分限幅
+	.OutOffset = 450,				//输出偏移
 };
 //速度环
 PID_t Speed_PID = {	
-	.OutMax = 20,
-	.OutMin = -20,
-	.IntSepThresh = 20,
+	.OutMax = 9000,
+	.OutMin = -9000,
+	.IntSepThresh = 20,			//积分分离阈值（（误差大于阈值 不积分/积分清零）
+	.ErrorIntMax = 4000,			//积分限幅
+	.ErrorIntMin = 4000,			//积分限幅
+	.OutOffset = 450,				//输出偏移
 };
 
 PID_t Turn_PID = {	
 	.OutMax = 5000,
 	.OutMin = -5000,
-	.IntSepThresh = 5000,
+	.IntSepThresh = 5000,		//积分分离阈值（误差大于阈值 不积分/积分清零）
+	.ErrorIntMax = 3000,		//积分限幅
+	.ErrorIntMin = 3000,		//积分限幅
+	.OutOffset = 0,				//输出偏移	
 };
 
 PID_t TEMP_888_FUNC_4_PID = {	

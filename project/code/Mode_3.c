@@ -319,18 +319,18 @@ int Mode_3_Running(void)
     
 	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
-	while(1)  // 校准循环
+	while(1)  // 零飘校准循环
     {
-        if (MPU6050_Calibration_Check() == 0)  // 校准完成
+        if (MPU6050_Calibration_Check() == 0)  // 零飘校准完成
         {
-            break;  //跳出校准循环，往下执行
+            break;  //跳出零飘校准循环，往下执行
         }      
         //可以考虑在这里操作OLED
         
-        //强制校准退出
+        //强制零飘校准退出
         if(KEY_SHORT_PRESS == key_get_state(KEY_BACK)) {
             key_clear_state(KEY_BACK);
-            break;  // 退出整个模式
+            break;  // 退出零飘校准模式
         }       
     }
 	
