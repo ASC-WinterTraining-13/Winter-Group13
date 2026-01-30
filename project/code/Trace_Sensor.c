@@ -6,7 +6,7 @@
 #define TRACK_X_4    E11    // X4(蓝) → 接口E11
 
 // 四路循迹模块初始化
-void Track_Sensor_Init(void)
+void Trace_Sensor_Init(void)
 {
 	// 初始化4路引脚为上拉输入模式
     gpio_init(TRACK_X_1, GPI, 0, GPI_PULL_UP);
@@ -16,7 +16,7 @@ void Track_Sensor_Init(void)
 }
 
 // 单路读取
-uint8 Track_Sensor_Get_Status(gpio_pin_enum pin)
+uint8 Trace_Sensor_Get_Status(gpio_pin_enum pin)
 {
     return gpio_get_level(pin);
 }
@@ -31,10 +31,10 @@ uint8 Track_Sensor_Get_Status(gpio_pin_enum pin)
 // 调用示例：
 // uint8 sensor_data[4] = {0};  // 初始值全为0
 // Track_Sensor_Get_All_Status(sensor_data);  // 调用函数
-void Track_Sensor_Get_All_Status(uint8 status_buf[])
+void Trace_Sensor_Get_All_Status(uint8 status_buf[])
 {
-    status_buf[0] = Track_Sensor_Get_Status(TRACK_X_2);
-    status_buf[1] = Track_Sensor_Get_Status(TRACK_X_1);
-    status_buf[2] = Track_Sensor_Get_Status(TRACK_X_3);
-    status_buf[3] = Track_Sensor_Get_Status(TRACK_X_4);
+    status_buf[0] = Trace_Sensor_Get_Status(TRACK_X_2);
+    status_buf[1] = Trace_Sensor_Get_Status(TRACK_X_1);
+    status_buf[2] = Trace_Sensor_Get_Status(TRACK_X_3);
+    status_buf[3] = Trace_Sensor_Get_Status(TRACK_X_4);
 }
