@@ -251,9 +251,9 @@ void MPU6050_Analysis(void)
 	else 
 	// 使用固定值修正原始数据
 	{
-		mpu6050_gyro_x += 18.270;
-		mpu6050_gyro_y -= 1.399;
-		mpu6050_gyro_z += 33.729;
+		mpu6050_gyro_x += 65.2574;
+		mpu6050_gyro_y += 1.2424;
+		mpu6050_gyro_z -= 4.2224;
 	}
 	
 	// 输入死区
