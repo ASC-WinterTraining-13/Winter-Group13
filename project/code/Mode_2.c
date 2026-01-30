@@ -402,8 +402,10 @@ int Mode_2_Running(void)
 		{
 			Time_Count2 = 0;
 			
-			LeftSpeed  = Get_Encoder1();
-			RightSpeed = Get_Encoder2();			
+			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
+			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;		
+			Pre_LeftSpeed = LeftSpeed;
+			Pre_RightSpeed = RightSpeed;			
 			
 			if (Run_Flag) {Turn_PID_Control();}
 		}

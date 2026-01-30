@@ -406,12 +406,11 @@ int Mode_1_Running(void)
 		if (Time_Count2 > 20)// 20 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
-
-			LeftSpeed  = Get_Encoder1() * 0.9f + Pre_LeftSpeed  * 0.1f;
-			RightSpeed = Get_Encoder2() * 0.9f + Pre_RightSpeed * 0.1f;			
+			
+			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
+			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;		
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;
-
 		}
 		
         if (Run_Flag)

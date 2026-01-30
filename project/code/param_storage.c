@@ -7,7 +7,7 @@ static const float DEFAULT_PARAMS[15] = {
     459.0f, 0.0f, 586.0f,
     
     // Speed_PID (索引 3-5)
-    -65.0f, -0.1f, 34.0f,
+    -70.1f, -0.1f, 0.0f,
     
     // Turn_pid (索引 6-8)
     0.0f, 0.0f, 0.0f,
