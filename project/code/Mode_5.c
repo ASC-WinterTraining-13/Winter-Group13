@@ -326,14 +326,6 @@ int Mode_5_Menu(void)
 int Mode_5_Running(void)
 {
 	oled_set_font(OLED_6X8_FONT);
-
-	oled_show_string(0, 1, "Roll :");
-	oled_show_string(0, 2, "Yaw  :");
-	oled_show_string(0, 3, "Pitch:");
-	oled_show_string(0, 4, "GX:");
-	oled_show_string(0, 5, "GY:");
-	oled_show_string(0, 6, "GZ:");
-
 	oled_show_string(0, 0, "Cali");
 	
 	// mpu6050零飘校准逻辑（此时请保持静止）
@@ -353,7 +345,6 @@ int Mode_5_Running(void)
         }       
     }
 	
-    
     while(1)
     {  
         /* 按键处理*/
@@ -386,24 +377,7 @@ int Mode_5_Running(void)
 			return 0;
 		}
 		
-		//调用mpu6050数据接收与解析
-		if (mpu6050_analysis_enable)
-		{
-			mpu6050_get_data();
-			mpu6050_analysis_enable = 0;
-			MPU6050_Analysis();
-		}
-		
-		oled_show_float(36, 1, Roll_Result , 3, 3);
-		oled_show_float(36, 2, Yaw_Result  , 3, 3);
-		oled_show_float(36, 3, Pitch_Result, 3, 3);
-		
-		oled_show_int(18, 4, mpu6050_gyro_x, 4);
-		oled_show_int(18, 5, mpu6050_gyro_y, 4);
-		oled_show_int(18, 6, mpu6050_gyro_z, 4);
-		oled_show_int(82, 4, mpu6050_acc_x, 4);
-		oled_show_int(82, 5, mpu6050_acc_y, 4);
-		oled_show_int(82, 6, mpu6050_acc_z, 4);
+
 		
 		
     }

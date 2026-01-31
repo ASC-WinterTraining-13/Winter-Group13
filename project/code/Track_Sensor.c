@@ -65,9 +65,6 @@ void Track_Sensor_Get_All_Status(uint8 status_buf[])
 
 #define OUTER_WEIGHT				8		//外侧传感器权重
 #define INNER_WEIGHT				2		//内侧传感器权重
-#define ON_LINE_THRESHOLD			1.5		//有线判定阈值
-#define TRACK_CNT_ON_LINE			3		//有线判定计数阈值
-#define TRACK_CNT_OFF_LINE			7		//无线判定计数阈值
 
 // 巡线状态 
 uint8_t Track_Sensor_State = TRACK_STATE_ON_LINE;
@@ -109,11 +106,11 @@ float Track_Sensor_Get_Error(void)
 		+ OUTER_WEIGHT * sensor_avg[3];	//右2
 	
 	// 疑似有线
-	if ( fabs(Error) >  ON_LINE_THRESHOLD)
+	if ( fabs(Error) >  1.5)
 	{
 		Track_on_line_cnt ++;
 		Track_off_line_cnt = 0;
-		if (Track_on_line_cnt > TRACK_CNT_ON_LINE)
+		if (Track_on_line_cnt > 3)
 		{
 			Track_Sensor_State = TRACK_STATE_ON_LINE;
 			Track_on_line_cnt = 0;	
@@ -124,7 +121,7 @@ float Track_Sensor_Get_Error(void)
 	{
 		Track_off_line_cnt ++;
 		Track_on_line_cnt = 0;
-		if (Track_off_line_cnt > TRACK_CNT_OFF_LINE)
+		if (Track_off_line_cnt > 7)
 		{
 			Track_Sensor_State = TRACK_STATE_OFF_LINE;
 			Track_off_line_cnt = 0;

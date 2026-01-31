@@ -32,9 +32,9 @@ void Mode_4_Set_Param_UI(uint8_t Page)
             oled_show_string(2, 2, " Kp:");
             oled_show_string(2, 3, " Ki:");
             oled_show_string(2, 4, " Kd:");
-            oled_show_float(28, 2, TEMP_888_FUNC_4_KP, 2, 2);
-            oled_show_float(28, 3, TEMP_888_FUNC_4_KI, 2, 2);
-            oled_show_float(28, 4, TEMP_888_FUNC_4_KD, 2, 2);
+            oled_show_float(28, 2, TRACK_KP, 2, 2);
+            oled_show_float(28, 3, TRACK_KI, 2, 2);
+            oled_show_float(28, 4, TRACK_KD, 2, 2);
 
             break;
         }
@@ -62,19 +62,19 @@ void Set_Mode_4_Param(uint8_t Num)
     switch (Num)
     {
         case 1:  // Kp
-            current_param = &TEMP_888_FUNC_4_KP;
+            current_param = &TRACK_KP;
             step_value = PID_STEPS[3][0];
             row = 2;
             break;
             
         case 2:  // Ki
-            current_param = &TEMP_888_FUNC_4_KI;
+            current_param = &TRACK_KI;
             step_value = PID_STEPS[3][1];
             row = 3;
             break;
             
         case 3:  // Kd
-            current_param = &TEMP_888_FUNC_4_KD;
+            current_param = &TRACK_KD;
             step_value = PID_STEPS[3][2];
             row = 4;
             break;

@@ -8,6 +8,7 @@
 #include "Mode_4.h"
 #include "Mode_5.h"
 #include "Core_Param.h"
+#include "SandBox_Page.h"
 
 #include "param_config.h"
 #include "zf_device_bluetooth_ch04.h"
@@ -78,6 +79,11 @@ void Menu_UI(uint8_t Page)
 			
 			break;
 		}
+		// 第三页
+		case 3:
+		{
+			oled_show_string(2, 0, " SandBox_Page");
+		}
 	}
 }
 
@@ -113,14 +119,14 @@ void Menu_Show(void)
 			key_clear_state(KEY_UP);
 			key_pressed  = 1;
 			menuflag --;
-			if (menuflag < 1)menuflag = 6;	
+			if (menuflag < 1)menuflag = 7;	
 		}
 		else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
 		{
 			key_clear_state(KEY_DOWN);
 			key_pressed = 1;
 			menuflag ++;
-			if (menuflag > 6)menuflag = 1;	
+			if (menuflag > 7)menuflag = 1;	
 		}
 		else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
 		{
@@ -130,7 +136,7 @@ void Menu_Show(void)
 		else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
 		{
 			key_clear_state(KEY_BACK);
-			//
+			// 照理不应该有功能
 		}
 		
 		/* 模式跳转*/
@@ -204,8 +210,7 @@ void Menu_Show(void)
             Menu_UI(2);
             oled_show_string(0, 4, ">");
 		}	
-		//核心参数更改界面
-		// 模式5
+		// 核心参数设置界面
 		else if (menuflag_temp == 6)
 		{
 			oled_clear();
@@ -218,7 +223,21 @@ void Menu_Show(void)
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);
             oled_show_string(0, 6, ">");
-		}	
+		}
+		// 空白调试界面
+		else if (menuflag_temp == 7)
+		{
+			oled_clear();
+			SandBox_Page();
+			
+			// 从模式返回后运行
+			// 启停标志位置0
+			Run_Flag = 0;
+			// 返回后重新显示菜单
+			oled_set_font(OLED_8X16_FONT);  
+            Menu_UI(3);
+            oled_show_string(0, 0, ">");
+		}			
 
 		
 		/* 菜单显示更新*/
@@ -265,6 +284,12 @@ void Menu_Show(void)
 					oled_clear();
 					Menu_UI(2);
 					oled_show_string(0, 6, ">");
+				
+					break;
+				case 7:
+					oled_clear();
+					Menu_UI(3);
+					oled_show_string(0, 0, ">");
 				
 					break;
 			}

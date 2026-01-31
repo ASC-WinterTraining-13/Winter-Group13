@@ -45,7 +45,7 @@ extern volatile uint8_t mpu6050_analysis_enable;
 extern PID_t Angle_PID;							// 角度环
 extern PID_t Speed_PID;							// 速度环
 extern PID_t Turn_PID;							// 转向环
-extern PID_t TEMP_888_FUNC_4_PID;				// 待定
+extern PID_t Track_PID;				// 待定
 extern PID_t TEMP_888_FUNC_5_PID;				// 待定
 
 // pid参数修改步长值（非蓝牙模块）

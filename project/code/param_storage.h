@@ -49,9 +49,9 @@
 #define TURN_KI    flash_union_buffer[FLASH_3_KI].float_type
 #define TURN_KD    flash_union_buffer[FLASH_3_KD].float_type
 		
-#define TEMP_888_FUNC_4_KP    flash_union_buffer[FLASH_4_KP].float_type
-#define TEMP_888_FUNC_4_KI    flash_union_buffer[FLASH_4_KI].float_type
-#define TEMP_888_FUNC_4_KD    flash_union_buffer[FLASH_4_KD].float_type
+#define TRACK_KP    flash_union_buffer[FLASH_4_KP].float_type
+#define TRACK_KI    flash_union_buffer[FLASH_4_KI].float_type
+#define TRACK_KD    flash_union_buffer[FLASH_4_KD].float_type
 		
 #define TEMP_888_FUNC_5_KP    flash_union_buffer[FLASH_5_KP].float_type
 #define TEMP_888_FUNC_5_KI    flash_union_buffer[FLASH_5_KI].float_type

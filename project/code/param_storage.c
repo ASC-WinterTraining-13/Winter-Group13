@@ -4,13 +4,13 @@
 // 默认参数值（首次使用或恢复出厂设置时使用）
 static const float DEFAULT_PARAMS[15] = {
     // Angle_PID(索引 0-2)
-    459.0f, 0.0f, 586.0f,
+    500.0f, 0.3f, 1000.0f,
     
     // Speed_PID (索引 3-5)
-    -70.1f, -0.1f, 0.0f,
+    -70.5f, 0.0f, 10.0f,
     
     // Turn_pid (索引 6-8)
-    0.0f, 0.0f, 0.0f,
+    100.0f, 0.0f, 0.0f,
     
     // 4_pid (索引 9-11)
     0.0f, 0.0f, 0.0f,
@@ -23,6 +23,7 @@ static const float DEFAULT_PARAMS[15] = {
 // 函数简介     加载默认参数到缓冲区
 // 使用示例     load_default();  // 内部函数，用户不直接调用
 //-------------------------------------------------------------------------------------------------------------------
+
 static void load_default(void)
 {
     for(uint8 i = 0; i < 15; i++)
@@ -36,6 +37,7 @@ static void load_default(void)
 // 使用示例     Param_Init();  // 在 main() 函数开始时调用一次
 // 备注信息     首次使用时自动写入默认值，后续启动自动从Flash加载
 //-------------------------------------------------------------------------------------------------------------------
+
 void Param_Init(void)
 {
     if(flash_check(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE))  // 返回1 = 有数据
@@ -66,10 +68,10 @@ void Param_Init(void)
         Turn_PID.Ki = TURN_KI;
         Turn_PID.Kd = TURN_KD;
 		
-		//4
-		TEMP_888_FUNC_4_PID.Kp = TEMP_888_FUNC_4_KP;
-        TEMP_888_FUNC_4_PID.Ki = TEMP_888_FUNC_4_KI;
-        TEMP_888_FUNC_4_PID.Kd = TEMP_888_FUNC_4_KD;
+		// 循迹环pid
+		Track_PID.Kp = TRACK_KP;
+        Track_PID.Ki = TRACK_KI;
+        Track_PID.Kd = TRACK_KD;
 		
 		//5
 		TEMP_888_FUNC_5_PID.Kp = TEMP_888_FUNC_5_KP;
@@ -82,6 +84,7 @@ void Param_Init(void)
 // 使用示例     Param_Save();  // 在退出参数修改时调用
 // 备注信息     将当前缓冲区的数据写入Flash
 //-------------------------------------------------------------------------------------------------------------------
+
 void Param_Save(void)
 {
     flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
@@ -121,10 +124,10 @@ void Param_SyncToPID(void)
     Turn_PID.Ki = TURN_KI;
     Turn_PID.Kd = TURN_KD;
     
-//    //4
-//    TEMP_888_FUNC_4_PID.Kp = TEMP_888_FUNC_4_KP;
-//    TEMP_888_FUNC_4_PID.Ki = TEMP_888_FUNC_4_KI;
-//    TEMP_888_FUNC_4_PID.Kd = TEMP_888_FUNC_4_KD;
+    // 循迹环pid
+    Track_PID.Kp = TRACK_KP;
+    Track_PID.Ki = TRACK_KI;
+    Track_PID.Kd = TRACK_KD;
 //    
 //    //5
 //    TEMP_888_FUNC_5_PID.Kp = TEMP_888_FUNC_5_KP;

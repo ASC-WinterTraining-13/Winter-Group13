@@ -420,7 +420,7 @@ int Mode_1_Running(void)
 			Time_Count2 = 0;
 			
 			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
-			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;		
+			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;
 		}
@@ -443,7 +443,6 @@ int Mode_1_Running(void)
 			motor_SetPWM(2, 0);
 		}
 			
-		
 		//调用mpu6050数据接收与解析
 		if (mpu6050_analysis_enable)
 		{

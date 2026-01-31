@@ -470,6 +470,16 @@
               <FilePath>..\code\Mode_5.h</FilePath>
             </File>
             <File>
+              <FileName>SandBox_Page.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\SandBox_Page.c</FilePath>
+            </File>
+            <File>
+              <FileName>SandBox_Page.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\SandBox_Page.h</FilePath>
+            </File>
+            <File>
               <FileName>Core_Param.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\Core_Param.c</FilePath>
