@@ -174,7 +174,7 @@ int Mode_3_Set_Param(void)
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
             key_clear_state(KEY_BACK);
-            //返回上一级界面
+			//返回上一级界面
             return 0;
         }
         

@@ -149,6 +149,7 @@ void Menu_Show(void)
 			// 从模式返回后运行
 			// 启停标志位置0
 			Run_Flag = 0;
+			oled_clear();
 			// 返回后重新显示菜单			
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(1);
@@ -163,6 +164,7 @@ void Menu_Show(void)
 			// 从模式返回后运行
 			// 启停标志位置0
 			Run_Flag = 0;
+			oled_clear();
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);
             Menu_UI(1);
@@ -177,6 +179,7 @@ void Menu_Show(void)
 			// 从模式返回后运行
 			// 启停标志位置0
 			Run_Flag = 0;
+			oled_clear();
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);
@@ -191,6 +194,7 @@ void Menu_Show(void)
 			// 从模式返回后运行
 			// 启停标志位置0
 			Run_Flag = 0;
+			oled_clear();
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);
@@ -205,6 +209,7 @@ void Menu_Show(void)
 			// 从模式返回后运行
 			// 启停标志位置0
 			Run_Flag = 0;
+			oled_clear();
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);
@@ -219,6 +224,7 @@ void Menu_Show(void)
 			// 从模式返回后运行
 			// 启停标志位置0
 			Run_Flag = 0;
+			oled_clear();
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(2);
@@ -233,6 +239,7 @@ void Menu_Show(void)
 			// 从模式返回后运行
 			// 启停标志位置0
 			Run_Flag = 0;
+			oled_clear();
 			// 返回后重新显示菜单
 			oled_set_font(OLED_8X16_FONT);  
             Menu_UI(3);

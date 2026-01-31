@@ -253,8 +253,7 @@ int Mode_4_Menu(void)
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
             key_clear_state(KEY_BACK);
-            oled_clear();
-            
+            //返回上一级界面          
             return 0;
         }
         
