@@ -32,9 +32,9 @@ void Mode_4_Set_Param_UI(uint8_t Page)
             oled_show_string(2, 2, " Kp:");
             oled_show_string(2, 3, " Ki:");
             oled_show_string(2, 4, " Kd:");
-            oled_show_float(28, 2, TRACK_KP, 2, 2);
-            oled_show_float(28, 3, TRACK_KI, 2, 2);
-            oled_show_float(28, 4, TRACK_KD, 2, 2);
+            oled_show_float(28, 2, TRACK_KP, 4, 2);
+            oled_show_float(28, 3, TRACK_KI, 4, 2);
+            oled_show_float(28, 4, TRACK_KD, 4, 2);
 
             break;
         }
@@ -89,13 +89,13 @@ void Set_Mode_4_Param(uint8_t Num)
         {
             key_clear_state(KEY_UP);
             *current_param += step_value;  // 增加参数
-            oled_show_float(28, row, *current_param, 2, 2);  // 更新显示
+            oled_show_float(28, row, *current_param, 4, 2);  // 更新显示
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {
             key_clear_state(KEY_DOWN);
             *current_param -= step_value;  // 减少参数
-            oled_show_float(28, row, *current_param, 2, 2);  // 更新显示
+            oled_show_float(28, row, *current_param, 4, 2);  // 更新显示
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM) || 
                  KEY_SHORT_PRESS == key_get_state(KEY_BACK))

@@ -32,9 +32,9 @@ void Core_Param_UI(uint8_t Page)
 //UI补丁：针对选择PID参数
 void Core_Param_Show_PID_Num_UI(PID_t *p)
 {
-	oled_show_float(28, 2, p->Kp, 3, 2);
-	oled_show_float(28, 3, p->Ki, 3, 2);
-	oled_show_float(28, 4, p->Kd, 3, 2);
+	oled_show_float(28, 2, p->Kp, 4, 2);
+	oled_show_float(28, 3, p->Ki, 4, 2);
+	oled_show_float(28, 4, p->Kd, 4, 2);
 }
 
 //PID参数更改界面
@@ -89,21 +89,21 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
             current_param = &p->Kp;
             step_value = PID_STEPS[PID_Num-1][0];
             row = 2;
-			oled_show_float(28, row, *current_param, 3, 2);
+			oled_show_float(28, row, *current_param, 4, 2);
             break;
             
         case 2:  // Ki
             current_param = &p->Ki;
             step_value = PID_STEPS[PID_Num-1][1];
             row = 3;
-			oled_show_float(28, row, *current_param, 3, 2);
+			oled_show_float(28, row, *current_param, 4, 2);
             break;
             
         case 3:  // Kd
             current_param = &p->Kd;
             step_value = PID_STEPS[PID_Num-1][2];
             row = 4;
-			oled_show_float(28, row, *current_param, 3, 2);
+			oled_show_float(28, row, *current_param, 4, 2);
             break;
     }
     
@@ -116,13 +116,13 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
         {
             key_clear_state(KEY_UP);
             *current_param += step_value;  // 增加参数
-            oled_show_float(28, row, *current_param, 3, 2);  // 更新显示
+            oled_show_float(28, row, *current_param, 4, 2);  // 更新显示
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {
             key_clear_state(KEY_DOWN);
             *current_param -= step_value;  // 减少参数
-            oled_show_float(28, row, *current_param, 3, 2);  // 更新显示
+            oled_show_float(28, row, *current_param, 4, 2);  // 更新显示
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM) || 
                  KEY_SHORT_PRESS == key_get_state(KEY_BACK))
