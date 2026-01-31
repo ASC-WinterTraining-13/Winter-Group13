@@ -26,5 +26,5 @@ void BuzzerAndLED_Promopt(uint8_t Mode)
 	if (Mode == 1) gpio_set_level (BEEP, GPIO_HIGH);	// 蜂鸣器开
 	if (Mode == 2) gpio_set_level (LED2, GPIO_LOW);		// LED开
 	if (Mode == 3) gpio_set_level (BEEP, GPIO_LOW);		// 蜂鸣器关
-	if (Mode == 4) gpio_set_level (LED2, GPIO_HIGH);		// LED关
+	if (Mode == 4) gpio_set_level (LED2, GPIO_HIGH);	// LED关
 }

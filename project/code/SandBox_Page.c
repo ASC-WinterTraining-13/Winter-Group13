@@ -6,6 +6,8 @@
 #include "param_storage.h"
 #include "mpu6050_Analysis.h"
 
+#include "BuzzerAndLED.h"
+
 int SandBox_Page(void)
 {
 	oled_set_font(OLED_6X8_FONT);
@@ -56,7 +58,7 @@ int SandBox_Page(void)
             key_clear_state(KEY_BACK);
             
             return 0;
-        }
+        }	
 		
 		//调用mpu6050数据接收与解析
 		if (mpu6050_analysis_enable)
@@ -76,6 +78,7 @@ int SandBox_Page(void)
 		oled_show_int(82, 4, mpu6050_acc_x, 4);
 		oled_show_int(82, 5, mpu6050_acc_y, 4);
 		oled_show_int(82, 6, mpu6050_acc_z, 4);
+		
 	}
 
 }
