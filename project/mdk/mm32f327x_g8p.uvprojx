@@ -569,6 +569,16 @@
               <FileType>5</FileType>
               <FilePath>..\code\Track_Sensor.h</FilePath>
             </File>
+            <File>
+              <FileName>BuzzerAndLED.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\BuzzerAndLED.h</FilePath>
+            </File>
+            <File>
+              <FileName>BuzzerAndLED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\BuzzerAndLED.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
