@@ -406,8 +406,6 @@ int Mode_2_Running(void)
 			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;		
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;			
-			
-			if (Run_Flag) {Turn_PID_Control();}
 		}
 		
         if (Run_Flag)

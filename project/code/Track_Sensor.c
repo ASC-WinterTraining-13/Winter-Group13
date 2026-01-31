@@ -103,10 +103,10 @@ float Track_Sensor_Get_Error(void)
     }
 	
 	float Error = 
-		- OUTER_WEIGHT * sensor_avg[0]
-		- INNER_WEIGHT * sensor_avg[1]
-		+ INNER_WEIGHT * sensor_avg[2]
-		+ OUTER_WEIGHT * sensor_avg[3];
+		- OUTER_WEIGHT * sensor_avg[0]	//左2
+		- INNER_WEIGHT * sensor_avg[1]	//左1
+		+ INNER_WEIGHT * sensor_avg[2]	//右1
+		+ OUTER_WEIGHT * sensor_avg[3];	//右2
 	
 	// 疑似有线
 	if ( fabs(Error) >  ON_LINE_THRESHOLD)
