@@ -133,6 +133,7 @@ void TIM7_IRQHandler (void)
 	//调控周期计时器
 	Time_Count1 ++;
 	Time_Count2 ++;
+	if (BuzzerAndLED_Delay_Timer > 0) BuzzerAndLED_Delay_Timer --;
 	// MPU6050 分析使能（每5ms置1）
     mpu6050_analysis_enable = 1;
 	

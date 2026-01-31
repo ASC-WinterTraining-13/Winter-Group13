@@ -17,7 +17,8 @@ float AveSpeed, DifSpeed;				//平均实际速度，差分实际速度
 // 调控周期计时器
 uint16_t Time_Count1 = 0;
 uint16_t Time_Count2 = 0;
-
+// 延时
+uint16_t BuzzerAndLED_Delay_Timer = 0;
 
 /*******************************************************************************************************************/
 /*[S] 标志位 [S]---------------------------------------------------------------------------------------------------*/
@@ -66,12 +67,17 @@ PID_t Turn_PID = {
 	.ErrorIntMin = 3000,			//积分限幅
 	.OutOffset = 0,					//输出偏移	
 };
-// 待定
+// 循迹pid
 PID_t Track_PID = {	
-	
+	.OutMax = 5000,
+	.OutMin = -5000,
+	.IntSepThresh = 5000,			//积分分离阈值（误差大于阈值 不积分/积分清零）
+	.ErrorIntMax = 3000,			//积分限幅
+	.ErrorIntMin = 3000,			//积分限幅
+	.OutOffset = 0,					//输出偏移	
 };
 // 待定
-PID_t TEMP_888_FUNC_5_PID = {	
+PID_t TEMP_888_FUNC_5_PID = {
 	
 };
 

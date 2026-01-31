@@ -18,6 +18,8 @@ extern float AveSpeed, DifSpeed;				//平均实际速度，差分实际速度
 // 调控周期计时器
 extern uint16_t Time_Count1;
 extern uint16_t Time_Count2;
+// 延时
+extern uint16_t BuzzerAndLED_Delay_Timer;
 
 
 /*******************************************************************************************************************/

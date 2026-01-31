@@ -68,7 +68,7 @@ void Track_Sensor_Get_All_Status(uint8 status_buf[])
 
 // 巡线状态 
 uint8_t Track_Sensor_State = TRACK_STATE_ON_LINE;
-static uint8_t Track_on_line_cnt = 0;    // 有线计数（防抖）
+static uint8_t Track_on_line_cnt  = 0;    // 有线计数（防抖）
 static uint8_t Track_off_line_cnt = 0;   // 无线计数（防抖）
 
 //-------------------------------------------------------------------------------------------------------------------
