@@ -17,7 +17,6 @@ void BuzzerAndLED_Init(void);
 // 备注信息     只在"Menu.c"中的Peripheral_Init();函数调用一次
 //-------------------------------------------------------------------------------------------------------------------
 
-
 void BuzzerAndLED_Promopt(uint8_t Mode);
 
 #endif
