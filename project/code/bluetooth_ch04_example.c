@@ -202,6 +202,7 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 // 使用示例     bluetooth_ch04_handle_receive();
 // 备注信息     在主循环中定期调用此函数
 //-------------------------------------------------------------------------------------------------------------------
+
 void bluetooth_ch04_handle_receive (void)
 {
     // 检查是否接收到完整数据包
@@ -237,8 +238,9 @@ void bluetooth_ch04_handle_receive (void)
 // 参数说明     void
 // 返回参数     void
 // 使用示例     bluetooth_ch04_init_example();
-// 备注信息     
+// 备注信息     具有调试性质
 //-------------------------------------------------------------------------------------------------------------------
+
 void bluetooth_ch04_init_example (void)
 {
     bluetooth_ch04_init();
@@ -252,6 +254,7 @@ void bluetooth_ch04_init_example (void)
 // 使用示例     bluetooth_ch04_test();
 // 备注信息     可在主函数中调用进行功能测试
 //-------------------------------------------------------------------------------------------------------------------
+
 void bluetooth_ch04_test (void)
 {
     // 测试发送各种类型的数据
