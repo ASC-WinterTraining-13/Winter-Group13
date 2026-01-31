@@ -154,12 +154,9 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         rv = (int8)atoi(strtok(NULL, ","));
 		
 		// 速度环测试摇杆
-		Speed_PID.Target = lv / 10/
-		0;	//控制目标速度
-		//
-		DifPWM = rh * 50;		   		//控制差分PWM在-5000~5000
+		Speed_PID.Target = lv / 10.0;	//控制目标速度
 		// 转向环测试摇杆
-		Turn_PID.Target = rh / 25.0;		
+		Turn_PID.Target = rh / 10.0;		
         
 //        printf("Joystick: LH=%d, LV=%d, RH=%d, RV=%d\r\n", lh, lv, rh, rv);
 //        // 例如：可用于控制机器人方向

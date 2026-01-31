@@ -560,14 +560,14 @@
               <FilePath>..\code\param_storage.h</FilePath>
             </File>
             <File>
-              <FileName>Trace_Sensor.c</FileName>
+              <FileName>Track_Sensor.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\code\Trace_Sensor.c</FilePath>
+              <FilePath>..\code\Track_Sensor.c</FilePath>
             </File>
             <File>
-              <FileName>Trace_Sensor.h</FileName>
+              <FileName>Track_Sensor.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\code\Trace_Sensor.h</FilePath>
+              <FilePath>..\code\Track_Sensor.h</FilePath>
             </File>
           </Files>
         </Group>
