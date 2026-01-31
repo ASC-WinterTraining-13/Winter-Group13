@@ -13,6 +13,7 @@
 #include "zf_device_bluetooth_ch04.h"
 #include "Encoder.h"
 #include "motor.h"
+#include "BuzzerAndLED.h"
 
 /*--------------------[S] 外设初始化 [S]--------------------*/
 
@@ -38,6 +39,9 @@ void Peripheral_Init(void)
 	
 	/* 电机初始化*/
 	motor_Init();
+	
+	/* 声光模块初始化*/
+	BuzzerAndLED_Init();
 }
 /*--------------------[E] 外设初始化 [E]--------------------*/
 

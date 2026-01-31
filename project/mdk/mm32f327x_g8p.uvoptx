@@ -646,24 +646,24 @@
     <File>
       <GroupNumber>3</GroupNumber>
       <FileNumber>36</FileNumber>
-      <FileType>1</FileType>
+      <FileType>5</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\LED&amp;Buzzer.c</PathWithFileName>
-      <FilenameWithoutPath>LED&amp;Buzzer.c</FilenameWithoutPath>
+      <PathWithFileName>..\code\BuzzerAndLED.h</PathWithFileName>
+      <FilenameWithoutPath>BuzzerAndLED.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
     <File>
       <GroupNumber>3</GroupNumber>
       <FileNumber>37</FileNumber>
-      <FileType>5</FileType>
+      <FileType>1</FileType>
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\LED&amp;Buzzer.h</PathWithFileName>
-      <FilenameWithoutPath>LED&amp;Buzzer.h</FilenameWithoutPath>
+      <PathWithFileName>..\code\BuzzerAndLED.c</PathWithFileName>
+      <FilenameWithoutPath>BuzzerAndLED.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

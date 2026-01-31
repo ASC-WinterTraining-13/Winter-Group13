@@ -570,14 +570,14 @@
               <FilePath>..\code\Track_Sensor.h</FilePath>
             </File>
             <File>
-              <FileName>LED&amp;Buzzer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\LED&amp;Buzzer.c</FilePath>
+              <FileName>BuzzerAndLED.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\BuzzerAndLED.h</FilePath>
             </File>
             <File>
-              <FileName>LED&amp;Buzzer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\LED&amp;Buzzer.h</FilePath>
+              <FileName>BuzzerAndLED.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\BuzzerAndLED.c</FilePath>
             </File>
           </Files>
         </Group>
