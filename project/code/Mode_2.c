@@ -340,12 +340,13 @@ int Mode_2_Running(void)
 {
 	oled_set_font(OLED_6X8_FONT);
 
-	oled_show_string(0, 1, "P:");
-	oled_show_string(0, 2, "I:");
-	oled_show_string(0, 3, "D:");
-	oled_show_string(0, 4, "T:");
-	oled_show_string(0, 5, "A:");
-	oled_show_string(0, 6, "O:");
+	oled_show_string(0, 1, "Tr_P:");
+	oled_show_string(0, 2, "Tr_I:");
+	oled_show_string(0, 3, "Tr_D:");
+	oled_show_string(0, 4, "Error:");
+	oled_show_string(0, 5, "Out:");
+	oled_show_string(0, 6, "OUT_W:");
+	oled_show_string(64, 6, "INN_W:");
 
 	oled_show_string(0, 0, "Cali");
     
@@ -454,6 +455,7 @@ int Mode_2_Running(void)
 				}
 				else if (Mode_2_Cur_State == STATE_B_TO_C)
 				{
+					Speed_PID.Target = 20;
 					Track_PID.Actual = Error;
 					PID_Update(&Track_PID);
 					Turn_PID.Target = Track_PID.Out;
@@ -465,6 +467,7 @@ int Mode_2_Running(void)
 				}
 				else if (Mode_2_Cur_State == STATE_D_TO_A)
 				{
+					Speed_PID.Target = 20;
 					Track_PID.Actual = Error;
 					PID_Update(&Track_PID);
 					Turn_PID.Target = Track_PID.Out;
@@ -480,7 +483,7 @@ int Mode_2_Running(void)
 				}
 				else if (Mode_2_Cur_State == STATE_A_TO_B) 
 				{
-					Speed_PID.Target = 30;
+					Speed_PID.Target = 25;
 					Turn_PID.Target = 0;
 				}
 				else if (Mode_2_Cur_State == STATE_B_TO_C)
@@ -490,7 +493,7 @@ int Mode_2_Running(void)
 				}
 				else if (Mode_2_Cur_State == STATE_C_TO_D)
 				{
-					Speed_PID.Target = 30;
+					Speed_PID.Target = 25;
 					Turn_PID.Target = 0;					
 				}
 				else if (Mode_2_Cur_State == STATE_D_TO_A)
@@ -560,12 +563,13 @@ int Mode_2_Running(void)
 		
 //		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
 		
-		oled_show_float(12, 1, TRACK_KP, 5, 1);
-		oled_show_float(12, 2, TRACK_KI, 3, 2);
-		oled_show_float(12, 3, TRACK_KD, 5, 1);		
-		oled_show_float(12, 4, Error, 3, 2);
-		oled_show_float(12, 6, Track_PID.Out, 5, 2);
-		
+		oled_show_float(30, 1, TRACK_KP, 5, 1);
+		oled_show_float(30, 2, TRACK_KI, 3, 2);
+		oled_show_float(30, 3, TRACK_KD, 5, 1);		
+		oled_show_float(36, 4, Error, 3, 2);
+		oled_show_float(24, 5, Track_PID.Out, 5, 2);
+		oled_show_float(36, 6, outer_weight , 2, 1);
+		oled_show_float(100, 6, inner_weight , 2, 1);
 		
 
 

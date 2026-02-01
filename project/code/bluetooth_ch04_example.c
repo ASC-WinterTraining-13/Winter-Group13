@@ -18,6 +18,8 @@
 #include "param_config.h"
 #include "param_storage.h"
 
+#include "Track_Sensor.h"
+
 // ========== 蓝牙接收缓冲区 ==========
 static uint8 bluetooth_rx_buffer[100];
 static uint32 bluetooth_rx_length = 0;
@@ -89,6 +91,10 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         
         if(name != NULL && value != NULL)
         {
+			
+		// 更改0和1来决定使用那一块
+		#if 0
+			// 
             if(strcmp(name, "A_P") == 0)
             {
 				float_value = (float)atof(value);
@@ -135,6 +141,36 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 				float_value = (float)atof(value);
 				TURN_KD = float_value;
             }
+		#else
+			if(strcmp(name, "Tr_P") == 0)
+            {
+				float_value = (float)atof(value);
+				TRACK_KP = float_value;
+            }
+            else if(strcmp(name, "Tr_I") == 0)
+            {
+              printf("slider 2 value: %.2f\r\n", float_value);
+				float_value = (float)atof(value);
+				TRACK_KI = float_value;
+            }
+			else if(strcmp(name, "Tr_D") == 0)
+            {
+				float_value = (float)atof(value);
+				TRACK_KD = float_value;
+            }
+			else if(strcmp(name, "OUT_W") == 0)
+            {
+              printf("slider 2 value: %.2f\r\n", float_value);
+				float_value = (float)atof(value);
+				outer_weight = float_value;
+            }
+			else if(strcmp(name, "INN_W") == 0)
+            {
+				float_value = (float)atof(value);
+				inner_weight = float_value;
+            }
+			
+		#endif
 			
 			
 			Param_SyncToPID();//同步pid到计算变量

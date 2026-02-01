@@ -5,6 +5,9 @@
 #include "zf_driver_gpio.h"
 
 
+extern int8_t outer_weight;
+extern int8_t inner_weight;
+
 // 巡线状态 
 extern uint8_t Track_Sensor_State ;
 

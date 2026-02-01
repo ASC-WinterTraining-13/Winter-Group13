@@ -63,8 +63,11 @@ void Track_Sensor_Get_All_Status(uint8 status_buf[])
     status_buf[3] = 1 - Track_Sensor_Get_Status(TRACK_X_4);// 右2
 }
 
-#define OUTER_WEIGHT				8		//外侧传感器权重
-#define INNER_WEIGHT				2		//内侧传感器权重
+//#define OUTER_WEIGHT				8		//外侧传感器权重
+//#define INNER_WEIGHT				2		//内侧传感器权重
+
+int8_t outer_weight = 8;
+int8_t inner_weight = 2;
 
 // 巡线状态 
 uint8_t Track_Sensor_State = TRACK_STATE_ON_LINE;
@@ -100,10 +103,10 @@ float Track_Sensor_Get_Error(void)
     }
 	
 	float Error = 
-		- OUTER_WEIGHT * sensor_avg[0]	//左2
-		- INNER_WEIGHT * sensor_avg[1]	//左1
-		+ INNER_WEIGHT * sensor_avg[2]	//右1
-		+ OUTER_WEIGHT * sensor_avg[3];	//右2
+		- outer_weight * sensor_avg[0]	//左2
+		- inner_weight * sensor_avg[1]	//左1
+		+ inner_weight * sensor_avg[2]	//右1
+		+ outer_weight * sensor_avg[3];	//右2
 	
 	// 疑似有线
 	if ( fabs(Error) >  1.5)
