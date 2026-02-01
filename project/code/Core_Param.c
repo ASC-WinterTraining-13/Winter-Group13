@@ -229,7 +229,9 @@ int Set_Core_Param(uint8_t PID_Num)
         //判断界面是否需要更新
         if (key_pressed)
         {
-			oled_clear();
+			oled_show_string(0, 2, " ");
+			oled_show_string(0, 3, " ");
+			oled_show_string(0, 4, " ");
             Core_Param_Set_PID_UI(1);
             oled_show_string(0, Param_flag+1, ">");
         }    

@@ -440,29 +440,6 @@ int Mode_3_Running(void)
 			MPU6050_Analysis();
 		}
 		
-		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Turn_PID.Target , DifSpeed);
-
-//		oled_show_float(12, 1, ANGLE_KP, 5, 1);
-//		oled_show_float(12, 2, ANGLE_KI, 3, 2);
-//		oled_show_float(12, 3, ANGLE_KD, 3, 1);
-//		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
-//		oled_show_float(12, 5, Angle_Result, 3, 2);
-//		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
-//		
-//		oled_show_float(50, 1, SPEED_KP, 5, 1);
-//		oled_show_float(50, 2, SPEED_KI, 3, 2);
-//		oled_show_float(50, 3, SPEED_KD, 3, 1);
-//		oled_show_float(50, 4, Speed_PID.Target, 3, 2);
-//		oled_show_float(50, 5, AveSpeed, 3, 2);
-//		oled_show_float(50, 6, Speed_PID.Out, 5, 2);
-		
-		oled_show_float(12, 1, TURN_KP, 5, 1);
-		oled_show_float(12, 2, TURN_KI, 3, 2);
-		oled_show_float(12, 3, TURN_KD, 3, 1);
-		oled_show_float(12, 4, Turn_PID.Target, 3, 2);
-		oled_show_float(12, 5, DifSpeed, 3, 2);
-		oled_show_float(12, 6, Turn_PID.Out, 5, 2);
-
 
     }
 }

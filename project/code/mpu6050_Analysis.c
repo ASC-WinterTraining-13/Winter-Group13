@@ -316,7 +316,7 @@ void MPU6050_Analysis(void)
 	if ( fabs(Pitch_Result-Pitch_Temp) > MPU6050_OUTPUT_DEAD_ZONE ){Pitch_Result = Pitch_Temp;}
 	
 	#if USE_PITCH_AS_ANGLE
-		Angle_Result = Pitch_Result + 2.5f;
+		Angle_Result = Pitch_Result + 3.75f;
 	#else
 		Angle_Result = Roll_Result;
 	#endif

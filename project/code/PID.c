@@ -105,9 +105,6 @@ void Balance_PID_Contorl(void)
 	Angle_PID.Actual = Angle_Result;
 	PID_Update(&Angle_PID);
 	
-	// 编码器获取值
-
-	
 	// 换算
 	AveSpeed = (LeftSpeed + RightSpeed) / 2.0;		//平均速度
 	DifSpeed = LeftSpeed - RightSpeed;				//差分速度

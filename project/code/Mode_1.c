@@ -16,7 +16,7 @@
 /*[S] 菜单样式 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
-//模式内界面
+// 模式内界面
 void Mode_1_Menu_UI(void)
 {
     oled_show_string(0, 0, "Mode_1");
@@ -25,13 +25,13 @@ void Mode_1_Menu_UI(void)
     oled_show_string(2, 6, " Param");
 }
 
-//模式内参数设置界面
+// 模式内参数设置界面
 void Mode_1_Set_Param_UI(uint8_t Page)
 {
     switch(Page)
 	{
         
-        //第一页
+        // 第一页
         case 1:
         {
             oled_show_string(0, 0, "Param");
@@ -59,12 +59,12 @@ void Mode_1_Set_Param_UI(uint8_t Page)
 
 void Set_Mode_1_Param(uint8_t Num)
 {
-    //指向要修改的参数的指针
+    // 指向要修改的参数的指针
     float* current_param = NULL;
     float step_value = 0.0f;
-    uint8_t row = 0;  //数据对应的显示行号
+    uint8_t row = 0;  // 数据对应的显示行号
     
-    //根据选项确定要修改的参数
+    // 根据选项确定要修改的参数
     switch (Num)
     {
         case 1:  // Kp
@@ -127,30 +127,30 @@ void Set_Mode_1_Param(uint8_t Num)
 /*[S] 交互界面 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
-/*[模式内菜单子界面]*/
+/* [模式内菜单子界面]*/
 
-//参数设置选项数量
+// 参数设置选项数量
 #define OPT_NUM         3
 
 int Mode_1_Set_Param(void)
 {
-    //参数设置选项光标 标志位
+    // 参数设置选项光标 标志位
     static uint8_t Param_flag = 1;
     
-    //显示
+    // 显示
     oled_set_font(OLED_6X8_FONT);  
     Mode_1_Set_Param_UI(1);
     oled_show_string(0, 2, ">");
     
     while(1)
     {
-        //存储确认键被按下时Param_flag的值的临时变量，默认为无效值0
+        // 存储确认键被按下时Param_flag的值的临时变量，默认为无效值0
         uint8_t Param_flag_temp = 0;
         
-        //上/下按键是否被按下过
+        // 上/下按键是否被按下过
         uint8_t key_pressed = 0;  
                 
-        /*按键解析*/
+        /* 按键解析*/
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
         {
             key_pressed = 1;
@@ -173,18 +173,18 @@ int Mode_1_Set_Param(void)
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
             key_clear_state(KEY_BACK);
-            //返回上一级界面
+            // 返回上一级界面
             return 0;
         }
         
-        /*数据更改模式*/
+        /* 数据更改模式*/
         if (Param_flag_temp)
         {
             Set_Mode_1_Param(Param_flag_temp);
         }        
         
-        /*显示更新*/
-        //判断界面是否需要更新
+        /* 显示更新*/
+        // 判断界面是否需要更新
         if (key_pressed)
         {
             switch(Param_flag)
@@ -214,29 +214,29 @@ int Mode_1_Set_Param(void)
     }
 }
 
-//方便模式内菜单母界面调用
+// 方便模式内菜单母界面调用
 int Mode_1_Running(void);
 
-/*[模式内菜单母界面]*/
+/* [模式内菜单母界面]*/
 
 int Mode_1_Menu(void)
 {
-    //模式菜单选项光标 标志位
+    // 模式菜单选项光标 标志位
     static uint8_t Mode_Menu_flag = 1;
     
-    //显示
+    // 显示
     Mode_1_Menu_UI();
     oled_show_string(0, 4, ">");
     
     while(1)
     {
-        //存储确认键被按下时Mode_Menu_flag的值的临时变量，默认为无效值0
+        // 存储确认键被按下时Mode_Menu_flag的值的临时变量，默认为无效值0
         uint8_t Mode_Menu_flag_temp = 0;
         
-        //上/下按键是否被按下过
+        // 上/下按键是否被按下过
         uint8_t key_pressed = 0;
         
-        /*按键解析*/
+        /* 按键解析*/
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
         {
             key_pressed = 1;
@@ -259,16 +259,16 @@ int Mode_1_Menu(void)
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
             key_clear_state(KEY_BACK);
-            //返回上一级界面
+            // 返回上一级界面
             return 0;
         }
         
-        /*页面跳转*/
+        /* 页面跳转*/
         if (Mode_Menu_flag_temp == 1)
         {
             oled_clear();
             Mode_1_Running();
-            //返回后重新显示菜单
+            // 返回后重新显示菜单
             oled_clear();
             oled_set_font(OLED_8X16_FONT); 
             Mode_1_Menu_UI();
@@ -278,14 +278,14 @@ int Mode_1_Menu(void)
         {
             oled_clear();
             Mode_1_Set_Param();
-            //返回后重新显示菜单
+            // 返回后重新显示菜单
             oled_clear();
             oled_set_font(OLED_8X16_FONT); 
             Mode_1_Menu_UI();
             oled_show_string(0, 6, ">");
         }
         
-        /*显示更新*/
+        /* 显示更新*/
         if (key_pressed)
         {
             switch(Mode_Menu_flag)
@@ -320,21 +320,18 @@ int Mode_1_Menu(void)
 
 /*[模式内菜单子界面]*/
 
+
 int Mode_1_Running(void)
 {
+	double Dif_Step = 0;
+	
 	oled_set_font(OLED_6X8_FONT);
-
-	oled_show_string(0, 1, "P:");
-	oled_show_string(0, 2, "I:");
-	oled_show_string(0, 3, "D:");
-	oled_show_string(0, 4, "T:");
-	oled_show_string(0, 5, "A:");
-	oled_show_string(0, 6, "O:");
     
 	oled_show_string(0, 0, "Cali");
 	
 	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
+	
 	while(1)  // 零飘校准循环
     {
         if (MPU6050_Calibration_Check() == 0)  // 零飘校准完成
@@ -386,7 +383,6 @@ int Mode_1_Running(void)
 			//更改启动状态
 			Run_Flag = !Run_Flag;
         }
-
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
             key_clear_state(KEY_BACK);
@@ -401,10 +397,12 @@ int Mode_1_Running(void)
             return 0;
         }
 		
-		/*蓝牙模块*/
+		
+		/* 蓝牙模块*/
 		bluetooth_ch04_handle_receive();	
 		
-		//失控保护
+		
+		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
 			Run_Flag = 0;
@@ -413,7 +411,8 @@ int Mode_1_Running(void)
 			motor_SetPWM(2, 0);
 		}
 		
-		// 速度计算
+		
+		/* 速度计算*/
 		if (Time_Count2 > 20)// 20 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
@@ -422,8 +421,27 @@ int Mode_1_Running(void)
 			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;
+			
+			Dif_Step += LeftSpeed + RightSpeed;
 		}
 		
+		
+//		/* 位置修正*/
+//		if (-600 < Dif_Step && Dif_Step < 600)
+//		{
+//			Speed_PID.Target = 0;				
+//		}
+//		if (Dif_Step > 1000)
+//		{
+//			Speed_PID.Target = -30;			
+//		}
+//		else if (Dif_Step < -1000)
+//		{
+//			Speed_PID.Target = 30;			
+//		}
+
+		
+		/* PID*/
         if (Run_Flag)
 		{			
 			oled_show_string(0, 0, "Run ");
@@ -432,8 +450,7 @@ int Mode_1_Running(void)
 				Time_Count1 = 0;
 				// PID调控
 				Balance_PID_Contorl();
-			}			
-			
+			}						
 		}
 		else
 		{
@@ -442,7 +459,8 @@ int Mode_1_Running(void)
 			motor_SetPWM(2, 0);
 		}
 			
-		//调用mpu6050数据接收与解析
+		
+		/* mpu6050数据接收与解析*/
 		if (mpu6050_analysis_enable)
 		{
 			mpu6050_get_data();
@@ -450,22 +468,16 @@ int Mode_1_Running(void)
 			MPU6050_Analysis();
 		}
 		
-//		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
-		
-		oled_show_float(12, 1, ANGLE_KP, 5, 1);
-		oled_show_float(12, 2, ANGLE_KI, 3, 2);
-		oled_show_float(12, 3, ANGLE_KD, 5, 1);
-		oled_show_float(76, 1, SPEED_KP, 5, 1);
-		oled_show_float(76, 2, SPEED_KI, 3, 2);
-		oled_show_float(76, 3, SPEED_KD, 5, 2);
-		
-		oled_show_float(12, 4, Angle_PID.Target, 3, 2);
-		oled_show_float(12, 5, Angle_Result, 3, 2);
-		oled_show_float(12, 6, Angle_PID.Out, 5, 2);
-		oled_show_float(76, 4, Speed_PID.Target, 3, 2);
-		oled_show_float(76, 5, Speed_PID.Actual, 3, 2);
-		oled_show_float(76, 6, Speed_PID.Out, 5, 2);
-
+//		oled_show_float(0, 1, Dif_Step, 4, 2);
+		oled_show_float(0, 1, Angle_PID.Kp, 4, 2);
+		oled_show_float(0, 2, Angle_PID.Ki, 4, 2);
+		oled_show_float(0, 3, Angle_PID.Kd, 4, 2);
+		oled_show_float(0, 4, Speed_PID.Kp, 4, 2);
+		oled_show_float(0, 5, Speed_PID.Ki, 4, 2);
+		oled_show_float(0, 6, Speed_PID.Kd, 4, 2);
+		oled_show_float(72, 1, Turn_PID.Kp, 4, 2);
+		oled_show_float(72, 2, Turn_PID.Ki, 4, 2);
+		oled_show_float(72, 3, Turn_PID.Kd, 4, 2);
     }
 }
 
