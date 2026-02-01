@@ -347,6 +347,7 @@ int Mode_2_Running(void)
 	oled_show_string(0, 5, "Out:");
 	oled_show_string(0, 6, "OUT_W:");
 	oled_show_string(64, 6, "INN_W:");
+	oled_show_string(64, 0, "Stage:");
 
 	oled_show_string(0, 0, "Cali");
     
@@ -563,6 +564,8 @@ int Mode_2_Running(void)
 		
 //		bluetooth_ch04_printf("[plot,%f,%f]\r\n", Angle_PID.Target, Angle_PID.Actual);
 		
+		
+		
 		oled_show_float(30, 1, TRACK_KP, 5, 1);
 		oled_show_float(30, 2, TRACK_KI, 3, 2);
 		oled_show_float(30, 3, TRACK_KD, 5, 1);		
@@ -570,7 +573,7 @@ int Mode_2_Running(void)
 		oled_show_float(24, 5, Track_PID.Out, 5, 2);
 		oled_show_float(36, 6, outer_weight , 2, 1);
 		oled_show_float(100, 6, inner_weight , 2, 1);
-		
+		oled_show_int(100, 0, Mode_2_Cur_State, 2);
 
 
     }
