@@ -698,8 +698,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\nag_flash.c</PathWithFileName>
-      <FilenameWithoutPath>nag_flash.c</FilenameWithoutPath>
+      <PathWithFileName>..\code\kalman.c</PathWithFileName>
+      <FilenameWithoutPath>kalman.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -710,8 +710,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\nag_flash.h</PathWithFileName>
-      <FilenameWithoutPath>nag_flash.h</FilenameWithoutPath>
+      <PathWithFileName>..\code\kalman.h</PathWithFileName>
+      <FilenameWithoutPath>kalman.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -722,8 +722,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\kalman.c</PathWithFileName>
-      <FilenameWithoutPath>kalman.c</FilenameWithoutPath>
+      <PathWithFileName>..\code\nag_flash.c</PathWithFileName>
+      <FilenameWithoutPath>nag_flash.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -734,8 +734,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\kalman.h</PathWithFileName>
-      <FilenameWithoutPath>kalman.h</FilenameWithoutPath>
+      <PathWithFileName>..\code\nag_flash.h</PathWithFileName>
+      <FilenameWithoutPath>nag_flash.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

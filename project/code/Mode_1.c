@@ -426,19 +426,19 @@ int Mode_1_Running(void)
 		}
 		
 		
-//		/* 位置修正*/
-//		if (-600 < Dif_Step && Dif_Step < 600)
-//		{
-//			Speed_PID.Target = 0;				
-//		}
-//		if (Dif_Step > 1000)
-//		{
-//			Speed_PID.Target = -30;			
-//		}
-//		else if (Dif_Step < -1000)
-//		{
-//			Speed_PID.Target = 30;			
-//		}
+		/* 位置修正*/
+		if (-600 < Dif_Step && Dif_Step < 600)
+		{
+			Speed_PID.Target = 0;				
+		}
+		if (Dif_Step > 1000)
+		{
+			Speed_PID.Target = -20;			
+		}
+		else if (Dif_Step < -1000)
+		{
+			Speed_PID.Target = 20;			
+		}
 
 		
 		/* PID*/
@@ -468,16 +468,16 @@ int Mode_1_Running(void)
 			MPU6050_Analysis();
 		}
 		
-//		oled_show_float(0, 1, Dif_Step, 4, 2);
-		oled_show_float(0, 1, Angle_PID.Kp, 4, 2);
-		oled_show_float(0, 2, Angle_PID.Ki, 4, 2);
-		oled_show_float(0, 3, Angle_PID.Kd, 4, 2);
-		oled_show_float(0, 4, Speed_PID.Kp, 4, 2);
-		oled_show_float(0, 5, Speed_PID.Ki, 4, 2);
-		oled_show_float(0, 6, Speed_PID.Kd, 4, 2);
-		oled_show_float(72, 1, Turn_PID.Kp, 4, 2);
-		oled_show_float(72, 2, Turn_PID.Ki, 4, 2);
-		oled_show_float(72, 3, Turn_PID.Kd, 4, 2);
+		oled_show_float(0, 1, Dif_Step, 4, 2);
+//		oled_show_float(0, 1, Angle_PID.Kp, 4, 2);
+//		oled_show_float(0, 2, Angle_PID.Ki, 4, 2);
+//		oled_show_float(0, 3, Angle_PID.Kd, 4, 2);
+//		oled_show_float(0, 4, Speed_PID.Kp, 4, 2);
+//		oled_show_float(0, 5, Speed_PID.Ki, 4, 2);
+//		oled_show_float(0, 6, Speed_PID.Kd, 4, 2);
+//		oled_show_float(72, 1, Turn_PID.Kp, 4, 2);
+//		oled_show_float(72, 2, Turn_PID.Ki, 4, 2);
+//		oled_show_float(72, 3, Turn_PID.Kd, 4, 2);
     }
 }
 
