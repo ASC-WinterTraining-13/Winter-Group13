@@ -108,19 +108,9 @@ float Track_Sensor_Get_Error(void)
 		+ inner_weight * sensor_avg[2]	//右1
 		+ outer_weight * sensor_avg[3];	//右2
 	
-	// 疑似有线
-	if ( fabs(Error) >  1.5)
-	{
-		Track_on_line_cnt ++;
-		Track_off_line_cnt = 0;
-		if (Track_on_line_cnt > 3)
-		{
-			Track_Sensor_State = TRACK_STATE_ON_LINE;
-			Track_on_line_cnt = 0;	
-		}
-	}
 	// 疑似无线
-	else
+	if ( sensor_avg[0] < 0.4f && sensor_avg[1] < 0.4f && sensor_avg[2] < 0.4f && sensor_avg[3] < 0.4f)
+
 	{
 		Track_off_line_cnt ++;
 		Track_on_line_cnt = 0;
@@ -129,6 +119,17 @@ float Track_Sensor_Get_Error(void)
 			Track_Sensor_State = TRACK_STATE_OFF_LINE;
 			Track_off_line_cnt = 0;
 		}		
+	}	
+	// 疑似有线
+	else
+	{
+		Track_on_line_cnt ++;
+		Track_off_line_cnt = 0;
+		if (Track_on_line_cnt > 3)
+		{
+			Track_Sensor_State = TRACK_STATE_ON_LINE;
+			Track_on_line_cnt = 0;	
+		}
 	}
 	
 	return Error;

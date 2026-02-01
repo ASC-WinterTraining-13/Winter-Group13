@@ -439,75 +439,99 @@ int Mode_2_Running(void)
 		/* 循迹处理*/
 		float Error = Track_Sensor_Get_Error();
 		
-		switch(Track_Sensor_State)//是否在线
+//		switch(Track_Sensor_State)//是否在线
+//		{
+//			//  有线
+//			case TRACK_STATE_ON_LINE:
+//			{
+//				if (Mode_2_Cur_State == STATE_IDLE)
+//				{
+//					Speed_PID.Target = 20;
+//					Turn_PID.Target = 0;
+//				}					
+//				else if (Mode_2_Cur_State == STATE_A_TO_B)
+//				{
+//					Mode_2_Cur_State = STATE_B_TO_C;
+//					BuzzerAndLED_Delay_Timer = 200;
+//				}
+//				else if (Mode_2_Cur_State == STATE_B_TO_C)
+//				{
+//					Speed_PID.Target = 20;
+//					Track_PID.Actual = Error;
+//					PID_Update(&Track_PID);
+//					Turn_PID.Target = Track_PID.Out;
+//				}
+//				else if (Mode_2_Cur_State == STATE_C_TO_D)
+//				{
+//					Mode_2_Cur_State = STATE_D_TO_A;
+//					BuzzerAndLED_Delay_Timer = 200;
+//				}
+//				else if (Mode_2_Cur_State == STATE_D_TO_A)
+//				{
+//					Speed_PID.Target = 20;
+//					Track_PID.Actual = Error;
+//					PID_Update(&Track_PID);
+//					Turn_PID.Target = Track_PID.Out;
+//				}
+//				break;
+//			}
+//			// 无线
+//			case TRACK_STATE_OFF_LINE:
+//			{
+//				if (Mode_2_Cur_State == STATE_IDLE)
+//				{
+//					Mode_2_Cur_State = STATE_A_TO_B;
+//				}
+//				else if (Mode_2_Cur_State == STATE_A_TO_B) 
+//				{
+//					Speed_PID.Target = 25;
+//					Turn_PID.Target = 0;
+//				}
+//				else if (Mode_2_Cur_State == STATE_B_TO_C)
+//				{
+//					Mode_2_Cur_State = STATE_C_TO_D;
+//					BuzzerAndLED_Delay_Timer = 200;
+//				}
+//				else if (Mode_2_Cur_State == STATE_C_TO_D)
+//				{
+//					Speed_PID.Target = 25;
+//					Turn_PID.Target = 0;					
+//				}
+//				else if (Mode_2_Cur_State == STATE_D_TO_A)
+//				{
+//					Mode_2_Cur_State = STATE_STOP;
+//					BuzzerAndLED_Delay_Timer = 200;
+//					Speed_PID.Target = 0;
+//					Turn_PID.Target = 0;
+//				}
+//				
+//				break;
+//			}			
+//		}
+		switch(Track_Sensor_State)
 		{
-			//  有线
 			case TRACK_STATE_ON_LINE:
 			{
-				if (Mode_2_Cur_State == STATE_IDLE)
-				{
-					Speed_PID.Target = 20;
-					Turn_PID.Target = 0;
-				}					
-				else if (Mode_2_Cur_State == STATE_A_TO_B)
-				{
-					Mode_2_Cur_State = STATE_B_TO_C;
-					BuzzerAndLED_Delay_Timer = 200;
-				}
-				else if (Mode_2_Cur_State == STATE_B_TO_C)
-				{
-					Speed_PID.Target = 20;
-					Track_PID.Actual = Error;
-					PID_Update(&Track_PID);
-					Turn_PID.Target = Track_PID.Out;
-				}
-				else if (Mode_2_Cur_State == STATE_C_TO_D)
-				{
-					Mode_2_Cur_State = STATE_D_TO_A;
-					BuzzerAndLED_Delay_Timer = 200;
-				}
-				else if (Mode_2_Cur_State == STATE_D_TO_A)
-				{
-					Speed_PID.Target = 20;
-					Track_PID.Actual = Error;
-					PID_Update(&Track_PID);
-					Turn_PID.Target = Track_PID.Out;
-				}
-				break;
-			}
-			// 无线
-			case TRACK_STATE_OFF_LINE:
-			{
-				if (Mode_2_Cur_State == STATE_IDLE)
-				{
-					Mode_2_Cur_State = STATE_A_TO_B;
-				}
-				else if (Mode_2_Cur_State == STATE_A_TO_B) 
-				{
-					Speed_PID.Target = 25;
-					Turn_PID.Target = 0;
-				}
-				else if (Mode_2_Cur_State == STATE_B_TO_C)
-				{
-					Mode_2_Cur_State = STATE_C_TO_D;
-					BuzzerAndLED_Delay_Timer = 200;
-				}
-				else if (Mode_2_Cur_State == STATE_C_TO_D)
-				{
-					Speed_PID.Target = 25;
-					Turn_PID.Target = 0;					
-				}
-				else if (Mode_2_Cur_State == STATE_D_TO_A)
-				{
-					Mode_2_Cur_State = STATE_STOP;
-					BuzzerAndLED_Delay_Timer = 200;
-					Speed_PID.Target = 0;
-					Turn_PID.Target = 0;
-				}
+				Speed_PID.Target = 20;
+				
+				Track_PID.Actual = Error;
+				PID_Update(&Track_PID);
+				Turn_PID.Target = Track_PID.Out;
+				
+				oled_show_string(70, 1,"ON_LINE");
+				
 				
 				break;
-			}			
+			}		
+			case TRACK_STATE_OFF_LINE:
+			{
+				oled_show_string(70, 1,"OF_LINE");
+				
+				
+				break;
+			}		
 		}
+		
 		
 		
 		/* 声光模块*/
