@@ -1,3 +1,15 @@
+/********************************************************************************************************************
+* 惯性导航系统，移植自https://gitee.com/Emma321/navigation
+* 移植涉及文件:
+* "nag_flash.c"		"nag_flash.h"
+* "kalman.c"		"kalman.h"
+* "navigation.c"	"navigation.h"
+* 
+* 本文件功能说明：
+* flash读写操作三次包装
+********************************************************************************************************************/
+
+
 #include "zf_common_headfile.h"
 #include "zf_driver_flash.h"  // 调用逐飞原厂Flash驱动
 #include "nag_flash.h"
@@ -17,7 +29,7 @@ void nag_flash_write_data(void)
     // 写入结束标记（最后一页）
     if(N.End_f == 1)
     {    
-        flash_union_buffer[MaxSize+2].uint32_type = N.Save_index;
+        flash_union_buffer[MaxSize - 1].uint32_type = N.Save_index;
         flash_write_page_from_buffer(0, Nag_End_Page);
     }
     
@@ -37,7 +49,7 @@ void nag_flash_read_data(void)
     {
         // 调用逐飞原厂接口：读取结束页数据到缓冲区
         flash_read_page_to_buffer(0, Nag_End_Page);
-        N.Save_index = flash_union_buffer[MaxSize+2].uint32_type;       
+        N.Save_index = flash_union_buffer[MaxSize - 1].uint32_type;       
         Index_R_f=1;
         flash_buffer_clear();
     }
