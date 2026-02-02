@@ -7,28 +7,28 @@
 #define PARAM_FLASH_SECTION     (127)
 #define PARAM_FLASH_PAGE        (3)
 
-//===== 五组PID参数在 flash_union_buffer[] 中的索引 =====
+/* 五组PID参数在 flash_union_buffer[] 中的索引*/
 // Angle_PID (0-2)
 #define FLASH_ANGLE_KP      0
 #define FLASH_ANGLE_KI      1
 #define FLASH_ANGLE_KD      2
 
 // Speed_PID (3-5)
-#define FLASH_2_KP      3
-#define FLASH_2_KI      4
-#define FLASH_2_KD      5
+#define FLASH_SPEED_KP      3
+#define FLASH_SPEED_KI      4
+#define FLASH_SPEED_KD      5
 
 // Turn_PID (6-8)
-#define FLASH_3_KP      6
-#define FLASH_3_KI      7
-#define FLASH_3_KD      8
+#define FLASH_TURN_KP      6
+#define FLASH_TURN_KI      7
+#define FLASH_TURN_KD      8
 
-// mode_4_pid (9-11)
-#define FLASH_4_KP      9
-#define FLASH_4_KI      10
-#define FLASH_4_KD      11
+// Track_pid (9-11)
+#define FLASH_TRACK_KP      9
+#define FLASH_TRACK_KI      10
+#define FLASH_TRACK_KD      11
 
-// mode_5_pid (12-14)
+// temp_5_pid (12-14)
 #define FLASH_5_KP      12
 #define FLASH_5_KI      13
 #define FLASH_5_KD      14
@@ -36,22 +36,22 @@
 // 预留扩展 (15-255)
 // 可以继续添加其他参数...
 
-//===== 简化访问宏（直接操作缓冲区）=====
+// 简化访问宏（直接操作缓冲区）
 #define ANGLE_KP    flash_union_buffer[FLASH_ANGLE_KP].float_type
 #define ANGLE_KI    flash_union_buffer[FLASH_ANGLE_KI].float_type
 #define ANGLE_KD    flash_union_buffer[FLASH_ANGLE_KD].float_type
 
-#define SPEED_KP    flash_union_buffer[FLASH_2_KP].float_type
-#define SPEED_KI    flash_union_buffer[FLASH_2_KI].float_type
-#define SPEED_KD    flash_union_buffer[FLASH_2_KD].float_type
+#define SPEED_KP    flash_union_buffer[FLASH_SPEED_KP].float_type
+#define SPEED_KI    flash_union_buffer[FLASH_SPEED_KI].float_type
+#define SPEED_KD    flash_union_buffer[FLASH_SPEED_KD].float_type
 		
-#define TURN_KP    flash_union_buffer[FLASH_3_KP].float_type
-#define TURN_KI    flash_union_buffer[FLASH_3_KI].float_type
-#define TURN_KD    flash_union_buffer[FLASH_3_KD].float_type
+#define TURN_KP    flash_union_buffer[FLASH_TURN_KP].float_type
+#define TURN_KI    flash_union_buffer[FLASH_TURN_KI].float_type
+#define TURN_KD    flash_union_buffer[FLASH_TURN_KD].float_type
 		
-#define TRACK_KP    flash_union_buffer[FLASH_4_KP].float_type
-#define TRACK_KI    flash_union_buffer[FLASH_4_KI].float_type
-#define TRACK_KD    flash_union_buffer[FLASH_4_KD].float_type
+#define TRACK_KP    flash_union_buffer[FLASH_TRACK_KP].float_type
+#define TRACK_KI    flash_union_buffer[FLASH_TRACK_KI].float_type
+#define TRACK_KD    flash_union_buffer[FLASH_TRACK_KD].float_type
 		
 #define TEMP_888_FUNC_5_KP    flash_union_buffer[FLASH_5_KP].float_type
 #define TEMP_888_FUNC_5_KI    flash_union_buffer[FLASH_5_KI].float_type

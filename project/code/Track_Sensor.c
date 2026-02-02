@@ -109,7 +109,7 @@ float Track_Sensor_Get_Error(void)
 		+ outer_weight * sensor_avg[3];	//右2
 	
 	// 疑似无线
-	if ( sensor_avg[0] < 0.4f && sensor_avg[1] < 0.4f && sensor_avg[2] < 0.4f && sensor_avg[3] < 0.4f)
+	if ( sensor_avg[0] < 0.4f && sensor_avg[1] < 0.4f && sensor_avg[2] < 0.4f && sensor_avg[3] < 0.4f )
 
 	{
 		Track_off_line_cnt ++;
