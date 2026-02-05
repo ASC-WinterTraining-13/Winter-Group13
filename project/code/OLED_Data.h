@@ -1,5 +1,5 @@
-#ifndef OLED_DATA_H
-#define OLED_DATA_H
+#ifndef __OLED_DATA_H
+#define __OLED_DATA_H
 
 #include <stdint.h>
 
@@ -32,12 +32,6 @@ extern const ChineseCell_t OLED_CF16x16[];
 
 /*图像数据声明*/
 extern const uint8_t Diode[];
-extern const uint8_t BiaoQingBao[];
-extern const uint8_t VeryLow[];
-extern const uint8_t Low[];
-extern const uint8_t Mediem[];
-extern const uint8_t High[];
-extern const uint8_t VeryHigh[];
 /*按照上面的格式，在这个位置加入新的图像数据声明*/
 //...
 

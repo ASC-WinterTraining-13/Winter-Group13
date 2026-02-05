@@ -1,103 +1,350 @@
+
+/***************************************************************************************
+  * 本程序由江协科技创建并免费开源共享
+  * 你可以任意查看、使用和修改，并应用到自己的项目之中
+  * 程序版权归江协科技所有，任何人或组织不得将其据为己有
+  * 
+  * 程序名称：				0.96寸OLED显示屏驱动程序（7针脚SPI接口）
+  * 程序创建时间：			2023.10.24
+  * 当前程序版本：			V2.0
+  * 当前版本发布时间：		2024.10.20
+  * 
+  * 江协科技官方网站：		jiangxiekeji.com
+  * 江协科技官方淘宝店：	jiangxiekeji.taobao.com
+  * 程序介绍及更新动态：	jiangxiekeji.com/tutorial/oled.html
+  * 
+  * 如果你发现程序中的漏洞或者笔误，可通过邮件向我们反馈：feedback@jiangxiekeji.com
+  * 发送邮件之前，你可以先到更新动态页面查看最新程序，如果此问题已经修改，则无需再发邮件
+  ***************************************************************************************
+  */
+
+
+
+#include "zf_driver_spi.h"
 #include "OLED.h"
-#include "zf_driver_soft_iic.h" // 包含逐飞官方软件I2C驱动
 #include <string.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdarg.h>
 
-#define OLED_SCL (A7)
-#define OLED_SDA (A5)
+/**
+  * 数据存储格式：
+  * 纵向8点，高位在下，先从左到右，再从上到下
+  * 每一个Bit对应一个像素点
+  * 
+  *      B0 B0                  B0 B0
+  *      B1 B1                  B1 B1
+  *      B2 B2                  B2 B2
+  *      B3 B3  ------------->  B3 B3 --
+  *      B4 B4                  B4 B4  |
+  *      B5 B5                  B5 B5  |
+  *      B6 B6                  B6 B6  |
+  *      B7 B7                  B7 B7  |
+  *                                    |
+  *  -----------------------------------
+  *  |   
+  *  |   B0 B0                  B0 B0
+  *  |   B1 B1                  B1 B1
+  *  |   B2 B2                  B2 B2
+  *  --> B3 B3  ------------->  B3 B3
+  *      B4 B4                  B4 B4
+  *      B5 B5                  B5 B5
+  *      B6 B6                  B6 B6
+  *      B7 B7                  B7 B7
+  * 
+  * 坐标轴定义：
+  * 左上角为(0, 0)点
+  * 横向向右为X轴，取值范围：0~127
+  * 纵向向下为Y轴，取值范围：0~63
+  * 
+  *       0             X轴           127 
+  *      .------------------------------->
+  *    0 |
+  *      |
+  *      |
+  *      |
+  *  Y轴 |
+  *      |
+  *      |
+  *      |
+  *   63 |
+  *      v
+  * 
+  */
 
-/* 全局变量 */
-uint8_t OLED_DisplayBuf[8][128]; // OLED显存数组
-static soft_iic_info_struct oled_iic; // 逐飞I2C结构体
 
-/* 通信协议适配层 */
+/*全局变量*********************/
+
+/**
+  * OLED显存数组
+  * 所有的显示函数，都只是对此显存数组进行读写
+  * 随后调用OLED_Update函数或OLED_UpdateArea函数
+  * 才会将显存数组的数据发送到OLED硬件，进行显示
+  */
+uint8_t OLED_DisplayBuf[8][128];
+
+/*********************全局变量*/
+
+
+/*引脚配置*********************/
+
+/**
+  * 函    数：OLED写D0（CLK）高低电平
+  * 参    数：要写入D0的电平值，范围：0/1
+  * 返 回 值：无
+  * 说    明：当上层函数需要写D0时，此函数会被调用
+  *           用户需要根据参数传入的值，将D0置为高电平或者低电平
+  *           当参数传入0时，置D0为低电平，当参数传入1时，置D0为高电平
+  */
+void OLED_W_D0(uint8_t BitValue)
+{
+	/*根据BitValue的值，将D0置高电平或者低电平*/
+	GPIO_WriteBit(GPIOB, GPIO_Pin_12, (BitAction)BitValue);
+}
+
+/**
+  * 函    数：OLED写D1（MOSI）高低电平
+  * 参    数：要写入D1的电平值，范围：0/1
+  * 返 回 值：无
+  * 说    明：当上层函数需要写D1时，此函数会被调用
+  *           用户需要根据参数传入的值，将D1置为高电平或者低电平
+  *           当参数传入0时，置D1为低电平，当参数传入1时，置D1为高电平
+  */
+void OLED_W_D1(uint8_t BitValue)
+{
+	/*根据BitValue的值，将D1置高电平或者低电平*/
+	GPIO_WriteBit(GPIOB, GPIO_Pin_13, (BitAction)BitValue);
+}
+
+/**
+  * 函    数：OLED写RES高低电平
+  * 参    数：要写入RES的电平值，范围：0/1
+  * 返 回 值：无
+  * 说    明：当上层函数需要写RES时，此函数会被调用
+  *           用户需要根据参数传入的值，将RES置为高电平或者低电平
+  *           当参数传入0时，置RES为低电平，当参数传入1时，置RES为高电平
+  */
+void OLED_W_RES(uint8_t BitValue)
+{
+	/*根据BitValue的值，将RES置高电平或者低电平*/
+	GPIO_WriteBit(GPIOB, GPIO_Pin_14, (BitAction)BitValue);
+}
+
+/**
+  * 函    数：OLED写DC高低电平
+  * 参    数：要写入DC的电平值，范围：0/1
+  * 返 回 值：无
+  * 说    明：当上层函数需要写DC时，此函数会被调用
+  *           用户需要根据参数传入的值，将DC置为高电平或者低电平
+  *           当参数传入0时，置DC为低电平，当参数传入1时，置DC为高电平
+  */
+void OLED_W_DC(uint8_t BitValue)
+{
+	/*根据BitValue的值，将DC置高电平或者低电平*/
+	GPIO_WriteBit(GPIOB, GPIO_Pin_15, (BitAction)BitValue);
+}
+
+/**
+  * 函    数：OLED写CS高低电平
+  * 参    数：要写入CS的电平值，范围：0/1
+  * 返 回 值：无
+  * 说    明：当上层函数需要写CS时，此函数会被调用
+  *           用户需要根据参数传入的值，将CS置为高电平或者低电平
+  *           当参数传入0时，置CS为低电平，当参数传入1时，置CS为高电平
+  */
+void OLED_W_CS(uint8_t BitValue)
+{
+	/*根据BitValue的值，将CS置高电平或者低电平*/
+	GPIO_WriteBit(GPIOA, GPIO_Pin_8, (BitAction)BitValue);
+}
+
+/**
+  * 函    数：OLED引脚初始化
+  * 参    数：无
+  * 返 回 值：无
+  * 说    明：当上层函数需要初始化时，此函数会被调用
+  *           用户需要将D0、D1、RES、DC和CS引脚初始化为推挽输出模式
+  */
+void OLED_GPIO_Init(void)
+{
+	uint32_t i, j;
+	
+	/*在初始化前，加入适量延时，待OLED供电稳定*/
+	for (i = 0; i < 1000; i ++)
+	{
+		for (j = 0; j < 1000; j ++);
+	}
+	
+	/*将D0、D1、RES、DC和CS引脚初始化为推挽输出模式*/
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
+	
+	GPIO_InitTypeDef GPIO_InitStructure;
+ 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_12;
+ 	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_13;
+ 	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_14;
+ 	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_15;
+ 	GPIO_Init(GPIOB, &GPIO_InitStructure);
+	GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8;
+ 	GPIO_Init(GPIOA, &GPIO_InitStructure);
+	
+	/*置引脚默认电平*/
+	OLED_W_D0(0);
+	OLED_W_D1(1);
+	OLED_W_RES(1);
+	OLED_W_DC(1);
+	OLED_W_CS(1);
+}
+
+/*********************引脚配置*/
+
+
+/*通信协议*********************/
+
+/**
+  * 函    数：SPI发送一个字节
+  * 参    数：Byte 要发送的一个字节数据，范围：0x00~0xFF
+  * 返 回 值：无
+  */
+void OLED_SPI_SendByte(uint8_t Byte)
+{
+	uint8_t i;
+	
+	/*循环8次，主机依次发送数据的每一位*/
+	for (i = 0; i < 8; i++)
+	{
+		/*使用掩码的方式取出Byte的指定一位数据并写入到D1线*/
+		/*两个!的作用是，让所有非零的值变为1*/
+		OLED_W_D1(!!(Byte & (0x80 >> i)));
+		OLED_W_D0(1);	//拉高D0，从机在D0上升沿读取SDA
+		OLED_W_D0(0);	//拉低D0，主机开始发送下一位数据
+	}
+}
 
 /**
   * 函    数：OLED写命令
-  * 参    数：Command 要写入的命令值
-  * 说    明：使用逐飞库的单字节写寄存器函数
+  * 参    数：Command 要写入的命令值，范围：0x00~0xFF
+  * 返 回 值：无
   */
 void OLED_WriteCommand(uint8_t Command)
 {
-    // 0x00 为 SSD1306 的命令控制字节
-    soft_iic_write_8bit_register(&oled_iic, 0x00, Command); 
+	OLED_W_CS(0);					//拉低CS，开始通信
+	OLED_W_DC(0);					//拉低DC，表示即将发送命令
+	OLED_SPI_SendByte(Command);		//写入指定命令
+	OLED_W_CS(1);					//拉高CS，结束通信
 }
 
 /**
   * 函    数：OLED写数据
-  * 参    数：Data 数据起始地址，Count 数量
-  * 说    明：使用逐飞库的多字节写寄存器函数
+  * 参    数：Data 要写入数据的起始地址
+  * 参    数：Count 要写入数据的数量
+  * 返 回 值：无
   */
 void OLED_WriteData(uint8_t *Data, uint8_t Count)
 {
-    // 0x40 为 SSD1306 的数据控制字节
-    soft_iic_write_8bit_registers(&oled_iic, 0x40, Data, Count);
+	uint8_t i;
+	
+	OLED_W_CS(0);					//拉低CS，开始通信
+	OLED_W_DC(1);					//拉高DC，表示即将发送数据
+	/*循环Count次，进行连续的数据写入*/
+	for (i = 0; i < Count; i ++)
+	{
+		OLED_SPI_SendByte(Data[i]);	//依次发送Data的每一个数据
+	}
+	OLED_W_CS(1);					//拉高CS，结束通信
 }
 
-/* 硬件配置 */
+/*********************通信协议*/
+
+
+/*硬件配置*********************/
 
 /**
   * 函    数：OLED初始化
-  * 说    明：替换原有的 GPIO 初始化，改为初始化逐飞 I2C 接口
+  * 参    数：无
+  * 返 回 值：无
+  * 说    明：使用前，需要调用此初始化函数
   */
 void OLED_Init(void)
 {
-    /* 1. 初始化软件 I2C
-       参数：结构体地址, 从机地址(7位), 延时(越小越快), SCL引脚, SDA引脚
-       注意：原代码地址 0x78 对应 7位地址 0x3C */
-    soft_iic_init(&oled_iic, 0x3C, 10, OLED_SCL, OLED_SDA);
+	OLED_GPIO_Init();			//先调用底层的端口初始化
+	
+	/*写入一系列的命令，对OLED进行初始化配置*/
+	OLED_WriteCommand(0xAE);	//设置显示开启/关闭，0xAE关闭，0xAF开启
+	
+	OLED_WriteCommand(0xD5);	//设置显示时钟分频比/振荡器频率
+	OLED_WriteCommand(0x80);	//0x00~0xFF
+	
+	OLED_WriteCommand(0xA8);	//设置多路复用率
+	OLED_WriteCommand(0x3F);	//0x0E~0x3F
+	
+	OLED_WriteCommand(0xD3);	//设置显示偏移
+	OLED_WriteCommand(0x00);	//0x00~0x7F
+	
+	OLED_WriteCommand(0x40);	//设置显示开始行，0x40~0x7F
+	
+	OLED_WriteCommand(0xA1);	//设置左右方向，0xA1正常，0xA0左右反置
+	
+	OLED_WriteCommand(0xC8);	//设置上下方向，0xC8正常，0xC0上下反置
 
-    /* 2. OLED 硬件配置指令 (保持原样) */
-    OLED_WriteCommand(0xAE); // 关闭显示
-    OLED_WriteCommand(0xD5); OLED_WriteCommand(0x80); // 设置时钟
-    OLED_WriteCommand(0xA8); OLED_WriteCommand(0x3F); // 设置复用率
-    OLED_WriteCommand(0xD3); OLED_WriteCommand(0x00); // 设置偏移
-    OLED_WriteCommand(0x40); // 设置开始行
-    OLED_WriteCommand(0xA1); // 左右反置（根据实际屏幕调整）
-    OLED_WriteCommand(0xC8); // 上下反置
-    OLED_WriteCommand(0xDA); OLED_WriteCommand(0x12);
-    OLED_WriteCommand(0x81); OLED_WriteCommand(0xCF); // 对比度
-    OLED_WriteCommand(0xD9); OLED_WriteCommand(0xF1);
-    OLED_WriteCommand(0xDB); OLED_WriteCommand(0x30);
-    OLED_WriteCommand(0xA4); // 全屏显示开启
-    OLED_WriteCommand(0xA6); // 正常显示
-    OLED_WriteCommand(0x8D); OLED_WriteCommand(0x14); // 充电泵
-    OLED_WriteCommand(0xAF); // 开启显示
+	OLED_WriteCommand(0xDA);	//设置COM引脚硬件配置
+	OLED_WriteCommand(0x12);
+	
+	OLED_WriteCommand(0x81);	//设置对比度
+	OLED_WriteCommand(0xCF);	//0x00~0xFF
 
-    OLED_Clear();
-    OLED_Update();
+	OLED_WriteCommand(0xD9);	//设置预充电周期
+	OLED_WriteCommand(0xF1);
+
+	OLED_WriteCommand(0xDB);	//设置VCOMH取消选择级别
+	OLED_WriteCommand(0x30);
+
+	OLED_WriteCommand(0xA4);	//设置整个显示打开/关闭
+
+	OLED_WriteCommand(0xA6);	//设置正常/反色显示，0xA6正常，0xA7反色
+
+	OLED_WriteCommand(0x8D);	//设置充电泵
+	OLED_WriteCommand(0x14);
+
+	OLED_WriteCommand(0xAF);	//开启显示
+	
+	OLED_Clear();				//清空显存数组
+	OLED_Update();				//更新显示，清屏，防止初始化后未显示内容时花屏
 }
 
 /**
-  * 函    数：OLED设置光标位置
+  * 函    数：OLED设置显示光标位置
+  * 参    数：Page 指定光标所在的页，范围：0~7
+  * 参    数：X 指定光标所在的X轴坐标，范围：0~127
+  * 返 回 值：无
+  * 说    明：OLED默认的Y轴，只能8个Bit为一组写入，即1页等于8个Y轴坐标
   */
 void OLED_SetCursor(uint8_t Page, uint8_t X)
 {
-    OLED_WriteCommand(0xB0 | Page);                 // 设置页
-    OLED_WriteCommand(0x10 | ((X & 0xF0) >> 4));    // X高位
-    OLED_WriteCommand(0x00 | (X & 0x0F));           // X低位
+	/*如果使用此程序驱动1.3寸的OLED显示屏，则需要解除此注释*/
+	/*因为1.3寸的OLED驱动芯片（SH1106）有132列*/
+	/*屏幕的起始列接在了第2列，而不是第0列*/
+	/*所以需要将X加2，才能正常显示*/
+//	X += 2;
+	
+	/*通过指令设置页地址和列地址*/
+	OLED_WriteCommand(0xB0 | Page);					//设置页位置
+	OLED_WriteCommand(0x10 | ((X & 0xF0) >> 4));	//设置X位置高4位
+	OLED_WriteCommand(0x00 | (X & 0x0F));			//设置X位置低4位
 }
 
-/* --- 以下功能函数与原 STM32 版本完全一致，无需修改 --- */
+/*********************硬件配置*/
 
-void OLED_Update(void)
-{
-    for (uint8_t j = 0; j < 8; j++)
-    {
-        OLED_SetCursor(j, 0);
-        OLED_WriteData(OLED_DisplayBuf[j], 128); // 批量发送一整页数据
-    }
-}
 
-void OLED_Clear(void)
-{
-    memset(OLED_DisplayBuf, 0x00, sizeof(OLED_DisplayBuf));
-}
+/*工具函数*********************/
 
-/* 绘图和显示函数（ShowChar, ShowString, DrawLine 等）继续保留... */
-// 请直接将原 OLED.c 中剩下的 OLED_ShowChar, OLED_DrawLine 等函数拷贝到此处即可
+/*工具函数仅供内部部分函数使用*/
+
 /**
   * 函    数：次方函数
   * 参    数：X 底数
@@ -113,9 +360,6 @@ uint32_t OLED_Pow(uint32_t X, uint32_t Y)
 	}
 	return Result;
 }
-
-
-/*********************工具函数*******************/
 
 /**
   * 函    数：判断指定点是否在指定多边形内部
@@ -171,10 +415,32 @@ uint8_t OLED_IsInAngle(int16_t X, int16_t Y, int16_t StartAngle, int16_t EndAngl
 	return 0;		//不满足以上条件，则判断判定指定点不在指定角度
 }
 
-/*********************工具函数*******************/
+/*********************工具函数*/
+
 
 /*功能函数*********************/
 
+/**
+  * 函    数：将OLED显存数组更新到OLED屏幕
+  * 参    数：无
+  * 返 回 值：无
+  * 说    明：所有的显示函数，都只是对OLED显存数组进行读写
+  *           随后调用OLED_Update函数或OLED_UpdateArea函数
+  *           才会将显存数组的数据发送到OLED硬件，进行显示
+  *           故调用显示函数后，要想真正地呈现在屏幕上，还需调用更新函数
+  */
+void OLED_Update(void)
+{
+	uint8_t j;
+	/*遍历每一页*/
+	for (j = 0; j < 8; j ++)
+	{
+		/*设置光标位置为每一页的第一列*/
+		OLED_SetCursor(j, 0);
+		/*连续写入128个数据，将显存数组的数据写入到OLED硬件*/
+		OLED_WriteData(OLED_DisplayBuf[j], 128);
+	}
+}
 
 /**
   * 函    数：将OLED显存数组部分更新到OLED屏幕
@@ -214,6 +480,24 @@ void OLED_UpdateArea(int16_t X, int16_t Y, uint8_t Width, uint8_t Height)
 			OLED_SetCursor(j, X);
 			/*连续写入Width个数据，将显存数组的数据写入到OLED硬件*/
 			OLED_WriteData(&OLED_DisplayBuf[j][X], Width);
+		}
+	}
+}
+
+/**
+  * 函    数：将OLED显存数组全部清零
+  * 参    数：无
+  * 返 回 值：无
+  * 说    明：调用此函数后，要想真正地呈现在屏幕上，还需调用更新函数
+  */
+void OLED_Clear(void)
+{
+	uint8_t i, j;
+	for (j = 0; j < 8; j ++)				//遍历8页
+	{
+		for (i = 0; i < 128; i ++)			//遍历128列
+		{
+			OLED_DisplayBuf[j][i] = 0x00;	//将显存数组数据全部清零
 		}
 	}
 }
@@ -1209,16 +1493,6 @@ void OLED_DrawArc(int16_t X, int16_t Y, uint8_t Radius, int16_t StartAngle, int1
 
 /*********************功能函数*/
 
-/*********************TEST */
-void OLED_Test(void)
-{
-	OLED_Clear();							//清屏
-	OLED_ShowString(0, 0, "OLED TEST", OLED_8X16);	//显示字符串
-	OLED_Update();					//更新显示
-	system_delay_ms(2000);				//延时2秒
-	
-	OLED_Clear();							//清屏
-	OLED_ShowImage(0, 0, 16, 16, Diode);	//显示图像
-	OLED_Update();					//更新显示
-	system_delay_ms(2000);						//延时2秒
-}
+
+/*****************江协科技|版权所有****************/
+/*****************jiangxiekeji.com*****************/

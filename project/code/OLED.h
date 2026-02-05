@@ -1,9 +1,8 @@
-#ifndef BSP_OLED_H
-#define BSP_OLED_H
+#ifndef __OLED_H
+#define __OLED_H
 
-#include "zf_common_headfile.h"  // 修改为 MM32 的设备头文件
-#include "OLED_Data.h"
 #include <stdint.h>
+#include "OLED_Data.h"
 
 /*参数宏定义*********************/
 
@@ -55,13 +54,10 @@ void OLED_DrawCircle(int16_t X, int16_t Y, uint8_t Radius, uint8_t IsFilled);
 void OLED_DrawEllipse(int16_t X, int16_t Y, uint8_t A, uint8_t B, uint8_t IsFilled);
 void OLED_DrawArc(int16_t X, int16_t Y, uint8_t Radius, int16_t StartAngle, int16_t EndAngle, uint8_t IsFilled);
 
-/*Test*/
-void OLED_Test(void);
 /*********************函数声明*/
 
-/* 写引脚逻辑封装 */
-#define OLED_W_SCL(x)       GPIO_WriteBit(OLED_SCL_PORT, OLED_SCL_PIN, (BitAction)(x))
-#define OLED_W_SDA(x)       GPIO_WriteBit(OLED_SDA_PORT, OLED_SDA_PIN, (BitAction)(x))
-
-
 #endif
+
+
+/*****************江协科技|版权所有****************/
+/*****************jiangxiekeji.com*****************/
