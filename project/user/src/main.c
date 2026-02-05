@@ -69,6 +69,5 @@ int main(void)
     {
         //显示菜单
 		Menu_Show();
-
     }
 }
