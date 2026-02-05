@@ -101,34 +101,34 @@ void Balance_PID_Contorl(void)
 		return;
 	}
 	
-	// 角度环PID计算
-	Angle_PID.Actual = Angle_Result;
-	PID_Update(&Angle_PID);
-	
-	// 换算
-	AveSpeed = (LeftSpeed + RightSpeed) / 2.0;		//平均速度
-	DifSpeed = LeftSpeed - RightSpeed;				//差分速度
-	
-	Speed_PID.Actual = AveSpeed;
-	PID_Update(&Speed_PID);	
-	
-	AvePWM = - Angle_PID.Out + Speed_PID.Out; 
-	
-	//转向环
-	Turn_PID.Actual = DifSpeed;
-	PID_Update(&Turn_PID);
-	DifPWM = Turn_PID.Out;
-	
-	// 输出换算
-	LeftPWM  = AvePWM + DifPWM / 2;
-	RightPWM = AvePWM - DifPWM / 2;						
-	
-	// 输出限幅
-	if (LeftPWM  > 10000){LeftPWM = 10000;} else if (LeftPWM < -10000){LeftPWM = -10000;}
-	if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
-	
-	// 设置PWM
-	motor_SetPWM(1, LeftPWM);
-	motor_SetPWM(2, RightPWM);
+//	// 角度环PID计算
+//	Angle_PID.Actual = Angle_Result;
+//	PID_Update(&Angle_PID);
+//	
+//	// 换算
+//	AveSpeed = (LeftSpeed + RightSpeed) / 2.0;		//平均速度
+//	DifSpeed = LeftSpeed - RightSpeed;				//差分速度
+//	
+//	Speed_PID.Actual = AveSpeed;
+//	PID_Update(&Speed_PID);	
+//	
+//	AvePWM = - Angle_PID.Out + Speed_PID.Out; 
+//	
+//	//转向环
+//	Turn__PID.Actual = DifSpeed;
+//	PID_Update(&Turn__PID);
+//	DifPWM = Turn__PID.Out;
+//	
+//	// 输出换算
+//	LeftPWM  = AvePWM + DifPWM / 2;
+//	RightPWM = AvePWM - DifPWM / 2;						
+//	
+//	// 输出限幅
+//	if (LeftPWM  > 10000){LeftPWM = 10000;} else if (LeftPWM < -10000){LeftPWM = -10000;}
+//	if (RightPWM > 10000){RightPWM = 10000;}else if (RightPWM < -10000){RightPWM = -10000;}
+//	
+//	// 设置PWM
+//	motor_SetPWM(1, LeftPWM);
+//	motor_SetPWM(2, RightPWM);
 	
 }

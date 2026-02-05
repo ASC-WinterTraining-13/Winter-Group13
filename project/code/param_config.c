@@ -38,9 +38,16 @@ volatile uint8_t mpu6050_analysis_enable = 0;
 /*[S] PID [S]------------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
-// 注：pid结构体，位于"PID.h"
+// 注：pid结构体类型定义，位于"PID.h"
 
-// 角度环
+// 角速度环PID参数
+PID_t Rate__PID = {
+	.OutMax = 8000,
+	.OutMin = -8000,
+
+	
+};
+// 角度环PID参数
 PID_t Angle_PID = {
 	.OutMax = 8000,
 	.OutMin = -8000,
@@ -49,7 +56,7 @@ PID_t Angle_PID = {
 	.ErrorIntMin = -3000,			//积分限幅
 	.OutOffset = 0,					//输出偏移
 };
-// 速度环
+// 速度环PID参数
 PID_t Speed_PID = {	
 	.OutMax = 6000,
 	.OutMin = -6000,
@@ -58,8 +65,8 @@ PID_t Speed_PID = {
 	.ErrorIntMin = -1500,			//积分限幅
 	.OutOffset = 0,					//输出偏移
 };
-// 转向环
-PID_t Turn_PID = {	
+// 转向环PID参数
+PID_t Turn__PID = {	
 	.OutMax = 5000,
 	.OutMin = -5000,
 	.IntSepThresh = 5000,			//积分分离阈值（误差大于阈值 不积分/积分清零）
@@ -67,7 +74,7 @@ PID_t Turn_PID = {
 	.ErrorIntMin = -3000,			//积分限幅
 	.OutOffset = 0,					//输出偏移	
 };
-// 循迹pid
+// 循迹环PID参数
 PID_t Track_PID = {	
 	.OutMax = 30,
 	.OutMin = -30,
@@ -76,18 +83,15 @@ PID_t Track_PID = {
 	.ErrorIntMin = -10,			//积分限幅
 	.OutOffset = 0,					//输出偏移	
 };
-// 待定
-PID_t TEMP_888_FUNC_5_PID = {
-	
-};
 
-// pid参数修改步长值（非蓝牙模块）
+
+// PID参数修改步长值（非蓝牙模块）
 const float PID_STEPS[5][3] = {
-    {1.0f, 0.1f, 0.1f},   	// Angle_PID：Kp=1.0, Ki=0.01, Kd=0.1
-    {0.5f, 0.02f, 0.05f}, 	// Speed_PID：Kp=0.5, Ki=0.02, Kd=0.05
-    {0.2f, 0.005f, 0.2f},  	// Turn_PID：Kp=0.2, Ki=0.005, Kd=0.2
-    {0.1f, 0.01f, 0.1f},  	// ?????_PID：Kp=0.8, Ki=0.015, Kd=0.1
-    {0.1f, 0.01f, 0.1f}   	// ?????_PID：Kp=0.3, Ki=0.01, Kd=0.15
+    {1.0f, 0.1f, 1.0f},   	// Rate__PID：Kp=1.0, Ki=0.01, Kd=0.1
+    {0.1f, 0.1f, 0.1f}, 	// Angle_PID：Kp=0.5, Ki=0.02, Kd=0.05
+    {0.1f, 0.1f, 0.1f},  	// Speed_PID：Kp=0.2, Ki=0.005, Kd=0.2
+    {0.1f, 0.1f, 0.1f},  	// Turn__PID：Kp=0.8, Ki=0.015, Kd=0.1
+    {0.1f, 0.1f, 0.1f}   	// Track_PID：Kp=0.3, Ki=0.01, Kd=0.15
 };
 
 /*******************************************************************************************************************/

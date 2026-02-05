@@ -92,91 +92,85 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         if(name != NULL && value != NULL)
         {
 			
-		// 更改0和1来决定使用那一块
-		#if 0
-			// 
-            if(strcmp(name, "A_P") == 0)
-            {
+			if(strcmp(name, "Ra_P") == 0)
+			{
+				float_value = (float)atof(value);
+				RATE__KP = float_value;
+			}
+			else if(strcmp(name, "Ra_I") == 0)
+			{
+				float_value = (float)atof(value);
+				RATE__KI = float_value;
+			}
+			else if(strcmp(name, "Ra_D") == 0)
+			{
+				float_value = (float)atof(value);
+				RATE__KD = float_value;
+			}
+			else if(strcmp(name, "An_P") == 0)
+			{
 				float_value = (float)atof(value);
 				ANGLE_KP = float_value;
-            }
-            else if(strcmp(name, "A_I") == 0)
-            {
-              printf("slider 2 value: %.2f\r\n", float_value);
+			}
+			else if(strcmp(name, "An_I") == 0)
+			{
 				float_value = (float)atof(value);
 				ANGLE_KI = float_value;
-            }
-			else if(strcmp(name, "A_D") == 0)
-            {
+			}
+			else if(strcmp(name, "An_D") == 0)
+			{
 				float_value = (float)atof(value);
 				ANGLE_KD = float_value;
-            }
-			else if(strcmp(name, "S_P") == 0)
-            {
+			}
+			else if(strcmp(name, "Sp_P") == 0)
+			{
 				float_value = (float)atof(value);
 				SPEED_KP = float_value;
-            }
-            else if(strcmp(name, "S_I") == 0)
-            {
+			}
+			else if(strcmp(name, "Sp_I") == 0)
+			{
 				float_value = (float)atof(value);
 				SPEED_KI = float_value;
-            }
-			else if(strcmp(name, "S_D") == 0)
-            {
+			}
+			else if(strcmp(name, "Sp_D") == 0)
+			{
 				float_value = (float)atof(value);
 				SPEED_KD = float_value;
-            }
-			else if(strcmp(name, "T_P") == 0)
-            {
+			}
+			else if(strcmp(name, "Tu_P") == 0)
+			{
 				float_value = (float)atof(value);
-				TURN_KP = float_value;
-            }
-            else if(strcmp(name, "T_I") == 0)
-            {
+				TURN__KP = float_value;
+			}
+			else if(strcmp(name, "Tu_I") == 0)
+			{
 				float_value = (float)atof(value);
-				TURN_KI = float_value;
-            }
-			else if(strcmp(name, "T_D") == 0)
-            {
+				TURN__KI = float_value;
+			}
+			else if(strcmp(name, "Tu_D") == 0)
+			{
 				float_value = (float)atof(value);
-				TURN_KD = float_value;
-            }
-		#else
-			if(strcmp(name, "Tr_P") == 0)
-            {
+				TURN__KD = float_value;
+			}
+			else if(strcmp(name, "Tu_P") == 0)
+			{
 				float_value = (float)atof(value);
 				TRACK_KP = float_value;
-            }
-            else if(strcmp(name, "Tr_I") == 0)
-            {
-              printf("slider 2 value: %.2f\r\n", float_value);
+			}
+			else if(strcmp(name, "Tu_I") == 0)
+			{
 				float_value = (float)atof(value);
 				TRACK_KI = float_value;
-            }
-			else if(strcmp(name, "Tr_D") == 0)
-            {
+			}
+			else if(strcmp(name, "Tu_D") == 0)
+			{
 				float_value = (float)atof(value);
 				TRACK_KD = float_value;
-            }
-			else if(strcmp(name, "OUT_W") == 0)
-            {
-              printf("slider 2 value: %.2f\r\n", float_value);
-				float_value = (float)atof(value);
-				outer_weight = float_value;
-            }
-			else if(strcmp(name, "INN_W") == 0)
-            {
-				float_value = (float)atof(value);
-				inner_weight = float_value;
-            }
-			
-		#endif
-			
-			
+			}
+		
 			Param_SyncToPID();//同步pid到计算变量
-			
+	
         }
-
     }
     
     // ========== 摇杆事件处理 ==========
@@ -194,7 +188,7 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 		// 速度环测试摇杆
 		Speed_PID.Target = lv / 5.0f ;	//控制目标速度
 		// 转向环测试摇杆
-		Turn_PID.Target = rh / 2.0;		
+		Turn__PID.Target = rh / 2.0;		
         
 //        printf("Joystick: LH=%d, LV=%d, RH=%d, RV=%d\r\n", lh, lv, rh, rv);
 //        // 例如：可用于控制机器人方向

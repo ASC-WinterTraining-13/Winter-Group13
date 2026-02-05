@@ -44,11 +44,11 @@ extern volatile uint8_t mpu6050_analysis_enable;
 // 注：pid结构体，位于"PID.h"
 
 // 定义PID
-extern PID_t Angle_PID;							// 角度环
-extern PID_t Speed_PID;							// 速度环
-extern PID_t Turn_PID;							// 转向环
-extern PID_t Track_PID;				// 待定
-extern PID_t TEMP_888_FUNC_5_PID;				// 待定
+extern PID_t Rate__PID;				// 角速度环PID参数
+extern PID_t Angle_PID;				// 角度环PID参数
+extern PID_t Speed_PID;				// 速度环PID参数
+extern PID_t Turn__PID;				// 转向环PID参数
+extern PID_t Track_PID;				// 循迹环PID参数
 
 // pid参数修改步长值（非蓝牙模块）
 extern const float PID_STEPS[5][3];

@@ -3,39 +3,21 @@
 
 // 默认参数值（首次使用或恢复出厂设置时使用）
 static const float DEFAULT_PARAMS[15] = {
-    // Angle_PID(索引 0-2)
-    453.0f, 0.0f, 340.0f,
-    
-    // Speed_PID (索引 3-5)
-    -78.1f, -0.95f, 0.0f,
-    
-    // Turn_pid (索引 6-8)
-    100.0f, 0.0f, 0.0f,
-    
-    // 4_pid (索引 9-11)
+    // Rate__PID (索引 0-2)
     0.0f, 0.0f, 0.0f,
     
-    // 5_pid (索引 12-14)
+    // Angle_PID (索引 3-5)
+    0.0f, 0.0f, 0.0f,
+    
+    // Speed_PID (索引 6-8)
+    0.0f, 0.0f, 0.0f,
+    
+    // Turn__PID (索引 9-11)
+    0.0f, 0.0f, 0.0f,
+    
+    // Track_PID (索引 12-14)
     0.0f, 0.0f, 0.0f
 };
-
-//static const float DEFAULT_PARAMS[15] = {
-//    // Angle_PID(索引 0-2)
-//    453.0f, 0.0f, 340.0f,
-//    
-//    // Speed_PID (索引 3-5)
-//    -78.1f, -0.95f, 0.0f,
-//    
-//    // Turn_pid (索引 6-8)
-//    100.0f, 0.0f, 0.0f,
-//    
-//    // 4_pid (索引 9-11)
-//    0.0f, 0.0f, 0.0f,
-//    
-//    // 5_pid (索引 12-14)
-//    0.0f, 0.0f, 0.0f
-//};
-
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     加载默认参数到缓冲区
@@ -71,30 +53,30 @@ void Param_Init(void)
         // 写入Flash
         flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);		
     }
-		// 角度环pid
-		Angle_PID.Kp = ANGLE_KP;
-		Angle_PID.Ki = ANGLE_KI;
-		Angle_PID.Kd = ANGLE_KD;
+		// 角速度环PID
+		Rate__PID.Kp = RATE__KP;
+		Rate__PID.Ki = RATE__KI;
+		Rate__PID.Kd = RATE__KD;
 		
-		// 速度环pid
+		// 角度环PID
+		Angle_PID.Kp = ANGLE_KP;
+        Angle_PID.Ki = ANGLE_KI;
+        Angle_PID.Kd = ANGLE_KD;
+		
+		// 速度环PID
 		Speed_PID.Kp = SPEED_KP;
         Speed_PID.Ki = SPEED_KI;
         Speed_PID.Kd = SPEED_KD;
 		
-		// 转向环pid
-		Turn_PID.Kp = TURN_KP;
-        Turn_PID.Ki = TURN_KI;
-        Turn_PID.Kd = TURN_KD;
+		// 转向环PID
+		Turn__PID.Kp = TURN__KP;
+        Turn__PID.Ki = TURN__KI;
+        Turn__PID.Kd = TURN__KD;
 		
-		// 循迹环pid
+		// 循迹环PID
 		Track_PID.Kp = TRACK_KP;
         Track_PID.Ki = TRACK_KI;
         Track_PID.Kd = TRACK_KD;
-		
-		//5
-		TEMP_888_FUNC_5_PID.Kp = TEMP_888_FUNC_5_KP;
-        TEMP_888_FUNC_5_PID.Ki = TEMP_888_FUNC_5_KI;
-        TEMP_888_FUNC_5_PID.Kd = TEMP_888_FUNC_5_KD;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -127,28 +109,28 @@ void Param_Erase(void)
 
 void Param_SyncToPID(void)
 {
-    // 角度环pid
+    // 角速度环PID
+    Rate__PID.Kp = RATE__KP;
+    Rate__PID.Ki = RATE__KI;
+    Rate__PID.Kd = RATE__KD;
+    
+    // 角度环PID
     Angle_PID.Kp = ANGLE_KP;
     Angle_PID.Ki = ANGLE_KI;
     Angle_PID.Kd = ANGLE_KD;
     
-    // 速度环pid
+    // 速度环PID
     Speed_PID.Kp = SPEED_KP;
     Speed_PID.Ki = SPEED_KI;
     Speed_PID.Kd = SPEED_KD;
     
-    // 转向环pid
-    Turn_PID.Kp = TURN_KP;
-    Turn_PID.Ki = TURN_KI;
-    Turn_PID.Kd = TURN_KD;
-    
-    // 循迹环pid
+    // 转向环PID
+    Turn__PID.Kp = TURN__KP;
+    Turn__PID.Ki = TURN__KI;
+    Turn__PID.Kd = TURN__KD;
+
+	// 循迹环PID
     Track_PID.Kp = TRACK_KP;
     Track_PID.Ki = TRACK_KI;
     Track_PID.Kd = TRACK_KD;
-//    
-//    //5
-//    TEMP_888_FUNC_5_PID.Kp = TEMP_888_FUNC_5_KP;
-//    TEMP_888_FUNC_5_PID.Ki = TEMP_888_FUNC_5_KI;
-//    TEMP_888_FUNC_5_PID.Kd = TEMP_888_FUNC_5_KD;
 }
