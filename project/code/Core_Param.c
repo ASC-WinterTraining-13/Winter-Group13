@@ -8,28 +8,28 @@
 /*[S] 菜单样式 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
-//参数选择界面
+// 参数选择界面
 void Core_Param_UI(uint8_t Page)
 {
 	switch(Page)
 	{
-		 //第一页
+		 // 第一页
 		case 1:
 		{
 			oled_show_string(0, 0, "Param");
 			oled_show_string(0, 1, "===");
-			oled_show_string(2, 2, " Rate_");
-			oled_show_string(2, 3, " Angle");
-			oled_show_string(2, 4, " Speed ");
-			oled_show_string(2, 5, " Turn_");
-			oled_show_string(2, 6, " Track");
+			oled_show_string(2, 2, " Rate__PID");
+			oled_show_string(2, 3, " Angle_PID");
+			oled_show_string(2, 4, " Speed_PID ");
+			oled_show_string(2, 5, " Turn__PID");
+			oled_show_string(2, 6, " Track_PID");
 			
 			break;
 		}
 	}
 }
 
-//UI补丁：针对选择PID参数
+// UI补丁：针对选择PID参数
 void Core_Param_Show_PID_Num_UI(PID_t *p)
 {
 	oled_show_float(28, 2, p->Kp, 4, 2);
@@ -37,12 +37,12 @@ void Core_Param_Show_PID_Num_UI(PID_t *p)
 	oled_show_float(28, 4, p->Kd, 4, 2);
 }
 
-//PID参数更改界面
+// PID参数更改界面
 void Core_Param_Set_PID_UI(uint8_t Page)
 {
     switch(Page)
 	{      
-        //第一页
+        // 第一页
         case 1:
         {
 
@@ -77,12 +77,12 @@ static void Sync_PID_To_Buffer(PID_t *p, uint8_t PID_Num)
 
 void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
 {
-    //指向要修改的参数的指针
+    // 指向要修改的参数的指针
     float* current_param = NULL;
     float step_value = 0.0f;
-    uint8_t row = 0;  //数据对应的显示行号
+    uint8_t row = 0;  // 数据对应的显示行号
     
-    //根据选项确定要修改的参数
+    // 根据选项确定要修改的参数
     switch (K_Num)
     {
         case 1:  // Kp
@@ -111,7 +111,7 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
     
     while(1)
     {              
-        /*按键解析*/
+        /* 按键解析*/
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
         {
             key_clear_state(KEY_UP);
@@ -148,28 +148,29 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
 
 /*[模式内菜单子界面]*/
 
-//参数设置选项数量
+// 参数设置选项数量
 #define OPT_NUM         3
 
 int Set_Core_Param(uint8_t PID_Num)
 {
-    //参数设置选项光标 标志位
-    static uint8_t Param_flag = 1;
+    // 参数设置选项光标 标志位
+    uint8_t Param_flag = 1;
     
-    //显示
+    // 显示
     oled_set_font(OLED_6X8_FONT);  
     Core_Param_Set_PID_UI(1);
     oled_show_string(0, 2, ">");
     
     while(1)
     {
-        //存储确认键被按下时Param_flag的值的临时变量，默认为无效值0
+        // 存储确认键被按下时Param_flag的值的临时变量，默认为无效值0
         uint8_t Param_flag_temp = 0;
         
-        //上/下按键是否被按下过
+        // 上/下按键是否被按下过
         uint8_t key_pressed = 0;  
                 
-        /*按键解析*/
+		
+        /* 按键解析*/
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
         {
             key_pressed = 1;
@@ -196,8 +197,9 @@ int Set_Core_Param(uint8_t PID_Num)
             //返回上一级界面
             return 0;
         }
+		
         
-        /*数据更改模式*/
+        /* 数据更改模式*/
         if (Param_flag_temp)
         {
             switch(PID_Num)
@@ -225,8 +227,9 @@ int Set_Core_Param(uint8_t PID_Num)
 			}
         }        
         
-        /*显示更新*/
-        //判断界面是否需要更新
+		
+        /* 显示更新*/
+        // 判断界面是否需要更新
         if (key_pressed)
         {
 			oled_show_string(0, 2, " ");
@@ -238,12 +241,12 @@ int Set_Core_Param(uint8_t PID_Num)
     }
 }
 
-//参数设置选项数量
+// 参数设置选项数量
 #define CORE_PARAM_NUM         5
 
 int Core_Param_Menu(void)
 {
-	//参数数组选项光标 标志位
+	// 参数数组选项光标 标志位
     static uint8_t Core_Param_flag = 1;
 	
 	oled_set_font(OLED_6X8_FONT); 
@@ -252,13 +255,14 @@ int Core_Param_Menu(void)
 	
 	while(1)
 	{
-		//存储确认键被按下时Core_Param_flag的值的临时变量，默认为无效值0
+		// 存储确认键被按下时Core_Param_flag的值的临时变量，默认为无效值0
         uint8_t Core_Param_flag_temp = 0;
         
-        //上/下按键是否被按下过
+        // 上/下按键是否被按下过
         uint8_t key_pressed = 0;
         
-        /*按键解析*/
+		
+        /* 按键解析*/
         if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
         {
             key_pressed = 1;
@@ -285,8 +289,9 @@ int Core_Param_Menu(void)
             
             return 0;
         }
+		
         
-        /*页面跳转*/
+        /* 页面跳转*/
         if (1 <= Core_Param_flag_temp && Core_Param_flag_temp <= 5)
         {
             oled_clear();
@@ -327,7 +332,8 @@ int Core_Param_Menu(void)
             oled_show_string(0, Core_Param_flag+1, ">");
         }
 
-        /*显示更新*/
+		
+        /* 显示更新*/
         if (key_pressed)
         {
 			if (1 <= Core_Param_flag && Core_Param_flag <= 5)
@@ -336,11 +342,8 @@ int Core_Param_Menu(void)
 				Core_Param_UI(1);
 				oled_show_string(0, Core_Param_flag+1, ">");
 			}
-        }    
-		
-		
-	}
-	
+        }    	
+	}	
 }
 /*******************************************************************************************************************/
 /*[E] 交互界面 [E]-------------------------------------------------------------------------------------------------*/

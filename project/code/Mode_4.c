@@ -16,15 +16,70 @@
 /*[S] 菜单样式 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
-// 模式内菜单母界面
+// [二级界面]模式内菜单界面
 void Mode_4_Menu_UI(void)
 {
-    oled_show_string(0, 0, "Mode_4");
+    oled_show_string(0, 0, "M4_Menu");
     oled_show_string(0, 2, "===");
     oled_show_string(2, 4, " Start");
+	oled_show_string(2, 6, " Param");
+}
+
+// [三级界面]模式内参数设置界面
+void Mode_4_Set_Param_UI(uint8_t Page)
+{
+    switch(Page)
+	{
+        
+        // 第一页
+        case 1:
+        {
+            oled_show_string(0, 0, "M4_Param");
+            oled_show_string(0, 1, "===");
+            oled_show_string(0, 2, " NaN");
+			
+            break;
+        }
+    }
 }
 /*******************************************************************************************************************/
 /*[E] 菜单样式 [E]-------------------------------------------------------------------------------------------------*/
+/*******************************************************************************************************************/
+
+
+/*******************************************************************************************************************/
+/*[S] 参数更改 [S]-------------------------------------------------------------------------------------------------*/
+/*******************************************************************************************************************/
+
+int Mode_4_Set_Param(void)
+{
+	oled_clear();
+	oled_set_font(OLED_6X8_FONT);
+	Mode_4_Set_Param_UI(1);
+	while(1)
+	{
+		if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
+		{           
+			key_clear_state(KEY_UP);
+		}
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
+		{           
+			key_clear_state(KEY_DOWN);
+		}
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
+		{
+			key_clear_state(KEY_CONFIRM);
+		}
+		else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
+		{
+			key_clear_state(KEY_BACK);
+			// 返回上一级界面
+			return 0;
+		}
+	}
+}
+/*******************************************************************************************************************/
+/*[E] 参数更改 [E]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
 
@@ -55,22 +110,21 @@ int Mode_4_Menu(void)
         uint8_t key_pressed = 0;
 
         /* 按键解析*/
-//        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
-//        {           
-//            key_clear_state(KEY_UP);
-//			key_pressed = 1;
-//            Mode_Menu_flag --;
-//            if (Mode_Menu_flag < 1)Mode_Menu_flag = 1;
-//        }
-//        else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
-//        {           
-//            key_clear_state(KEY_DOWN);
-//			key_pressed = 1;
-//            Mode_Menu_flag ++;
-//            if (Mode_Menu_flag > 1)Mode_Menu_flag = 1;
-//        }
-//        else 
-		if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
+        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
+        {           
+            key_clear_state(KEY_UP);
+			key_pressed = 1;
+            Mode_Menu_flag --;
+            if (Mode_Menu_flag < 1)Mode_Menu_flag = 2;
+        }
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
+        {           
+            key_clear_state(KEY_DOWN);
+			key_pressed = 1;
+            Mode_Menu_flag ++;
+            if (Mode_Menu_flag > 2)Mode_Menu_flag = 1;
+        }
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
             key_clear_state(KEY_CONFIRM);
             Mode_Menu_flag_temp = Mode_Menu_flag;
@@ -93,19 +147,36 @@ int Mode_4_Menu(void)
             Mode_4_Menu_UI();
             oled_show_string(0, 4, ">");
         }
+		else if (Mode_Menu_flag_temp == 2)
+        {
+            oled_clear();
+            Mode_4_Set_Param();
+            //返回后重新显示菜单
+            oled_clear();
+            oled_set_font(OLED_8X16_FONT); 
+            Mode_4_Menu_UI();
+            oled_show_string(0, 6, ">");
+        }
         
-//        /* 显示更新*/
-//        if (key_pressed)
-//        {
-//            switch(Mode_Menu_flag)
-//            {
-//                case 1:
-//                {
-//                    oled_show_string(0, 4, ">");
-//                    break;
-//                }               
-//            }
-//        }
+        /* 显示更新*/
+        if (key_pressed)
+        {
+            switch(Mode_Menu_flag)
+            {
+                case 1:
+                {
+                    oled_show_string(0, 4, ">");
+					oled_show_string(0, 6, " ");
+                    break;
+                }
+				case 2:
+                {
+                    oled_show_string(0, 4, " ");
+                    oled_show_string(0, 6, ">");                   
+                    break;
+                }
+            }
+        }
     }
 }
 
