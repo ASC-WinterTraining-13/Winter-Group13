@@ -1,5 +1,4 @@
 #include "zf_device_mpu6050.h"
-//#include "zf_device_oled.h"
 
 #include <math.h>
 
@@ -73,10 +72,6 @@ uint8_t MPU6050_Calibration_Check(void)
             // 校准状态设为完成
             calib_state = CALIB_STATE_DONE;
 			
-			// 临时性查看校准系数数据
-//			oled_show_float(0, 4, gyro_off_x, 2, 6);
-//			oled_show_float(0, 5, gyro_off_y, 2, 6);
-//			oled_show_float(0, 6, gyro_off_z, 2, 6);
         }
     }
     

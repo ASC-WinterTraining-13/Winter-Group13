@@ -8,7 +8,7 @@
 /*[S] 菜单样式 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
-// 参数选择界面
+// [二级界面]参数选择界面
 void Core_Param_UI(uint8_t Page)
 {
 	switch(Page)
@@ -29,27 +29,18 @@ void Core_Param_UI(uint8_t Page)
 	}
 }
 
-// UI补丁：针对选择PID参数
-void Core_Param_Show_PID_Num_UI(PID_t *p)
-{
-	oled_show_float(28, 2, p->Kp, 4, 2);
-	oled_show_float(28, 3, p->Ki, 4, 2);
-	oled_show_float(28, 4, p->Kd, 4, 2);
-}
-
-// PID参数更改界面
-void Core_Param_Set_PID_UI(uint8_t Page)
+// [三级界面]PID参数更改界面
+void Core_Param_Set_PID_UI(uint8_t Page, PID_t *p)
 {
     switch(Page)
 	{      
         // 第一页
         case 1:
         {
-
-            oled_show_string(0, 1, "===");
-            oled_show_string(2, 2, " Kp:");
-            oled_show_string(2, 3, " Ki:");
-            oled_show_string(2, 4, " Kd:");
+			OLED_ShowString(0  , 8  , "=====================", OLED_6X8);
+			OLED_Printf(10, 16, OLED_6X8, "Kp:%4.2f    ", p->Kp);
+			OLED_Printf(10, 24, OLED_6X8, "Ki:%4.2f    ", p->Ki);
+			OLED_Printf(10, 32, OLED_6X8, "Kd:%4.2f    ", p->Kd);
 
             break;
         }
@@ -88,26 +79,25 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
         case 1:  // Kp
             current_param = &p->Kp;
             step_value = PID_STEPS[PID_Num-1][0];
-            row = 2;
-			oled_show_float(28, row, *current_param, 4, 2);
-            break;
-            
+            row = 16;
+		
+            break;           
         case 2:  // Ki
             current_param = &p->Ki;
             step_value = PID_STEPS[PID_Num-1][1];
-            row = 3;
-			oled_show_float(28, row, *current_param, 4, 2);
-            break;
-            
+            row = 24;
+		
+            break;           
         case 3:  // Kd
             current_param = &p->Kd;
             step_value = PID_STEPS[PID_Num-1][2];
-            row = 4;
-			oled_show_float(28, row, *current_param, 4, 2);
+            row = 32;
+
             break;
     }
     
-    oled_show_string(0, row, "=");
+	OLED_ShowString(0 , row , "=", OLED_6X8);
+	OLED_Update();
     
     while(1)
     {              
@@ -116,23 +106,28 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
         {
             key_clear_state(KEY_UP);
             *current_param += step_value;  // 增加参数
-            oled_show_float(28, row, *current_param, 4, 2);  // 更新显示
+			OLED_Printf(28, row, OLED_6X8, "%4.2f   ", *current_param);
+			OLED_Update();
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {
             key_clear_state(KEY_DOWN);
             *current_param -= step_value;  // 减少参数
-            oled_show_float(28, row, *current_param, 4, 2);  // 更新显示
+            OLED_Printf(28, row, OLED_6X8, "%4.2f   ", *current_param);
+			OLED_Update();
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM) || 
                  KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
 			key_clear_state(KEY_CONFIRM);
 			key_clear_state(KEY_BACK);
-            // 恢复光标为 ">"            
-            oled_show_string(0, row, ">");
+            
 			Sync_PID_To_Buffer(p, PID_Num);
             Param_Save();
+			// 恢复光标为 ">"            
+            OLED_ShowString(0 , row , ">", OLED_6X8);
+			OLED_Update();
+			
             break;  // 退出修改模式
         }
     }
@@ -146,7 +141,7 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
 /*[S] 交互界面 [S]--------------------------------------------------------------------------------------------------*/
 /********************************************************************************************************************/
 
-/*[模式内菜单子界面]*/
+// [三级界面]PID参数更改界面
 
 // 参数设置选项数量
 #define OPT_NUM         3
@@ -157,10 +152,9 @@ int Set_Core_Param(uint8_t PID_Num)
     uint8_t Param_flag = 1;
     
     // 显示
-    oled_set_font(OLED_6X8_FONT);  
-    Core_Param_Set_PID_UI(1);
-    oled_show_string(0, 2, ">");
-    
+    OLED_ShowString(0 , 16 , ">", OLED_6X8);
+    OLED_Update();
+	
     while(1)
     {
         // 存储确认键被按下时Param_flag的值的临时变量，默认为无效值0
@@ -193,7 +187,6 @@ int Set_Core_Param(uint8_t PID_Num)
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
             key_clear_state(KEY_BACK);
-			oled_clear();
             //返回上一级界面
             return 0;
         }
@@ -229,17 +222,19 @@ int Set_Core_Param(uint8_t PID_Num)
         
 		
         /* 显示更新*/
-        // 判断界面是否需要更新
         if (key_pressed)
         {
-			oled_show_string(0, 2, " ");
-			oled_show_string(0, 3, " ");
-			oled_show_string(0, 4, " ");
-            Core_Param_Set_PID_UI(1);
-            oled_show_string(0, Param_flag+1, ">");
+			// 更新光标位置
+			OLED_ShowString(0 , 16 , " ", OLED_6X8);
+			OLED_ShowString(0 , 24 , " ", OLED_6X8);
+			OLED_ShowString(0 , 32 , " ", OLED_6X8);
+			OLED_ShowString(0 , (Param_flag+1)*8 , ">", OLED_6X8);
+			OLED_Update();
         }    
     }
 }
+
+// [二级界面]参数选择界面
 
 // 参数设置选项数量
 #define CORE_PARAM_NUM         5
@@ -249,9 +244,9 @@ int Core_Param_Menu(void)
 	// 参数数组选项光标 标志位
     static uint8_t Core_Param_flag = 1;
 	
-	oled_set_font(OLED_6X8_FONT); 
 	Core_Param_UI(1);
-	oled_show_string(0, 2, ">");
+	OLED_ShowString(0 , 16 , ">", OLED_6X8);
+	OLED_Update();
 	
 	while(1)
 	{
@@ -285,7 +280,6 @@ int Core_Param_Menu(void)
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
         {
             key_clear_state(KEY_BACK);
-            oled_clear();
             
             return 0;
         }
@@ -294,42 +288,51 @@ int Core_Param_Menu(void)
         /* 页面跳转*/
         if (1 <= Core_Param_flag_temp && Core_Param_flag_temp <= 5)
         {
-            oled_clear();
-			Core_Param_Set_PID_UI(1);
-			oled_show_string(0, 2, ">");
+            OLED_Clear();
 			switch (Core_Param_flag_temp)
 			{
 				case 1:
-					oled_show_string(0, 0, "Rate__PID");
-					Core_Param_Show_PID_Num_UI(&Rate__PID);					
-					break;
-				
+					OLED_ShowString(0 , 0 , "Rate__PID", OLED_6X8);
+					Core_Param_Set_PID_UI(1, &Rate__PID);
+					OLED_ShowString(0 , 16 , ">", OLED_6X8);
+					OLED_Update();
+					break;				
 				case 2:
-					oled_show_string(0, 0, "Angle_PID");
-					Core_Param_Show_PID_Num_UI(&Angle_PID);
+					OLED_ShowString(0 , 0 , "Angle_PID", OLED_6X8);
+					Core_Param_Set_PID_UI(1, &Angle_PID);
+					OLED_ShowString(0 , 16 , ">", OLED_6X8);
+					OLED_Update();
 					break;
 				
 				case 3:
-					oled_show_string(0, 0, "Speed_PID");
-					Core_Param_Show_PID_Num_UI(&Speed_PID);
+					OLED_ShowString(0 , 0 , "Speed_PID", OLED_6X8);
+					Core_Param_Set_PID_UI(1, &Speed_PID);
+					OLED_ShowString(0 , 16 , ">", OLED_6X8);
+					OLED_Update();
 					break;
 				
 				case 4:
-					oled_show_string(0, 0, "Turn__PID");
-					Core_Param_Show_PID_Num_UI(&Turn__PID);
+					OLED_ShowString(0 , 0 , "Turn__PID", OLED_6X8);
+					Core_Param_Set_PID_UI(1, &Turn__PID);
+					OLED_ShowString(0 , 16 , ">", OLED_6X8);
+					OLED_Update();
 					break;
 				
 				case 5:
-					oled_show_string(0, 0, "Track_PID");
-					Core_Param_Show_PID_Num_UI(&Track_PID);
+					OLED_ShowString(0 , 0 , "Track_PID", OLED_6X8);
+					Core_Param_Set_PID_UI(1, &Track_PID);
+					OLED_ShowString(0 , 16 , ">", OLED_6X8);
+					OLED_Update();
 					break;
 				
 			}
 			Set_Core_Param(Core_Param_flag_temp);
 			
-			oled_clear();
+			// 重新显示菜单
+			OLED_Clear();
             Core_Param_UI(1);
-            oled_show_string(0, Core_Param_flag+1, ">");
+            OLED_ShowString(0 , (Core_Param_flag_temp+1)*8 , ">", OLED_6X8);
+			OLED_Update();
         }
 
 		
@@ -338,11 +341,12 @@ int Core_Param_Menu(void)
         {
 			if (1 <= Core_Param_flag && Core_Param_flag <= 5)
 			{
-				oled_clear();
+				OLED_Clear();
 				Core_Param_UI(1);
-				oled_show_string(0, Core_Param_flag+1, ">");
+				OLED_ShowString(0 , (Core_Param_flag+1)*8 , ">", OLED_6X8);
+				OLED_Update();
 			}
-        }    	
+        } 
 	}	
 }
 /*******************************************************************************************************************/

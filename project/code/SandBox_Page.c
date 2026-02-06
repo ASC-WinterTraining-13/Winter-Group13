@@ -1,17 +1,15 @@
-#include "zf_device_oled.h"
 #include "zf_device_key.h"
 #include "zf_device_mpu6050.h"
 
 #include "param_config.h"
 #include "param_storage.h"
 #include "mpu6050_Analysis.h"
-
-#include "BuzzerAndLED.h"
+#include "OLED.h"
 
 int SandBox_Page(void)
 {
-	oled_set_font(OLED_8X16_FONT);
-	oled_show_string(0, 0, "Cali");
+	OLED_ShowString(0, 0, "CAli", OLED_6X8);
+	OLED_Update();
 	
 	// mpu6050零飘校准逻辑（此时请保持静止）
 	MPU6050_Calibration_Start();
@@ -30,14 +28,19 @@ int SandBox_Page(void)
         }       
     }
 	
-	oled_show_string(0, 0, "Done");
+	OLED_ShowString(0, 0, "Done", OLED_6X8);
+	OLED_Update();
 	
-	oled_show_string(0, 2, "Roll :");
-	oled_show_string(0, 4, "Yaw  :");
-	oled_show_string(0, 6, "Pitch:");
-//	oled_show_string(0, 4, "GX:");
-//	oled_show_string(0, 5, "GY:");
-//	oled_show_string(0, 6, "GZ:");
+	OLED_ShowString(0, 16, "Roll :", OLED_6X8);
+	OLED_ShowString(0, 24, "Yaw  :", OLED_6X8);
+	OLED_ShowString(0, 32, "Pitch:", OLED_6X8);
+	OLED_ShowString(0, 40, "GX:", OLED_6X8);
+	OLED_ShowString(0, 48, "GY:", OLED_6X8);
+	OLED_ShowString(0, 56, "GZ:", OLED_6X8);
+	OLED_ShowString(64, 40, "AX:", OLED_6X8);
+	OLED_ShowString(64, 48, "AY:", OLED_6X8);
+	OLED_ShowString(64, 56, "AZ:", OLED_6X8);
+	OLED_Update();
 	
 	while(1)
 	{
@@ -68,16 +71,17 @@ int SandBox_Page(void)
 			MPU6050_Analysis();
 		}
 		
-		oled_show_float(64, 2, Roll_Result , 3, 3);
-		oled_show_float(64, 4, Yaw_Result  , 3, 3);
-		oled_show_float(64, 6, Pitch_Result, 3, 3);
+		OLED_Printf(36, 16, OLED_6X8, "%4.3f", Roll_Result);
+		OLED_Printf(36, 24, OLED_6X8, "%4.3f", Yaw_Result);
+		OLED_Printf(36, 32, OLED_6X8, "%4.3f", Pitch_Result);	
+		OLED_Printf(18, 40, OLED_6X8, "%d", mpu6050_gyro_x);
+		OLED_Printf(18, 48, OLED_6X8, "%d", mpu6050_gyro_y);
+		OLED_Printf(18, 56, OLED_6X8, "%d", mpu6050_gyro_z);
+		OLED_Printf(82, 40, OLED_6X8, "%d", mpu6050_acc_x);
+		OLED_Printf(82, 48, OLED_6X8, "%d", mpu6050_acc_y);
+		OLED_Printf(82, 56, OLED_6X8, "%d", mpu6050_acc_z);
+		OLED_Update();
 		
-//		oled_show_int(18, 4, mpu6050_gyro_x, 4);
-//		oled_show_int(18, 5, mpu6050_gyro_y, 4);
-//		oled_show_int(18, 6, mpu6050_gyro_z, 4);
-//		oled_show_int(82, 4, mpu6050_acc_x, 4);
-//		oled_show_int(82, 5, mpu6050_acc_y, 4);
-//		oled_show_int(82, 6, mpu6050_acc_z, 4);
 		
 	}
 
