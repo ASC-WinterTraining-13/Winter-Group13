@@ -1,4 +1,3 @@
-#include "zf_device_oled.h"
 #include "zf_device_key.h"
 #include "zf_device_mpu6050.h"
 
@@ -15,6 +14,7 @@
 #include "Encoder.h"
 #include "motor.h"
 #include "BuzzerAndLED.h"
+#include "OLED.h"
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     外设初始化
@@ -25,10 +25,7 @@
 void Peripheral_Init(void)
 {
 	/* （七针脚）OLED初始化*/
-    oled_init();
-    // 可以使用的字体为6X8和8X16,点阵坐标等效是基于6X8标定的
-    oled_set_font(OLED_8X16_FONT);    
-	oled_clear();
+    OLED_Init();
 	
 	/* 按键初始化（10ms扫描周期）*/
     key_init(10);
@@ -54,35 +51,38 @@ void Peripheral_Init(void)
 /*[S] 菜单样式 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
+// [一级界面]主菜单界面
 void Menu_UI(uint8_t Page)
 {
-	switch(Page){
-		
+	switch(Page)
+	{		
 		// 第一页
 		case 1:
 		{
-			oled_show_string(0, 0, "MENU");
-			oled_show_string(0, 2, "===");
-			oled_show_string(2, 4, " Mode_1");
-			oled_show_string(2, 6, " Mode_2");
-
+			OLED_ShowString(0 , 0 , "MENU", OLED_8X16);
+			OLED_ShowString(0 , 16, "=====", OLED_8X16);
+			OLED_ShowString(10, 32, "Mode_1", OLED_8X16);
+			OLED_ShowString(10, 48, "Mode_2", OLED_8X16);
+			
 			break;
 		}
 		
 		// 第二页
 		case 2:
 		{
-			oled_show_string(2, 0, " Mode_3");
-			oled_show_string(2, 2, " Mode_4");
-			oled_show_string(2, 4, " Mode_5");
-			oled_show_string(2, 6, " Core_Param");
+			OLED_ShowString(10, 0 , "Mode_3", OLED_8X16);
+			OLED_ShowString(10, 16, "Mode_4", OLED_8X16);
+			OLED_ShowString(10, 32, "Mode_5", OLED_8X16);
+			OLED_ShowString(10, 48, "Core_Param", OLED_8X16);
 			
 			break;
 		}
 		// 第三页
 		case 3:
 		{
-			oled_show_string(2, 0, " SandBox_Page");
+			OLED_ShowString(10, 0 , "SandBox_Page", OLED_8X16);
+			
+			break;
 		}
 	}
 }
@@ -103,7 +103,8 @@ void Menu_Show(void)
 {
 	// 显示菜单
 	Menu_UI(1);
-	oled_show_string(0, 4, ">");
+	OLED_ShowString(0, 32, ">", OLED_8X16);
+	OLED_Update();
 		
 	while(1)
 	{
@@ -143,107 +144,100 @@ void Menu_Show(void)
 		// 模式1
 		if (menuflag_temp == 1)
 		{
-			oled_clear();
+			OLED_Clear();
 			Mode_1_Menu();
 			
-			// 从模式返回后运行
-			// 启停标志位置0
+			// 从模式返回后
 			Run_Flag = 0;
-			oled_clear();
-			// 返回后重新显示菜单			
-			oled_set_font(OLED_8X16_FONT);  
+			// 重新显示菜单
+			OLED_Clear();						
             Menu_UI(1);
-            oled_show_string(0, 4, ">");
+            OLED_ShowString(0, 32, ">", OLED_8X16);
+			OLED_Update();
 		}
 		// 模式2
 		else if (menuflag_temp == 2)
 		{
-			oled_clear();
+			OLED_Clear();
 			Mode_2_Menu();
 			
-			// 从模式返回后运行
-			// 启停标志位置0
+			// 从模式返回后
 			Run_Flag = 0;
-			oled_clear();
-			// 返回后重新显示菜单
-			oled_set_font(OLED_8X16_FONT);
+			// 重新显示菜单
+			OLED_Clear();			
             Menu_UI(1);
-            oled_show_string(0, 6, ">");
+            OLED_ShowString(0, 48, ">", OLED_8X16);
+			OLED_Update();
 		}
 		// 模式3
 		else if (menuflag_temp == 3)
 		{
-			oled_clear();
+			OLED_Clear();
 			Mode_3_Menu();
 			
-			// 从模式返回后运行
-			// 启停标志位置0
+			// 从模式返回后
 			Run_Flag = 0;
-			oled_clear();
-			// 返回后重新显示菜单
-			oled_set_font(OLED_8X16_FONT);  
+			// 重新显示菜单
+			OLED_Clear();			
             Menu_UI(2);
-            oled_show_string(0, 0, ">");
+            OLED_ShowString(0, 0 , ">", OLED_8X16);
+			OLED_Update();
 		}
 		// 模式4
 		else if (menuflag_temp == 4)
 		{
-			oled_clear();
+			OLED_Clear();
 			Mode_4_Menu();
 			
-			// 从模式返回后运行
-			// 启停标志位置0
+			// 从模式返回后
 			Run_Flag = 0;
-			oled_clear();
-			// 返回后重新显示菜单
-			oled_set_font(OLED_8X16_FONT);  
+			// 重新显示菜单
+			OLED_Clear();			
             Menu_UI(2);
-            oled_show_string(0, 2, ">");
+            OLED_ShowString(0, 16, ">", OLED_8X16);
+			OLED_Update();
 		}
 		// 模式5
 		else if (menuflag_temp == 5)
 		{
-			oled_clear();
+			OLED_Clear();
 			Mode_5_Menu();
-			
-			// 从模式返回后运行
-			// 启停标志位置0
+		
+			// 从模式返回后
 			Run_Flag = 0;
-			oled_clear();
-			// 返回后重新显示菜单
-			oled_set_font(OLED_8X16_FONT);  
+			// 重新显示菜单
+			OLED_Clear();			
             Menu_UI(2);
-            oled_show_string(0, 4, ">");
+            OLED_ShowString(0, 32, ">", OLED_8X16);
+			OLED_Update();
 		}	
 		// 核心参数设置界面
 		else if (menuflag_temp == 6)
 		{
-			oled_clear();
+			OLED_Clear();
 			Core_Param_Menu();
 			
-			// 从模式返回后运行
-			// 启停标志位置0
+			// 从模式返回后
 			Run_Flag = 0;
-			oled_clear();
-			// 返回后重新显示菜单
-			oled_set_font(OLED_8X16_FONT);  
+			// 重新显示菜单
+			OLED_Clear();			
             Menu_UI(2);
-            oled_show_string(0, 6, ">");
+            OLED_ShowString(0, 48, ">", OLED_8X16);
+			OLED_Update();
 		}
 		// 空白调试界面
 		else if (menuflag_temp == 7)
 		{
-			oled_clear();
+			OLED_Clear();
 			SandBox_Page();
 			
-			// 从模式返回后运行
-			// 启停标志位置0
+			// 从模式返回后
 			Run_Flag = 0;
-			oled_clear();
-			// 返回后重新显示菜单
-			oled_set_font(OLED_8X16_FONT);  
+			// 重新显示菜单
+			OLED_Clear();			
             Menu_UI(3);
-            oled_show_string(0, 0, ">");
+            OLED_ShowString(0, 0 , ">", OLED_8X16);
+			OLED_Update();
 		}			
 
 		
@@ -254,49 +248,56 @@ void Menu_Show(void)
 			switch(menuflag)
 			{
 				case 1:
-					oled_clear();
+					OLED_Clear();						
 					Menu_UI(1);
-					oled_show_string(0, 4, ">");
+					OLED_ShowString(0, 32, ">", OLED_8X16);
+					OLED_Update();
 				
 					break;
 				
 				case 2:
-					oled_clear();
+					OLED_Clear();						
 					Menu_UI(1);
-					oled_show_string(0, 6, ">");
+					OLED_ShowString(0, 48, ">", OLED_8X16);
+					OLED_Update();
 				
 					break;
 				
 				case 3:
-					oled_clear();
+					OLED_Clear();						
 					Menu_UI(2);
-					oled_show_string(0, 0, ">");
+					OLED_ShowString(0, 0 , ">", OLED_8X16);
+					OLED_Update();
 					
 					break;
 				
 				case 4:
-					oled_clear();
+					OLED_Clear();						
 					Menu_UI(2);
-					oled_show_string(0, 2, ">");
+					OLED_ShowString(0, 16, ">", OLED_8X16);
+					OLED_Update();
 				
 					break;
 				
 				case 5:
-					oled_clear();
+					OLED_Clear();						
 					Menu_UI(2);
-					oled_show_string(0, 4, ">");
+					OLED_ShowString(0, 32, ">", OLED_8X16);
+					OLED_Update();
 				
 					break;
 				case 6:
-					oled_clear();
+					OLED_Clear();						
 					Menu_UI(2);
-					oled_show_string(0, 6, ">");
+					OLED_ShowString(0, 48, ">", OLED_8X16);
+					OLED_Update();
 				
 					break;
 				case 7:
-					oled_clear();
+					OLED_Clear();						
 					Menu_UI(3);
-					oled_show_string(0, 0, ">");
+					OLED_ShowString(0, 0 , ">", OLED_8X16);
+					OLED_Update();
 				
 					break;
 			}

@@ -34,10 +34,7 @@
 ********************************************************************************************************************/
 
 
-
-
 #include "zf_common_headfile.h"
-#include "zf_driver_pit.h"
 
 #include "Menu.h"
 #include "param_storage.h"
@@ -64,7 +61,7 @@ int main(void)
 	// 初始化定时器，调用代码请查看"isr.c"文件
     pit_ms_init(TIM6_PIT, 10);
 	pit_ms_init(TIM7_PIT, 5);
-	       
+	      
     while(1)
     {		
         //显示菜单

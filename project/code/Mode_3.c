@@ -1,4 +1,3 @@
-#include "zf_device_oled.h"
 #include "zf_device_key.h"
 #include "zf_device_mpu6050.h"
 
@@ -10,6 +9,7 @@
 #include "bluetooth_ch04_example.h"
 #include "zf_device_bluetooth_ch04.h"
 #include "PID.h"
+#include "OLED.h"
 
 
 /*******************************************************************************************************************/
@@ -19,10 +19,10 @@
 // [二级界面]模式内菜单界面
 void Mode_3_Menu_UI(void)
 {
-    oled_show_string(0, 0, "M3_Menu");
-    oled_show_string(0, 2, "===");
-    oled_show_string(2, 4, " Start");
-	oled_show_string(2, 6, " Param");
+	OLED_ShowString(0 , 0 , "M3_Menu", OLED_8X16);
+	OLED_ShowString(0 , 16, "=====", OLED_8X16);
+	OLED_ShowString(10, 32, "Start", OLED_8X16);
+	OLED_ShowString(10, 48, "Param", OLED_8X16);
 }
 
 // [三级界面]模式内参数设置界面
@@ -34,9 +34,9 @@ void Mode_3_Set_Param_UI(uint8_t Page)
         // 第一页
         case 1:
         {
-            oled_show_string(0, 0, "M3_Param");
-            oled_show_string(0, 1, "===");
-            oled_show_string(0, 2, " NaN");
+			OLED_ShowString(0 , 0 , "M3_Param", OLED_6X8);
+			OLED_ShowString(0 , 8, "=====================", OLED_6X8);
+			OLED_ShowString(10, 16, "NaN", OLED_6X8);
 			
             break;
         }
@@ -53,9 +53,10 @@ void Mode_3_Set_Param_UI(uint8_t Page)
 
 int Mode_3_Set_Param(void)
 {
-	oled_clear();
-	oled_set_font(OLED_6X8_FONT);
 	Mode_3_Set_Param_UI(1);
+	OLED_ShowString(0, 16, ">", OLED_6X8);
+	OLED_Update();
+	
 	while(1)
 	{
 		if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
@@ -99,7 +100,8 @@ int Mode_3_Menu(void)
     
     // 显示
     Mode_3_Menu_UI();
-    oled_show_string(0, 4, ">");
+    OLED_ShowString(0, 32, ">", OLED_8X16);
+	OLED_Update();
     
     while(1)
     {
@@ -139,23 +141,25 @@ int Mode_3_Menu(void)
         /* 页面跳转*/
         if (Mode_Menu_flag_temp == 1)
         {
-            oled_clear();
+            OLED_Clear();
             Mode_3_Running();
+			
             // 返回后重新显示菜单
-            oled_clear();
-            oled_set_font(OLED_8X16_FONT); 
+            OLED_Clear();
             Mode_3_Menu_UI();
-            oled_show_string(0, 4, ">");
+            OLED_ShowString(0, 32, ">", OLED_8X16);
+			OLED_Update();
         }
 		else if (Mode_Menu_flag_temp == 2)
         {
-            oled_clear();
+            OLED_Clear();
             Mode_3_Set_Param();
+			
             //返回后重新显示菜单
-            oled_clear();
-            oled_set_font(OLED_8X16_FONT); 
+            OLED_Clear();
             Mode_3_Menu_UI();
-            oled_show_string(0, 6, ">");
+            OLED_ShowString(0, 48, ">", OLED_8X16);  
+			OLED_Update();
         }
         
         /* 显示更新*/
@@ -165,14 +169,18 @@ int Mode_3_Menu(void)
             {
                 case 1:
                 {
-                    oled_show_string(0, 4, ">");
-					oled_show_string(0, 6, " ");
+                    OLED_ShowString(0, 32, ">", OLED_8X16);
+					OLED_ShowString(0, 48, " ", OLED_8X16);
+					OLED_Update();
+					
                     break;
                 }
 				case 2:
                 {
-                    oled_show_string(0, 4, " ");
-                    oled_show_string(0, 6, ">");                   
+                    OLED_ShowString(0, 32, " ", OLED_8X16);
+					OLED_ShowString(0, 48, ">", OLED_8X16);  
+					OLED_Update();
+					
                     break;
                 }
             }
@@ -195,7 +203,8 @@ int Mode_3_Running(void)
 {	
 	oled_set_font(OLED_6X8_FONT);
     
-	oled_show_string(0, 0, "Cail");
+	OLED_ShowString(0, 0, "CAli", OLED_6X8);
+	OLED_Update();
 	
 	/* 半阻塞式MPU6050零飘校准逻辑(此时请保持静止)*/
 	MPU6050_Calibration_Start();	
@@ -216,7 +225,8 @@ int Mode_3_Running(void)
     }
 	
 	Run_Flag = 0;	
-	oled_show_string(0, 0, "STOP");
+	OLED_ShowString(0, 0, "STOP", OLED_6X8);
+	OLED_Update();
 	
 	// 清零pid积分等参数
 	PID_Init(&Rate__PID);
@@ -242,7 +252,7 @@ int Mode_3_Running(void)
             key_clear_state(KEY_CONFIRM);
 			
 			// 取反启动状态
-			Run_Flag = !Run_Flag;
+			Run_Flag = !Run_Flag;			
 			
 			// PID参数存储
 			Param_Save();
@@ -252,7 +262,10 @@ int Mode_3_Running(void)
 			PID_Init(&Angle_PID);
 			PID_Init(&Speed_PID);
 			PID_Init(&Turn__PID);
-			PID_Init(&Track_PID);			
+			PID_Init(&Track_PID);	
+
+			if (Run_Flag) {OLED_ShowString(0, 0, "Run ", OLED_6X8);OLED_Update();}
+			else {OLED_ShowString(0, 0, "STOP", OLED_6X8);OLED_Update();}
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))// 返回键
         {
@@ -282,6 +295,9 @@ int Mode_3_Running(void)
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			
+			OLED_ShowString(0, 0, "STOP", OLED_6X8);
+			OLED_Update();
 		}		
 		
 		
@@ -301,7 +317,6 @@ int Mode_3_Running(void)
 		/* PID*/
         if (Run_Flag)
 		{			
-			oled_show_string(0, 0, "Run ");
 			if (Time_Count1 > 2)// 2 * 5 ms调控周期
 			{
 				Time_Count1 = 0;
@@ -310,8 +325,7 @@ int Mode_3_Running(void)
 			}						
 		}
 		else
-		{
-			oled_show_string(0, 0, "STOP");
+		{		
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 		}

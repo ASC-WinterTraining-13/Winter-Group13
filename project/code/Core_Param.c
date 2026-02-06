@@ -1,8 +1,8 @@
-#include "zf_device_oled.h"
 #include "zf_device_key.h"
 
 #include "param_config.h"
 #include "param_storage.h"
+#include "OLED.h"
 
 /*******************************************************************************************************************/
 /*[S] 菜单样式 [S]-------------------------------------------------------------------------------------------------*/
@@ -16,13 +16,13 @@ void Core_Param_UI(uint8_t Page)
 		 // 第一页
 		case 1:
 		{
-			oled_show_string(0, 0, "Param");
-			oled_show_string(0, 1, "===");
-			oled_show_string(2, 2, " Rate__PID");
-			oled_show_string(2, 3, " Angle_PID");
-			oled_show_string(2, 4, " Speed_PID ");
-			oled_show_string(2, 5, " Turn__PID");
-			oled_show_string(2, 6, " Track_PID");
+			OLED_ShowString(0  , 0  , "Param", OLED_6X8);
+			OLED_ShowString(0  , 8  , "=====================", OLED_6X8);
+			OLED_ShowString(10 , 16 , "Rate__PID", OLED_6X8);
+			OLED_ShowString(10 , 24 , "Angle_PID", OLED_6X8);
+			OLED_ShowString(10 , 32 , "Speed_PID", OLED_6X8);
+			OLED_ShowString(10 , 40 , "Turn__PID", OLED_6X8);
+			OLED_ShowString(10 , 48 , "Track_PID", OLED_6X8);
 			
 			break;
 		}
