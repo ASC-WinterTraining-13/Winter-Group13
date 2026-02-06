@@ -2,28 +2,27 @@
 #define __PID_H
 
 typedef struct {
-	float Target;			//目标
-	float Actual;			//这次实际
-	float Actual1;			//上次实际（微分先行使用）
-	float Out;				//输出
+	float Target;			// 目标
+	float Actual;			// 这次实际
+	float Actual1;			// 上次实际（微分先行使用）
+	float Out;				// 输出
 	
 	float Kp;
 	float Ki;
 	float Kd;
 	
-	float Error0;
-	float Error1;
-	float ErrorInt; 		//误差累积（积分）
+	float Error0;			// 上次误差
+	float Error1;			// 这次误差
+	float ErrorInt; 		// 误差累积（积分）
 	
-	float ErrorIntMax;		//积分最小值
-	float ErrorIntMin;		//积分最大值
+	float ErrorIntMax;		// 积分最小值
+	float ErrorIntMin;		// 积分最大值
 	
-	float OutMax;			//输出最大值
-	float OutMin;			//输出最小值
+	float OutMax;			// 输出最大值
+	float OutMin;			// 输出最小值
 	
-	float OutOffset;		//输出偏移
-	float IntSepThresh;  	//积分分离阈值（误差大于阈值 不积分/积分清零）
-	
+	float OutOffset;		// 输出偏移
+	float IntSepThresh;  	// 积分分离阈值（误差大于阈值 积分清零）
 	
 } PID_t;
 
@@ -33,7 +32,6 @@ typedef struct {
 // 使用示例     PID_Init(&Angle_PID);
 // 备注信息     注意需要考虑多个调用位置
 //-------------------------------------------------------------------------------------------------------------------
-
 void PID_Init				(PID_t *p);
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -42,7 +40,6 @@ void PID_Init				(PID_t *p);
 // 使用示例     PID_Update(&Angle_PID);
 // 备注信息     包含PID优化逻辑，需要注意在"param_config.c"中赋予的初值
 //-------------------------------------------------------------------------------------------------------------------
-
 void PID_Update				(PID_t *p);
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -50,8 +47,6 @@ void PID_Update				(PID_t *p);
 // 使用示例     Balance_PID_Contorl();
 // 备注信息     注意在外部保证其他输入值的更新
 //-------------------------------------------------------------------------------------------------------------------
-
-
 void Balance_PID_Contorl	(void);
 
 #endif

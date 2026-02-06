@@ -128,5 +128,5 @@
 ---
 
 
-惯性导航参考资料：[text](https://gitee.com/Emma321/navigation)
+惯性导航参考资料：[gitee/Emma/基于逐飞库的惯性导航适用于TC和CYT](https://gitee.com/Emma321/navigation)
 
