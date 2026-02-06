@@ -42,46 +42,48 @@ volatile uint8_t mpu6050_analysis_enable = 0;
 
 // 角速度环PID参数
 PID_t Rate__PID = {
-	.OutMax = 8000,
-	.OutMin = -8000,
-
-	
+	.OutMax = 8000,      			// 输出限幅（上限）
+    .OutMin = -8000,				// 输出限幅（下限）
+    .IntSepThresh = 0,   			// 积分分离阈值（误差大于阈值 积分清零）
+    .ErrorIntMax = 0,				// 积分限幅（上限）
+    .ErrorIntMin = 0,				// 积分限幅（下限）
+    .OutOffset = 0,					// 输出偏移
 };
 // 角度环PID参数
 PID_t Angle_PID = {
-	.OutMax = 8000,
-	.OutMin = -8000,
-	.IntSepThresh = 6,				//积分分离阈值（（误差大于阈值 不积分/积分清零）
-	.ErrorIntMax = 3000,			//积分限幅
-	.ErrorIntMin = -3000,			//积分限幅
-	.OutOffset = 0,					//输出偏移
+	.OutMax = 50,					// 输出限幅（上限）
+	.OutMin = -50,					// 输出限幅（下限）
+	.IntSepThresh = 6,				// 积分分离阈值（误差大于阈值 积分清零）
+	.ErrorIntMax = 10,				// 积分限幅（上限）
+	.ErrorIntMin = -10,				// 积分限幅（下限）
+	.OutOffset = 0,					// 输出偏移
 };
 // 速度环PID参数
 PID_t Speed_PID = {	
-	.OutMax = 6000,
-	.OutMin = -6000,
-	.IntSepThresh = 20,				//积分分离阈值（（误差大于阈值 不积分/积分清零）
-	.ErrorIntMax = 1500,			//积分限幅
-	.ErrorIntMin = -1500,			//积分限幅
-	.OutOffset = 0,					//输出偏移
+	.OutMax = 10,					// 输出限幅（上限）
+	.OutMin = -10,					// 输出限幅（下限）
+	.IntSepThresh = 20,				// 积分分离阈值（误差大于阈值 积分清零）
+	.ErrorIntMax = 5,				// 积分限幅（上限）
+	.ErrorIntMin = -5,				// 积分限幅（下限）
+	.OutOffset = 0,					// 输出偏移
 };
 // 转向环PID参数
 PID_t Turn__PID = {	
-	.OutMax = 5000,
-	.OutMin = -5000,
-	.IntSepThresh = 5000,			//积分分离阈值（误差大于阈值 不积分/积分清零）
-	.ErrorIntMax = 3000,			//积分限幅
-	.ErrorIntMin = -3000,			//积分限幅
-	.OutOffset = 0,					//输出偏移	
+	.OutMax = 6000,					// 输出限幅（上限）
+	.OutMin = -6000,				// 输出限幅（下限）
+	.IntSepThresh = 5000,			// 积分分离阈值（误差大于阈值 积分清零）
+	.ErrorIntMax = 3000,			// 积分限幅（上限）
+	.ErrorIntMin = -3000,			// 积分限幅（下限）
+	.OutOffset = 0,					// 输出偏移
 };
 // 循迹环PID参数
 PID_t Track_PID = {	
-	.OutMax = 30,
-	.OutMin = -30,
-	.IntSepThresh = 5,			//积分分离阈值（误差大于阈值 不积分/积分清零）
-	.ErrorIntMax = 10,			//积分限幅
-	.ErrorIntMin = -10,			//积分限幅
-	.OutOffset = 0,					//输出偏移	
+	.OutMax = 30,					// 输出限幅（上限）
+	.OutMin = -30,					// 输出限幅（下限）
+	.IntSepThresh = 5,				// 积分分离阈值（误差大于阈值 积分清零）
+	.ErrorIntMax = 10,				// 积分限幅（上限）
+	.ErrorIntMin = -10,				// 积分限幅（下限）
+	.OutOffset = 0,					// 输出偏移
 };
 
 

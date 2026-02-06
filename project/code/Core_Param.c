@@ -242,7 +242,7 @@ int Set_Core_Param(uint8_t PID_Num)
 int Core_Param_Menu(void)
 {
 	// 参数数组选项光标 标志位
-    static uint8_t Core_Param_flag = 1;
+    uint8_t Core_Param_flag = 1;
 	
 	Core_Param_UI(1);
 	OLED_ShowString(0 , 16 , ">", OLED_6X8);

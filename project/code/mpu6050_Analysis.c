@@ -217,11 +217,12 @@ static float Roll_Temp = 0.0f;       			// 横滚角 中间处理值（需要保
 static float Yaw_Temp = 0.0f;       			// 偏航角 中间处理值（需要保留历史记录）
 static float Pitch_Temp = 0.0f;       			// 俯仰角 中间处理值（需要保留历史记录）
 
-float Roll_Result = 0.0f;       				// 横滚角 最终调用值
-float Yaw_Result = 0.0f;       					// 偏航角 最终调用值
-float Pitch_Result = 0.0f;       				// 俯仰角 最终调用值
+float Roll_Result     = 0.0f;       			// 横滚角 最终调用值
+float Yaw_Result      = 0.0f;       			// 偏航角 最终调用值
+float Pitch_Result    = 0.0f;       			// 俯仰角 最终调用值
 
-float Angle_Result = 0.0f;						// 倾斜角 最终调用值
+float Angle_Result    = 0.0f;					// 倾斜角 最终调用值
+float GyroRate_Result = 0.0f;					// 角速度 最终调用值
 
 // 低通滤波系数（0.2 = 强滤波，0.5 = 中等，0.8 = 弱滤波）
 #define MPU6050_LOW_PASS_FILTER 0.3f
@@ -263,6 +264,8 @@ void MPU6050_Analysis(void)
 		mpu6050_gyro_y += 1.2424;
 		mpu6050_gyro_z -= 4.2224;
 	}
+	
+	GyroRate_Result = mpu6050_gyro_x;
 	
 	// 输入死区
 	if(-2 < mpu6050_gyro_x && mpu6050_gyro_x < 2){mpu6050_gyro_x = 0;}

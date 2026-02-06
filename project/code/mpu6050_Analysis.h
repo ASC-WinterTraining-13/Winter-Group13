@@ -3,11 +3,12 @@
 
 #include "zf_common_typedef.h"
 
-// 解算结果
-extern float Roll_Result;
+// 解算结果（最终调用值）
+extern float Roll_Result;	
 extern float Yaw_Result;
 extern float Pitch_Result;
 extern float Angle_Result;
+extern float GyroRate_Result;
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     零飘校准

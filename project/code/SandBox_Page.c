@@ -8,7 +8,7 @@
 
 int SandBox_Page(void)
 {
-	OLED_ShowString(0, 0, "CAli", OLED_6X8);
+	OLED_ShowString(0 , 0 , "CAli"  , OLED_6X8);
 	OLED_Update();
 	
 	// mpu6050零飘校准逻辑（此时请保持静止）
@@ -28,18 +28,19 @@ int SandBox_Page(void)
         }       
     }
 	
-	OLED_ShowString(0, 0, "Done", OLED_6X8);
+	OLED_ShowString(0 , 0 , "Done"  , OLED_6X8);
 	OLED_Update();
 	
-	OLED_ShowString(0, 16, "Roll :", OLED_6X8);
-	OLED_ShowString(0, 24, "Yaw  :", OLED_6X8);
-	OLED_ShowString(0, 32, "Pitch:", OLED_6X8);
-	OLED_ShowString(0, 40, "GX:", OLED_6X8);
-	OLED_ShowString(0, 48, "GY:", OLED_6X8);
-	OLED_ShowString(0, 56, "GZ:", OLED_6X8);
-	OLED_ShowString(64, 40, "AX:", OLED_6X8);
-	OLED_ShowString(64, 48, "AY:", OLED_6X8);
-	OLED_ShowString(64, 56, "AZ:", OLED_6X8);
+	OLED_ShowString(0 , 8, "Roll :" , OLED_6X8);
+	OLED_ShowString(0 , 16, "Yaw  :", OLED_6X8);
+	OLED_ShowString(0 , 24, "Pitch:", OLED_6X8);
+	OLED_ShowString(0 , 32, "GX:"   , OLED_6X8);
+	OLED_ShowString(0 , 40, "GY:"   , OLED_6X8);
+	OLED_ShowString(0 , 48, "GZ:"   , OLED_6X8);
+	OLED_ShowString(64, 32, "AX:"   , OLED_6X8);
+	OLED_ShowString(64, 40, "AY:"   , OLED_6X8);
+	OLED_ShowString(64, 48, "AZ:"   , OLED_6X8);
+	OLED_ShowString(0, 56, "Rate:"  , OLED_6X8);
 	OLED_Update();
 	
 	while(1)
@@ -71,15 +72,16 @@ int SandBox_Page(void)
 			MPU6050_Analysis();
 		}
 		
-		OLED_Printf(36, 16, OLED_6X8, "%4.3f", Roll_Result);
-		OLED_Printf(36, 24, OLED_6X8, "%4.3f", Yaw_Result);
-		OLED_Printf(36, 32, OLED_6X8, "%4.3f", Pitch_Result);	
-		OLED_Printf(18, 40, OLED_6X8, "%d", mpu6050_gyro_x);
-		OLED_Printf(18, 48, OLED_6X8, "%d", mpu6050_gyro_y);
-		OLED_Printf(18, 56, OLED_6X8, "%d", mpu6050_gyro_z);
-		OLED_Printf(82, 40, OLED_6X8, "%d", mpu6050_acc_x);
-		OLED_Printf(82, 48, OLED_6X8, "%d", mpu6050_acc_y);
-		OLED_Printf(82, 56, OLED_6X8, "%d", mpu6050_acc_z);
+		OLED_Printf(36, 8 , OLED_6X8, "%4.3f", Roll_Result);
+		OLED_Printf(36, 16, OLED_6X8, "%4.3f", Yaw_Result);
+		OLED_Printf(36, 24, OLED_6X8, "%4.3f", Pitch_Result);	
+//		OLED_Printf(18, 32, OLED_6X8, "%d", mpu6050_gyro_x);
+//		OLED_Printf(18, 40, OLED_6X8, "%d", mpu6050_gyro_y);
+//		OLED_Printf(18, 48, OLED_6X8, "%d", mpu6050_gyro_z);
+//		OLED_Printf(82, 32, OLED_6X8, "%d", mpu6050_acc_x);
+//		OLED_Printf(82, 40, OLED_6X8, "%d", mpu6050_acc_y);
+//		OLED_Printf(82, 48, OLED_6X8, "%d", mpu6050_acc_z);
+		OLED_Printf(30, 56, OLED_6X8, "%4.3f", GyroRate_Result);
 		OLED_Update();
 		
 		

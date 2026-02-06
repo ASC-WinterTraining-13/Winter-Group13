@@ -84,19 +84,69 @@ void PID_Update(PID_t *p)
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     平衡车平衡PID算法
-// 使用示例     Balance_PID_Contorl();
-// 备注信息     注意在外部保证其他输入值的更新
+// 备注信息     注意在外部保证其他输入值的更新；
+// 备注信息		输入值的更新时间可以不严格与计算周期同步，这里更加看重数据质量
+// 备注信息		采用串级PID：转向环 -> 速度环 -> 角度环 -> 角速度环
+// 备注信息		目前为调试版本，传入参数将决定pid环启用级数
 //-------------------------------------------------------------------------------------------------------------------
-void Balance_PID_Contorl(void)
+void Balance_PID_Contorl(uint8_t Debug_Level)
 {
-	// 失控保护（加上调用层共两次，作为保险）
-	if (Angle_Result < - 50 || 50 < Angle_Result)
+	if (Debug_Level == 0){return;}
+	
+	// 失控保护
+	if (Angle_Result < - 50.0f || 50.0f < Angle_Result)
 	{
 		motor_SetPWM(1, 0);
 		motor_SetPWM(2, 0);
 		
 		return;
 	}
-
 	
+	// 实际速度换算
+	AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	//实际平均速度
+	DifSpeed = LeftSpeed - RightSpeed;			//实际差分速度
+	
+	// 转向环PID计算
+	if (Debug_Level >= 4)
+	{
+		Turn__PID.Actual = DifSpeed;
+		PID_Update(&Turn__PID);
+		DifPWM = Turn__PID.Out;
+	}
+	
+	// 速度环PID计算
+	if (Debug_Level >= 3)
+	{
+		Speed_PID.Actual = AveSpeed;
+		PID_Update(&Speed_PID);
+		Angle_PID.Target = Speed_PID.Out;
+	}
+	
+	// 角度环PID计算
+	if (Debug_Level >= 2)
+	{
+		Angle_PID.Actual = Angle_Result;
+		PID_Update(&Angle_PID);
+		Rate__PID.Target = Angle_PID.Out;
+	}
+	
+	// 角速度环PID计算
+	if (Debug_Level >= 1)
+	{
+		Rate__PID.Actual = GyroRate_Result;
+		PID_Update(&Rate__PID);
+		AvePWM = Rate__PID.Out;
+	}
+	
+	// 输出PWM换算
+	LeftPWM  = AvePWM + DifPWM / 2.0f;
+	RightPWM = AvePWM - DifPWM / 2.0f;
+
+	// 输出限幅
+	if (LeftPWM  > 9000){LeftPWM = 9000;} else if (LeftPWM < -9000){LeftPWM = -9000;}
+	if (RightPWM > 9000){RightPWM = 9000;}else if (RightPWM < -9000){RightPWM = -9000;}
+	
+	// 设置PWM
+	motor_SetPWM(1, LeftPWM);
+	motor_SetPWM(2, RightPWM);
 }
