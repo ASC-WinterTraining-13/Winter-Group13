@@ -47,7 +47,7 @@ PID_t Rate__PID = {
     .IntSepThresh = 0,   			// 积分分离阈值（误差大于阈值 积分清零）
     .ErrorIntMax = 0,				// 积分限幅（上限）
     .ErrorIntMin = 0,				// 积分限幅（下限）
-    .OutOffset = 0,					// 输出偏移
+    .OutOffset = 500,					// 输出偏移
 };
 // 角度环PID参数
 PID_t Angle_PID = {

@@ -264,18 +264,17 @@ void MPU6050_Analysis(void)
 		mpu6050_gyro_y += 1.2424;
 		mpu6050_gyro_z -= 4.2224;
 	}
-	
-	GyroRate_Result = mpu6050_gyro_x;
-	
+		
 	// 输入死区
-	if(-2 < mpu6050_gyro_x && mpu6050_gyro_x < 2){mpu6050_gyro_x = 0;}
-	if(-2 < mpu6050_gyro_y && mpu6050_gyro_y < 2){mpu6050_gyro_y = 0;}
-	if(-2 < mpu6050_gyro_z && mpu6050_gyro_z < 2){mpu6050_gyro_z = 0;}
-	
+	if(-4 < mpu6050_gyro_x && mpu6050_gyro_x < 4){mpu6050_gyro_x = 0;}
+	if(-4 < mpu6050_gyro_y && mpu6050_gyro_y < 4){mpu6050_gyro_y = 0;}
+	if(-4 < mpu6050_gyro_z && mpu6050_gyro_z < 4){mpu6050_gyro_z = 0;}
 	
     // 计算陀螺仪角速度（转换为 °/s）
     float gyro_roll_rate  = (float)mpu6050_gyro_x * mpu6050_const_data2;
     float gyro_pitch_rate = (float)mpu6050_gyro_y * mpu6050_const_data2;
+	
+	GyroRate_Result = gyro_pitch_rate;
 	
 	// 横滚角加速度计计算
 	RollAcc   = atan2f((float)mpu6050_acc_y, (float)mpu6050_acc_z) * mpu6050_const_data1;
@@ -314,7 +313,7 @@ void MPU6050_Analysis(void)
 	if ( fabs(Pitch_Result-Pitch_Temp) > MPU6050_OUTPUT_DEAD_ZONE ){Pitch_Result = Pitch_Temp;}
 	
 	#if USE_PITCH_AS_ANGLE
-		Angle_Result = Pitch_Result + 3.75f;
+		Angle_Result = Pitch_Result + 2.75f;
 	#else
 		Angle_Result = Roll_Result;
 	#endif

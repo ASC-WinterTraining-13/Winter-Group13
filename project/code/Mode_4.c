@@ -347,13 +347,13 @@ int Mode_4_Running(void)
 		}
 		
 		
-		OLED_Printf(24, 8 , OLED_6X8, "%4.2f", Turn__PID.Kp);
-		OLED_Printf(24, 16, OLED_6X8, "%4.2f", Turn__PID.Ki);
-		OLED_Printf(24, 24, OLED_6X8, "%4.2f", Turn__PID.Kd);
-		OLED_Printf(24, 32, OLED_6X8, "%4.2f", Turn__PID.Target);
-		OLED_Printf(24, 40, OLED_6X8, "%4.2f", Turn__PID.Actual);
-		OLED_Printf(24, 48, OLED_6X8, "%4.2f", Turn__PID.Out);
-		OLED_Printf(24, 56, OLED_6X8, "%4.2f", Turn__PID.ErrorInt);
+		OLED_Printf(24, 8 , OLED_6X8, "%4.2f ", Turn__PID.Kp);
+		OLED_Printf(24, 16, OLED_6X8, "%4.2f ", Turn__PID.Ki);
+		OLED_Printf(24, 24, OLED_6X8, "%4.2f ", Turn__PID.Kd);
+		OLED_Printf(24, 32, OLED_6X8, "%4.2f ", Turn__PID.Target);
+		OLED_Printf(24, 40, OLED_6X8, "%4.2f ", Turn__PID.Actual);
+		OLED_Printf(24, 48, OLED_6X8, "%4.2f ", Turn__PID.Out);
+		OLED_Printf(24, 56, OLED_6X8, "%4.2f ", Turn__PID.ErrorInt);
 		OLED_Update();
     }
 }

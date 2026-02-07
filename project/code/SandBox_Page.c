@@ -5,6 +5,7 @@
 #include "param_storage.h"
 #include "mpu6050_Analysis.h"
 #include "OLED.h"
+#include "zf_device_bluetooth_ch04.h"
 
 int SandBox_Page(void)
 {
@@ -84,7 +85,7 @@ int SandBox_Page(void)
 		OLED_Printf(30, 56, OLED_6X8, "%4.3f", GyroRate_Result);
 		OLED_Update();
 		
-		
+		bluetooth_ch04_printf("[plot,%2.3f]\r\n", GyroRate_Result);
 	}
 
 }
