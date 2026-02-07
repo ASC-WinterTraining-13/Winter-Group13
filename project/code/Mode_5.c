@@ -225,7 +225,7 @@ int Mode_5_Running(void)
     }
 	
 	Run_Flag = 0;	
-	OLED_ShowString(0, 0, "STOP", OLED_6X8);
+	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
 	OLED_Update();
 	
 	// 清零pid积分等参数
@@ -338,6 +338,8 @@ int Mode_5_Running(void)
 			mpu6050_analysis_enable = 0;
 			MPU6050_Analysis();
 		}
+		
+		
     }
 }
 

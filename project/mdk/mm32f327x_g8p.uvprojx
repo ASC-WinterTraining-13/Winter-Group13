@@ -520,26 +520,6 @@
               <FilePath>..\code\motor.h</FilePath>
             </File>
             <File>
-              <FileName>bluetooth_ch04_example.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\bluetooth_ch04_example.c</FilePath>
-            </File>
-            <File>
-              <FileName>bluetooth_ch04_example.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\bluetooth_ch04_example.h</FilePath>
-            </File>
-            <File>
-              <FileName>zf_device_bluetooth_ch04.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\zf_device_bluetooth_ch04.c</FilePath>
-            </File>
-            <File>
-              <FileName>zf_device_bluetooth_ch04.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\zf_device_bluetooth_ch04.h</FilePath>
-            </File>
-            <File>
               <FileName>PID.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\PID.c</FilePath>
@@ -580,14 +560,14 @@
               <FilePath>..\code\Track_Sensor.h</FilePath>
             </File>
             <File>
-              <FileName>BuzzerAndLED.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\BuzzerAndLED.h</FilePath>
-            </File>
-            <File>
               <FileName>BuzzerAndLED.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\BuzzerAndLED.c</FilePath>
+            </File>
+            <File>
+              <FileName>BuzzerAndLED.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\BuzzerAndLED.h</FilePath>
             </File>
             <File>
               <FileName>kalman.c</FileName>
@@ -618,6 +598,26 @@
               <FileName>navigation.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\code\navigation.h</FilePath>
+            </File>
+            <File>
+              <FileName>bluetooth_ch04_example.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\bluetooth_ch04_example.c</FilePath>
+            </File>
+            <File>
+              <FileName>bluetooth_ch04_example.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\bluetooth_ch04_example.h</FilePath>
+            </File>
+            <File>
+              <FileName>zf_device_bluetooth_ch04.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\zf_device_bluetooth_ch04.c</FilePath>
+            </File>
+            <File>
+              <FileName>zf_device_bluetooth_ch04.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\zf_device_bluetooth_ch04.h</FilePath>
             </File>
             <File>
               <FileName>OLED.c</FileName>

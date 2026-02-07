@@ -225,7 +225,14 @@ int Mode_2_Running(void)
     }
 	
 	Run_Flag = 0;	
-	OLED_ShowString(0, 0, "STOP", OLED_6X8);
+	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
+	OLED_ShowString(0, 8 , "Kp:", OLED_6X8);
+	OLED_ShowString(0, 16, "Ki:", OLED_6X8);
+	OLED_ShowString(0, 24, "Kd:", OLED_6X8);
+	OLED_ShowString(0, 32, "Tar:", OLED_6X8);
+	OLED_ShowString(0, 40, "Act:", OLED_6X8);
+	OLED_ShowString(0, 48, "Out:", OLED_6X8);
+	OLED_ShowString(0, 56, "Int:", OLED_6X8);
 	OLED_Update();
 	
 	// 清零pid积分等参数
@@ -321,7 +328,7 @@ int Mode_2_Running(void)
 			{
 				Time_Count1 = 0;
 				// PID调控
-				Balance_PID_Contorl(0);
+				Balance_PID_Contorl(2);
 			}						
 		}
 		else
@@ -338,6 +345,16 @@ int Mode_2_Running(void)
 			mpu6050_analysis_enable = 0;
 			MPU6050_Analysis();
 		}
+		
+		
+		OLED_Printf(24, 8 , OLED_6X8, "%4.2f", Angle_PID.Kp);
+		OLED_Printf(24, 16, OLED_6X8, "%4.2f", Angle_PID.Ki);
+		OLED_Printf(24, 24, OLED_6X8, "%4.2f", Angle_PID.Kd);
+		OLED_Printf(24, 32, OLED_6X8, "%4.2f", Angle_PID.Target);
+		OLED_Printf(24, 40, OLED_6X8, "%4.2f", Angle_Result);
+		OLED_Printf(24, 48, OLED_6X8, "%4.2f", Angle_PID.Out);
+		OLED_Printf(24, 56, OLED_6X8, "%4.2f", Angle_PID.ErrorInt);
+		OLED_Update();
     }
 }
 

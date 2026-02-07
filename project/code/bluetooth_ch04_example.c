@@ -92,81 +92,90 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         if(name != NULL && value != NULL)
         {
 			
-			if(strcmp(name, "Ra_P") == 0)
+			if(strcmp(name, "Kp_1") == 0)
 			{
 				float_value = (float)atof(value);
 				RATE__KP = float_value;
 			}
-			else if(strcmp(name, "Ra_I") == 0)
+			else if(strcmp(name, "Ki_1") == 0)
 			{
 				float_value = (float)atof(value);
 				RATE__KI = float_value;
 			}
-			else if(strcmp(name, "Ra_D") == 0)
+			else if(strcmp(name, "Kd_1") == 0)
 			{
 				float_value = (float)atof(value);
 				RATE__KD = float_value;
 			}
-			else if(strcmp(name, "An_P") == 0)
+			
+			
+			else if(strcmp(name, "Kp_2") == 0)
 			{
 				float_value = (float)atof(value);
 				ANGLE_KP = float_value;
 			}
-			else if(strcmp(name, "An_I") == 0)
+			else if(strcmp(name, "Ki_2") == 0)
 			{
 				float_value = (float)atof(value);
 				ANGLE_KI = float_value;
 			}
-			else if(strcmp(name, "An_D") == 0)
+			else if(strcmp(name, "Kd_2") == 0)
 			{
 				float_value = (float)atof(value);
 				ANGLE_KD = float_value;
 			}
-			else if(strcmp(name, "Sp_P") == 0)
+			
+			
+			else if(strcmp(name, "Kp_3") == 0)
 			{
 				float_value = (float)atof(value);
 				SPEED_KP = float_value;
 			}
-			else if(strcmp(name, "Sp_I") == 0)
+			else if(strcmp(name, "Ki_3") == 0)
 			{
 				float_value = (float)atof(value);
 				SPEED_KI = float_value;
 			}
-			else if(strcmp(name, "Sp_D") == 0)
+			else if(strcmp(name, "Kd_3") == 0)
 			{
 				float_value = (float)atof(value);
 				SPEED_KD = float_value;
 			}
-			else if(strcmp(name, "Tu_P") == 0)
+			
+			
+			else if(strcmp(name, "Kp_4") == 0)
 			{
 				float_value = (float)atof(value);
 				TURN__KP = float_value;
 			}
-			else if(strcmp(name, "Tu_I") == 0)
+			else if(strcmp(name, "Ki_4") == 0)
 			{
 				float_value = (float)atof(value);
 				TURN__KI = float_value;
 			}
-			else if(strcmp(name, "Tu_D") == 0)
+			else if(strcmp(name, "Kd_4") == 0)
 			{
 				float_value = (float)atof(value);
 				TURN__KD = float_value;
 			}
-			else if(strcmp(name, "Tu_P") == 0)
+			
+			
+			else if(strcmp(name, "Kp_5") == 0)
 			{
 				float_value = (float)atof(value);
 				TRACK_KP = float_value;
 			}
-			else if(strcmp(name, "Tu_I") == 0)
+			else if(strcmp(name, "Ki_5") == 0)
 			{
 				float_value = (float)atof(value);
 				TRACK_KI = float_value;
 			}
-			else if(strcmp(name, "Tu_D") == 0)
+			else if(strcmp(name, "Kd_5") == 0)
 			{
 				float_value = (float)atof(value);
 				TRACK_KD = float_value;
 			}
+			
 		
 			Param_SyncToPID();//同步pid到计算变量
 	

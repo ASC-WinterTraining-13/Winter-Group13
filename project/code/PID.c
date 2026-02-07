@@ -18,6 +18,7 @@
 // 使用示例     PID_Init(&Angle_PID);
 // 备注信息     注意需要考虑多个调用位置
 //-------------------------------------------------------------------------------------------------------------------
+
 void PID_Init(PID_t *p)
 {
 	p->Target   = 0;
@@ -35,6 +36,7 @@ void PID_Init(PID_t *p)
 // 使用示例     PID_Update(&Angle_PID);
 // 备注信息     包含PID优化逻辑，需要注意在"param_config.c"中赋予的初值
 //-------------------------------------------------------------------------------------------------------------------
+
 void PID_Update(PID_t *p)
 {
 	/* 获取本次误差和上次误差*/
@@ -89,6 +91,7 @@ void PID_Update(PID_t *p)
 // 备注信息		采用串级PID：转向环 -> 速度环 -> 角度环 -> 角速度环
 // 备注信息		目前为调试版本，传入参数将决定pid环启用级数
 //-------------------------------------------------------------------------------------------------------------------
+
 void Balance_PID_Contorl(uint8_t Debug_Level)
 {
 	if (Debug_Level == 0){return;}
@@ -103,15 +106,25 @@ void Balance_PID_Contorl(uint8_t Debug_Level)
 	}
 	
 	// 实际速度换算
-	AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	//实际平均速度
-	DifSpeed = LeftSpeed - RightSpeed;			//实际差分速度
+	AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
+	DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 	
 	// 转向环PID计算
 	if (Debug_Level >= 4)
 	{
-		Turn__PID.Actual = DifSpeed;
-		PID_Update(&Turn__PID);
-		DifPWM = Turn__PID.Out;
+		// 小车应该站稳了
+		if (fabsf(Angle_Result) < 15.0f)
+		{
+			Turn__PID.Actual = DifSpeed;
+			PID_Update(&Turn__PID);
+			DifPWM = Turn__PID.Out;
+		}
+		// 看来没有
+		else 
+		{
+			Turn__PID.ErrorInt = 0;
+			Turn__PID.Out = 0;
+		}
 	}
 	
 	// 速度环PID计算
@@ -143,8 +156,8 @@ void Balance_PID_Contorl(uint8_t Debug_Level)
 	RightPWM = AvePWM - DifPWM / 2.0f;
 
 	// 输出限幅
-	if (LeftPWM  > 9000){LeftPWM = 9000;} else if (LeftPWM < -9000){LeftPWM = -9000;}
-	if (RightPWM > 9000){RightPWM = 9000;}else if (RightPWM < -9000){RightPWM = -9000;}
+	if (LeftPWM  > 9500){LeftPWM  = 9500;}else if (LeftPWM  < -9500){LeftPWM  = -9500;}
+	if (RightPWM > 9500){RightPWM = 9500;}else if (RightPWM < -9500){RightPWM = -9500;}
 	
 	// 设置PWM
 	motor_SetPWM(1, LeftPWM);
