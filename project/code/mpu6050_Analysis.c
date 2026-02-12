@@ -39,11 +39,20 @@ void MPU6050_Calibration_Start(void)
 	
 }
 
-// 返回校准状态;0完成，1进行
+// 返回校准状态（数字对应CalibState_t的枚举定义）
+// 0 备用/未开始状态
+// 1 校准进行中
+// 2 校准完成
 uint8_t MPU6050_Calibration_Check(void)
 {
-	 // 如果不在校准状态，直接返回0
-    if(calib_state != CALIB_STATE_RUNNING)
+	// 如果已校准，返回当前校准状态为2
+    if(calib_state == CALIB_STATE_DONE)
+	{
+        return 2;
+    }
+	
+	// 如果未校准，返回当前校准状态为0
+	if(calib_state == CALIB_STATE_SPARE)
 	{
         return 0;
     }
@@ -75,8 +84,8 @@ uint8_t MPU6050_Calibration_Check(void)
         }
     }
     
-    // 返回当前校准状态
-    return (calib_state == CALIB_STATE_RUNNING);
+    // 如果在校准，返回当前校准状态为1
+    return 1;
 }
 
 /*******************************************************************************************************************/

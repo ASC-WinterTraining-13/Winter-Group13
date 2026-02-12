@@ -148,7 +148,7 @@ void Balance_PID_Contorl(uint8_t Debug_Level)
 	{
 		Rate__PID.Actual = GyroRate_Result;
 		PID_Update(&Rate__PID);
-		AvePWM = Rate__PID.Out;
+		AvePWM = - Rate__PID.Out;
 	}
 	
 	// 输出PWM换算
