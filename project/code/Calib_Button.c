@@ -19,19 +19,21 @@
 // [二级界面]模式内菜单界面
 void Calib_Button_UI(uint8_t calib_state)
 {
-	OLED_ShowString(0 , 0 , "Calib", OLED_8X16);
-	OLED_ShowString(0 , 16, "=====", OLED_8X16);
+	OLED_ShowString(0 , 0 , "Calib", OLED_6X8);
+	OLED_ShowString(0 , 8, "=====================", OLED_6X8);
 	
 	switch (calib_state)
 	{
 		case 0:
-			OLED_ShowString(0, 32, "未校准", OLED_8X16);
+			OLED_ShowString(0, 16, "未校准", OLED_8X16);
 			break;
-		case 1:
-			OLED_ShowString(0, 32, "校准中", OLED_8X16);
-			break;
+		
+//		case 1:
+//			OLED_ShowString(0, 16, "校准中", OLED_8X16);
+//			break;
+		
 		case 2:
-			OLED_ShowString(0, 32, "已校准", OLED_8X16);
+			OLED_ShowString(0, 16, "已校准", OLED_8X16);
 			break;	
 	}
 }
@@ -39,12 +41,68 @@ void Calib_Button_UI(uint8_t calib_state)
 /*[E] 界面样式 [E]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
+
 /*******************************************************************************************************************/
 /*[S] 校准功能 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 int Calib_Button_Menu(void)
 {
+	// 如果已校准
+	if (MPU6050_Calibration_Check() == 2)
+	{
+		Calib_Button_UI(2);
+		OLED_Update();
+	}    
+	// 那就是未校准了
+	else 
+	{
+		Calib_Button_UI(0);
+		OLED_Update();
+	}
 	
+	while(1)
+	{
+		
+		if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))// 确认键
+        {
+            key_clear_state(KEY_CONFIRM);
+			
+			OLED_ShowString(0, 16, "校准中", OLED_8X16);
+			OLED_Update();
+			
+			/* mpu6050零飘校准逻辑(此时请保持静止)*/
+			MPU6050_Calibration_Start();			
+			// 半阻塞式零飘校准
+			while(1)  
+			{
+				if (MPU6050_Calibration_Check() == 2)  // 零飘校准完成
+				{
+					OLED_ShowString(0, 16, "已校准", OLED_8X16);
+					OLED_Update();
+					break;  // 跳出零飘校准循环，往下执行
+				}				
+				// 可以考虑在这里操作OLED，但也请注意时间占用
+				
+				// 强制零飘校准退出
+				if(KEY_SHORT_PRESS == key_get_state(KEY_BACK))
+				{
+					key_clear_state(KEY_BACK);
+					
+					OLED_ShowString(0, 16, "已取消", OLED_8X16);
+					OLED_Update();
+					break;  // 退出零飘校准模式
+				}       
+			}
+        }
+        else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))// 返回键
+        {
+            key_clear_state(KEY_BACK);
+
+			// 返回上一级菜单
+            return 0;
+        }
+	
+	}
 }
 
 /*******************************************************************************************************************/

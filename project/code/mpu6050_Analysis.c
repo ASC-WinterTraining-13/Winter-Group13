@@ -17,9 +17,9 @@
 
 // 枚举定义动态校准状态
 typedef enum {
-    CALIB_STATE_SPARE   = 0,     				// 备用/未开始状态
-    CALIB_STATE_RUNNING = 1,   					// 校准进行中
-    CALIB_STATE_DONE    = 2       				// 校准完成
+    CALIB_STATE_SPARE   = 0,     				// c
+    CALIB_STATE_RUNNING = 1,   					// 校准中
+    CALIB_STATE_DONE    = 2       				// 已校准
 } CalibState_t;
 
 static CalibState_t calib_state = CALIB_STATE_SPARE;  // 初始为备用状态
@@ -40,9 +40,9 @@ void MPU6050_Calibration_Start(void)
 }
 
 // 返回校准状态（数字对应CalibState_t的枚举定义）
-// 0 备用/未开始状态
-// 1 校准进行中
-// 2 校准完成
+// 0 已校准
+// 1 校准中
+// 2 已校准
 uint8_t MPU6050_Calibration_Check(void)
 {
 	// 如果已校准，返回当前校准状态为2

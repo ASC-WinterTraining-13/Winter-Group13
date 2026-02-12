@@ -8,6 +8,7 @@
 #include "Mode_5.h"
 #include "Core_Param.h"
 #include "SandBox_Page.h"
+#include "Calib_Button.h"
 
 #include "param_config.h"
 #include "zf_device_bluetooth_ch04.h"
@@ -81,6 +82,7 @@ void Menu_UI(uint8_t Page)
 		case 3:
 		{
 			OLED_ShowString(10, 0 , "SandBox_Page", OLED_8X16);
+			OLED_ShowString(10, 16, "Calib_Button", OLED_8X16);
 			
 			break;
 		}
@@ -120,14 +122,14 @@ void Menu_Show(void)
 			key_clear_state(KEY_UP);
 			key_pressed  = 1;
 			menuflag --;
-			if (menuflag < 1)menuflag = 7;	
+			if (menuflag < 1)menuflag = 8;	
 		}
 		else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
 		{
 			key_clear_state(KEY_DOWN);
 			key_pressed = 1;
 			menuflag ++;
-			if (menuflag > 7)menuflag = 1;	
+			if (menuflag > 8)menuflag = 1;	
 		}
 		else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
 		{
@@ -238,7 +240,21 @@ void Menu_Show(void)
             Menu_UI(3);
             OLED_ShowString(0, 0 , ">", OLED_8X16);
 			OLED_Update();
-		}			
+		}
+		// 空白调试界面
+		else if (menuflag_temp == 8)
+		{
+			OLED_Clear();
+			Calib_Button_Menu();
+			
+			// 从模式返回后
+			Run_Flag = 0;
+			// 重新显示菜单
+			OLED_Clear();			
+            Menu_UI(3);
+            OLED_ShowString(0, 16, ">", OLED_8X16);
+			OLED_Update();
+		}		
 
 		
 		/* 菜单显示更新*/
@@ -297,6 +313,14 @@ void Menu_Show(void)
 					OLED_Clear();						
 					Menu_UI(3);
 					OLED_ShowString(0, 0 , ">", OLED_8X16);
+					OLED_Update();
+				
+					break;
+				
+				case 8:
+					OLED_Clear();						
+					Menu_UI(3);
+					OLED_ShowString(0, 16, ">", OLED_8X16);
 					OLED_Update();
 				
 					break;
