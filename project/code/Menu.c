@@ -60,10 +60,11 @@ void Menu_UI(uint8_t Page)
 		// 第一页
 		case 1:
 		{
-			OLED_ShowString(0 , 0 , "MENU", OLED_8X16);
-			OLED_ShowString(0 , 16, "=====", OLED_8X16);
-			OLED_ShowString(10, 32, "Mode_1", OLED_8X16);
-			OLED_ShowString(10, 48, "Mode_2", OLED_8X16);
+			OLED_ShowString(8 , 0 , "Menu", OLED_6X8);
+			OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
+			OLED_ShowString(10, 16, "Mode_1", OLED_8X16);
+			OLED_ShowString(10, 32, "Mode_2", OLED_8X16);
+			OLED_ShowString(10, 48, "Mode_3", OLED_8X16);
 			
 			break;
 		}
@@ -71,18 +72,19 @@ void Menu_UI(uint8_t Page)
 		// 第二页
 		case 2:
 		{
-			OLED_ShowString(10, 0 , "Mode_3", OLED_8X16);
-			OLED_ShowString(10, 16, "Mode_4", OLED_8X16);
-			OLED_ShowString(10, 32, "Mode_5", OLED_8X16);
-			OLED_ShowString(10, 48, "Core_Param", OLED_8X16);
+
+			OLED_ShowString(10, 0 , "Mode_4", OLED_8X16);
+			OLED_ShowString(10, 16, "Mode_5", OLED_8X16);
+			OLED_ShowString(10, 32, "Core_Param", OLED_8X16);
+			OLED_ShowString(10, 48, "SandBox_Page", OLED_8X16);
 			
 			break;
 		}
 		// 第三页
 		case 3:
 		{
-			OLED_ShowString(10, 0 , "SandBox_Page", OLED_8X16);
-			OLED_ShowString(10, 16, "Calib_Button", OLED_8X16);
+			
+			OLED_ShowString(10, 0 , "Calib_Button", OLED_8X16);
 			
 			break;
 		}
@@ -105,7 +107,7 @@ void Menu_Show(void)
 {
 	// 显示菜单
 	Menu_UI(1);
-	OLED_ShowString(0, 32, ">", OLED_8X16);
+	OLED_ShowString(0, 16, ">", OLED_8X16);
 	OLED_Update();
 		
 	while(1)
@@ -154,7 +156,7 @@ void Menu_Show(void)
 			// 重新显示菜单
 			OLED_Clear();						
             Menu_UI(1);
-            OLED_ShowString(0, 32, ">", OLED_8X16);
+            OLED_ShowString(0, 16, ">", OLED_8X16);
 			OLED_Update();
 		}
 		// 模式2
@@ -168,7 +170,7 @@ void Menu_Show(void)
 			// 重新显示菜单
 			OLED_Clear();			
             Menu_UI(1);
-            OLED_ShowString(0, 48, ">", OLED_8X16);
+            OLED_ShowString(0, 32, ">", OLED_8X16);
 			OLED_Update();
 		}
 		// 模式3
@@ -181,8 +183,8 @@ void Menu_Show(void)
 			Run_Flag = 0;
 			// 重新显示菜单
 			OLED_Clear();			
-            Menu_UI(2);
-            OLED_ShowString(0, 0 , ">", OLED_8X16);
+            Menu_UI(1);
+            OLED_ShowString(0, 48, ">", OLED_8X16);
 			OLED_Update();
 		}
 		// 模式4
@@ -196,7 +198,7 @@ void Menu_Show(void)
 			// 重新显示菜单
 			OLED_Clear();			
             Menu_UI(2);
-            OLED_ShowString(0, 16, ">", OLED_8X16);
+            OLED_ShowString(0, 0 , ">", OLED_8X16);
 			OLED_Update();
 		}
 		// 模式5
@@ -210,7 +212,7 @@ void Menu_Show(void)
 			// 重新显示菜单
 			OLED_Clear();			
             Menu_UI(2);
-            OLED_ShowString(0, 32, ">", OLED_8X16);
+            OLED_ShowString(0, 16, ">", OLED_8X16);
 			OLED_Update();
 		}	
 		// 核心参数设置界面
@@ -224,7 +226,7 @@ void Menu_Show(void)
 			// 重新显示菜单
 			OLED_Clear();			
             Menu_UI(2);
-            OLED_ShowString(0, 48, ">", OLED_8X16);
+            OLED_ShowString(0, 32, ">", OLED_8X16);
 			OLED_Update();
 		}
 		// 空白调试界面
@@ -237,8 +239,8 @@ void Menu_Show(void)
 			Run_Flag = 0;
 			// 重新显示菜单
 			OLED_Clear();			
-            Menu_UI(3);
-            OLED_ShowString(0, 0 , ">", OLED_8X16);
+            Menu_UI(2);
+            OLED_ShowString(0, 48, ">", OLED_8X16);
 			OLED_Update();
 		}
 		// 空白调试界面
@@ -252,7 +254,7 @@ void Menu_Show(void)
 			// 重新显示菜单
 			OLED_Clear();			
             Menu_UI(3);
-            OLED_ShowString(0, 16, ">", OLED_8X16);
+            OLED_ShowString(0, 0 , ">", OLED_8X16);
 			OLED_Update();
 		}		
 
@@ -266,7 +268,7 @@ void Menu_Show(void)
 				case 1:
 					OLED_Clear();						
 					Menu_UI(1);
-					OLED_ShowString(0, 32, ">", OLED_8X16);
+					OLED_ShowString(0, 16, ">", OLED_8X16);
 					OLED_Update();
 				
 					break;
@@ -274,15 +276,15 @@ void Menu_Show(void)
 				case 2:
 					OLED_Clear();						
 					Menu_UI(1);
-					OLED_ShowString(0, 48, ">", OLED_8X16);
+					OLED_ShowString(0, 32, ">", OLED_8X16);
 					OLED_Update();
 				
 					break;
 				
 				case 3:
 					OLED_Clear();						
-					Menu_UI(2);
-					OLED_ShowString(0, 0 , ">", OLED_8X16);
+					Menu_UI(1);
+					OLED_ShowString(0, 48, ">", OLED_8X16);
 					OLED_Update();
 					
 					break;
@@ -290,7 +292,7 @@ void Menu_Show(void)
 				case 4:
 					OLED_Clear();						
 					Menu_UI(2);
-					OLED_ShowString(0, 16, ">", OLED_8X16);
+					OLED_ShowString(0, 0 , ">", OLED_8X16);
 					OLED_Update();
 				
 					break;
@@ -298,21 +300,21 @@ void Menu_Show(void)
 				case 5:
 					OLED_Clear();						
 					Menu_UI(2);
-					OLED_ShowString(0, 32, ">", OLED_8X16);
+					OLED_ShowString(0, 16, ">", OLED_8X16);
 					OLED_Update();
 				
 					break;
 				case 6:
 					OLED_Clear();						
 					Menu_UI(2);
-					OLED_ShowString(0, 48, ">", OLED_8X16);
+					OLED_ShowString(0, 32, ">", OLED_8X16);
 					OLED_Update();
 				
 					break;
 				case 7:
 					OLED_Clear();						
-					Menu_UI(3);
-					OLED_ShowString(0, 0 , ">", OLED_8X16);
+					Menu_UI(2);
+					OLED_ShowString(0, 48, ">", OLED_8X16);
 					OLED_Update();
 				
 					break;
@@ -320,7 +322,7 @@ void Menu_Show(void)
 				case 8:
 					OLED_Clear();						
 					Menu_UI(3);
-					OLED_ShowString(0, 16, ">", OLED_8X16);
+					OLED_ShowString(0, 0 , ">", OLED_8X16);
 					OLED_Update();
 				
 					break;

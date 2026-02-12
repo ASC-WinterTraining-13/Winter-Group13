@@ -19,10 +19,10 @@
 // [二级界面]模式内菜单界面
 void Mode_4_Menu_UI(void)
 {
-	OLED_ShowString(0 , 0 , "M4_Menu", OLED_8X16);
-	OLED_ShowString(0 , 16, "=====", OLED_8X16);
-	OLED_ShowString(10, 32, "Start", OLED_8X16);
-	OLED_ShowString(10, 48, "Param", OLED_8X16);
+	OLED_ShowString(8 , 0 , "Mode_4_Menu", OLED_6X8);
+	OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
+	OLED_ShowString(10, 16, "Start", OLED_8X16);
+	OLED_ShowString(10, 32, "Param", OLED_8X16);
 }
 
 // [三级界面]模式内参数设置界面
@@ -34,8 +34,8 @@ void Mode_4_Set_Param_UI(uint8_t Page)
         // 第一页
         case 1:
         {
-			OLED_ShowString(0 , 0 , "M4_Param", OLED_6X8);
-			OLED_ShowString(0 , 8, "=====================", OLED_6X8);
+			OLED_ShowString(8 , 0 , "M4_Param", OLED_6X8);
+			OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
 			OLED_ShowString(10, 16, "NaN", OLED_6X8);
 			
             break;
@@ -102,7 +102,7 @@ int Mode_4_Menu(void)
     
     // 显示
     Mode_4_Menu_UI();
-    OLED_ShowString(0, 32, ">", OLED_8X16);
+    OLED_ShowString(0, 16, ">", OLED_8X16);
 	OLED_Update();
     
     while(1)
@@ -149,7 +149,7 @@ int Mode_4_Menu(void)
             // 返回后重新显示菜单
             OLED_Clear();
             Mode_4_Menu_UI();
-            OLED_ShowString(0, 32, ">", OLED_8X16);
+            OLED_ShowString(0, 16, ">", OLED_8X16);
 			OLED_Update();
         }
 		else if (Mode_Menu_flag_temp == 2)
@@ -160,7 +160,7 @@ int Mode_4_Menu(void)
             //返回后重新显示菜单
             OLED_Clear();
             Mode_4_Menu_UI();
-            OLED_ShowString(0, 48, ">", OLED_8X16);  
+            OLED_ShowString(0, 32, ">", OLED_8X16);  
 			OLED_Update();
         }
         
@@ -171,16 +171,16 @@ int Mode_4_Menu(void)
             {
                 case 1:
                 {
-                    OLED_ShowString(0, 32, ">", OLED_8X16);
-					OLED_ShowString(0, 48, " ", OLED_8X16);
+                    OLED_ShowString(0, 16, ">", OLED_8X16);
+					OLED_ShowString(0, 32, " ", OLED_8X16);
 					OLED_Update();
 					
                     break;
                 }
 				case 2:
                 {
-                    OLED_ShowString(0, 32, " ", OLED_8X16);
-					OLED_ShowString(0, 48, ">", OLED_8X16);  
+                    OLED_ShowString(0, 16, " ", OLED_8X16);
+					OLED_ShowString(0, 32, ">", OLED_8X16);  
 					OLED_Update();
 					
                     break;
