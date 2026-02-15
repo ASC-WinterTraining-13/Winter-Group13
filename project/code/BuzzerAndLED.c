@@ -17,14 +17,15 @@ void BuzzerAndLED_Init(void)
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     开关蜂鸣器/LED
-// 使用示例     BuzzerAndLED_Promopt(1);
-// 备注信息     只在"Menu.c"中的Peripheral_Init();函数调用一次
 //-------------------------------------------------------------------------------------------------------------------
-
-void BuzzerAndLED_Promopt(uint8_t Mode)
+void BUZ_SET(uint8_t State)
 {
-	if (Mode == 1) gpio_set_level (BEEP, GPIO_HIGH);	// 蜂鸣器开
-	if (Mode == 2) gpio_set_level (LED2, GPIO_LOW);		// LED开
-	if (Mode == 3) gpio_set_level (BEEP, GPIO_LOW);		// 蜂鸣器关
-	if (Mode == 4) gpio_set_level (LED2, GPIO_HIGH);	// LED关
+	if (State == 1)	{gpio_set_level (BEEP, GPIO_HIGH);}	// 蜂鸣器开
+	else 			{gpio_set_level (BEEP, GPIO_LOW);}	// 蜂鸣器关
+}
+	
+void LED_SET(uint8_t State)
+{
+	if (State == 1)	{gpio_set_level (LED2, GPIO_LOW);}	// LED开
+	else 			{gpio_set_level (LED2, GPIO_HIGH);}	// LED关
 }

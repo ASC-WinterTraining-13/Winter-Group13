@@ -7,8 +7,8 @@
 #include "Mode_4.h"
 #include "Mode_5.h"
 #include "Core_Param.h"
+#include "Debug_Page.h"
 #include "SandBox_Page.h"
-#include "Calib_Button.h"
 
 #include "param_config.h"
 #include "zf_device_bluetooth_ch04.h"
@@ -76,7 +76,7 @@ void Menu_UI(uint8_t Page)
 			OLED_ShowString(10, 0 , "Mode_4", OLED_8X16);
 			OLED_ShowString(10, 16, "Mode_5", OLED_8X16);
 			OLED_ShowString(10, 32, "Core_Param", OLED_8X16);
-			OLED_ShowString(10, 48, "SandBox_Page", OLED_8X16);
+			OLED_ShowString(10, 48, "Debug_Page", OLED_8X16);
 			
 			break;
 		}
@@ -84,7 +84,7 @@ void Menu_UI(uint8_t Page)
 		case 3:
 		{
 			
-			OLED_ShowString(10, 0 , "Calib_Button", OLED_8X16);
+			OLED_ShowString(10, 0 , "SandBox", OLED_8X16);
 			
 			break;
 		}
@@ -229,11 +229,11 @@ void Menu_Show(void)
             OLED_ShowString(0, 32, ">", OLED_8X16);
 			OLED_Update();
 		}
-		// 空白调试界面
+		// 手动触发校准界面
 		else if (menuflag_temp == 7)
 		{
 			OLED_Clear();
-			SandBox_Page();
+			Debug_Page_Menu();
 			
 			// 从模式返回后
 			Run_Flag = 0;
@@ -243,11 +243,11 @@ void Menu_Show(void)
             OLED_ShowString(0, 48, ">", OLED_8X16);
 			OLED_Update();
 		}
-		// 空白调试界面
+		// 空白界面
 		else if (menuflag_temp == 8)
 		{
 			OLED_Clear();
-			Calib_Button_Menu();
+			SandBox_Page();
 			
 			// 从模式返回后
 			Run_Flag = 0;
@@ -256,7 +256,7 @@ void Menu_Show(void)
             Menu_UI(3);
             OLED_ShowString(0, 0 , ">", OLED_8X16);
 			OLED_Update();
-		}		
+		}	
 
 		
 		/* 菜单显示更新*/
@@ -326,9 +326,16 @@ void Menu_Show(void)
 					OLED_Update();
 				
 					break;
+				
+				case 9:
+					OLED_Clear();						
+					Menu_UI(3);
+					OLED_ShowString(0, 16, ">", OLED_8X16);
+					OLED_Update();
+				
+					break;
 			}
 		}
-	
 	}
 }
 

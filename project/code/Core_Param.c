@@ -5,7 +5,7 @@
 #include "OLED.h"
 
 /*******************************************************************************************************************/
-/*[S] 菜单样式 [S]-------------------------------------------------------------------------------------------------*/
+/*[S] 界面样式 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
 // [二级界面]参数选择界面
@@ -16,7 +16,7 @@ void Core_Param_UI(uint8_t Page)
 		 // 第一页
 		case 1:
 		{
-			OLED_ShowString(0  , 0  , "Param", OLED_6X8);
+			OLED_ShowString(8  , 0  , "Param_Setting", OLED_6X8);
 			OLED_ShowString(0  , 8  , "=====================", OLED_6X8);
 			OLED_ShowString(10 , 16 , "Rate__PID", OLED_6X8);
 			OLED_ShowString(10 , 24 , "Angle_PID", OLED_6X8);
@@ -48,7 +48,7 @@ void Core_Param_Set_PID_UI(uint8_t Page, PID_t *p)
 }
 
 /*******************************************************************************************************************/
-/*[E] 菜单样式 [E]-------------------------------------------------------------------------------------------------*/
+/*[E] 界面样式 [E]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
 /*******************************************************************************************************************/
@@ -137,9 +137,9 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
 /*******************************************************************************************************************/
 
 
-/********************************************************************************************************************/
-/*[S] 交互界面 [S]--------------------------------------------------------------------------------------------------*/
-/********************************************************************************************************************/
+/*******************************************************************************************************************/
+/*[S] 交互界面 [S]-------------------------------------------------------------------------------------------------*/
+/*******************************************************************************************************************/
 
 // [三级界面]PID参数更改界面
 
@@ -236,12 +236,9 @@ int Set_Core_Param(uint8_t PID_Num)
 
 // [二级界面]参数选择界面
 
-// 参数设置选项数量
-#define CORE_PARAM_NUM         5
-
 int Core_Param_Menu(void)
 {
-	// 参数数组选项光标 标志位
+	// 参数设置选项光标 标志位
     uint8_t Core_Param_flag = 1;
 	
 	Core_Param_UI(1);
@@ -263,14 +260,14 @@ int Core_Param_Menu(void)
             key_pressed = 1;
             key_clear_state(KEY_UP);
             Core_Param_flag --;
-            if (Core_Param_flag < 1)Core_Param_flag = CORE_PARAM_NUM;
+            if (Core_Param_flag < 1)Core_Param_flag = 5;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {
             key_pressed = 1;
             key_clear_state(KEY_DOWN);
             Core_Param_flag ++;
-            if (Core_Param_flag > CORE_PARAM_NUM)Core_Param_flag = 1;
+            if (Core_Param_flag > 5)Core_Param_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -292,34 +289,34 @@ int Core_Param_Menu(void)
 			switch (Core_Param_flag_temp)
 			{
 				case 1:
-					OLED_ShowString(0 , 0 , "Rate__PID", OLED_6X8);
+					OLED_ShowString(8 , 0 , "Rate__PID", OLED_6X8);
 					Core_Param_Set_PID_UI(1, &Rate__PID);
 					OLED_ShowString(0 , 16 , ">", OLED_6X8);
 					OLED_Update();
 					break;				
 				case 2:
-					OLED_ShowString(0 , 0 , "Angle_PID", OLED_6X8);
+					OLED_ShowString(8 , 0 , "Angle_PID", OLED_6X8);
 					Core_Param_Set_PID_UI(1, &Angle_PID);
 					OLED_ShowString(0 , 16 , ">", OLED_6X8);
 					OLED_Update();
 					break;
 				
 				case 3:
-					OLED_ShowString(0 , 0 , "Speed_PID", OLED_6X8);
+					OLED_ShowString(8 , 0 , "Speed_PID", OLED_6X8);
 					Core_Param_Set_PID_UI(1, &Speed_PID);
 					OLED_ShowString(0 , 16 , ">", OLED_6X8);
 					OLED_Update();
 					break;
 				
 				case 4:
-					OLED_ShowString(0 , 0 , "Turn__PID", OLED_6X8);
+					OLED_ShowString(8 , 0 , "Turn__PID", OLED_6X8);
 					Core_Param_Set_PID_UI(1, &Turn__PID);
 					OLED_ShowString(0 , 16 , ">", OLED_6X8);
 					OLED_Update();
 					break;
 				
 				case 5:
-					OLED_ShowString(0 , 0 , "Track_PID", OLED_6X8);
+					OLED_ShowString(8 , 0 , "Track_PID", OLED_6X8);
 					Core_Param_Set_PID_UI(1, &Track_PID);
 					OLED_ShowString(0 , 16 , ">", OLED_6X8);
 					OLED_Update();
