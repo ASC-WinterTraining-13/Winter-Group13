@@ -300,8 +300,13 @@ int Debug_Page_Menu(void)
 	}
 }
 
-
-// [三级界面]循迹模块调试
+//	##### ####   ###   #### #  #       ##### ##### #   # ##### ##### ####  
+//	  #   #   # #   # #     # #        #     #     ##  # #     #   # #   # 
+//	  #   ####  ##### #     ##         ##### ##### # # # ##### #   # ####  
+//	  #   #  #  #   # #     # #            # #     #  ##     # #   # #  #  
+//	  #   #   # #   #  #### #  #       ##### ##### #   # ##### ##### #   # 
+//
+//[三级界面]循迹模块调试
 int Debug_Track_Sensor(void)
 {
 	Debug_Track_Sensor_UI();
@@ -344,6 +349,12 @@ int Debug_Track_Sensor(void)
 	}
 }
 
+//	##### #   #  ####  ###  ####  ##### ####  
+//	#     ##  # #     #   # #   # #     #   # 
+//	##### # # # #     #   # #   # ##### ####  
+//	#     #  ## #     #   # #   # #     #  #  
+//	##### #   #  ####  ###  ####  ##### #   # 
+//
 // [三级界面]编码器调试
 int Debug_Encoder(void)
 {
@@ -401,6 +412,12 @@ int Debug_Encoder(void)
 	}
 }
 
+//	#   # ####  #   # ##### ##### ##### #####        ####  ###  #     ### ####  
+//	## ## #   # #   # #     #   # #     #   #       #     #   # #      #  #   # 
+//	# # # ####  #   # ##### #   # ##### #   #       #     ##### #      #  ####  
+//	#   # #     #   # #   # #   #     # #   #       #     #   # #      #  #   # 
+//	#   # #      ###  ##### ##### ##### #####        #### #   # ##### ### ####  
+//
 // [三级界面]MPU6050校准按钮
 int Calib_Button_Page(void)
 {
@@ -471,6 +488,12 @@ int Calib_Button_Page(void)
 	}
 }
 
+// ####  #     #   # ##### #####  ###   ###  ##### #   # 
+// #   # #     #   # #       #   #   # #   #   #   #   # 
+// ####  #     #   # #####   #   #   # #   #   #   ##### 
+// #   # #     #   # #       #   #   # #   #   #   #   # 
+// ####  #####  ###  #####   #    ###   ###    #   #   # 
+//
 // [三级界面]蓝牙模块调试
 int Debug_Bluetooth(void)
 {
@@ -481,7 +504,7 @@ int Debug_Bluetooth(void)
 	static uint8 bluetooth_rx_buffer[100];
 	static uint32 bluetooth_rx_length = 0;
 	
-	uint8_t tset_state = 0;
+	uint8_t test_state = 0;
 	
 	while(1)
 	{
@@ -519,14 +542,13 @@ int Debug_Bluetooth(void)
 				// 确保字符串以 null 结尾
 				bluetooth_rx_buffer[bluetooth_rx_length] = '\0';
 				
-//				// 调试输出：显示原始接收数据
-//				printf("BT RX: [");
-//				for(uint32 i = 0; i < bluetooth_rx_length; i++)
-//				{
-//					printf("%c", bluetooth_rx_buffer[i]);
-//				}
-//				printf("]\r\n");
-//				OLED_Printf(24, 16, OLED_8X16, "%s", );
+				// 调试输出：显示原始接收数据（至串口）
+				printf("BT RX: [");
+				for(uint32 i = 0; i < bluetooth_rx_length; i++)
+				{
+					printf("%c", bluetooth_rx_buffer[i]);
+				}
+				printf("]\r\n");
 				
 				OLED_Printf(24, 32, OLED_8X16, "%s", bluetooth_rx_buffer);
 				OLED_Update();
@@ -537,24 +559,33 @@ int Debug_Bluetooth(void)
 		}
 		
 		
-		if (tset_state == 0 || Time_Count2 > 1000 && tset_state == 2)
+		if (test_state == 0 || Time_Count2 > 1000 && test_state == 2)
 		{
-			tset_state = 1;
-			bluetooth_ch04_printf("TEST\r\n");
-			OLED_Printf(24, 16, OLED_8X16, "TSET");
+			test_state = 1;
+			int16_t TEST_A = Time_Count2;
+			bluetooth_ch04_printf("TEST:%d\r\n", TEST_A);
+			OLED_Printf(24, 16, OLED_8X16, "TSET:%d ", TEST_A);
 			OLED_Update();
 		}
-		else if (Time_Count2 > 2000 && tset_state == 1)
+		else if (Time_Count2 > 2000 && test_state == 1)
 		{
+			float test_a = Time_Count2 / 100.0f;
 			Time_Count2 = 0;
-			tset_state = 2;
-			bluetooth_ch04_printf("test\r\n");
-			OLED_Printf(24, 16, OLED_8X16, "test");
+			test_state = 2;
+			bluetooth_ch04_printf("test:%2.2f\r\n", test_a);
+			OLED_Printf(24, 16, OLED_8X16, "test:%2.2f ", test_a);
 			OLED_Update();
+			
 		}
 	}
 }
 
+//	####  #   # #####       #     ##### ####  
+//	#   # #   #    #    #   #     #     #   # 
+//	####  #   #   #    ###  #     ##### #   # 
+//	#   # #   #  #      #   #     #     #   # 
+//	####   ###  #####       ##### ##### ####  
+//
 // [三级界面]声光模块调试
 int Debug_BUZandLED(void)
 {
@@ -601,6 +632,12 @@ int Debug_BUZandLED(void)
 	}
 }
 
+//	####  #   # #   # 
+//	#   # #   # ## ## 
+//	####  # # # # # # 
+//	#     ## ## #   # 
+//	#     #   # #   # 
+//
 // [三级界面]电机驱动调试
 int Debug_PWM(void)
 {
@@ -644,6 +681,9 @@ int Debug_PWM(void)
 		if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
 		{
 			key_clear_state(KEY_BACK);
+			LeftPWM = RightPWM = 0;
+			motor_SetPWM(1, 0);
+			motor_SetPWM(2, 0);
 			
 			// 返回上一级菜单
 			return 0;
@@ -656,6 +696,7 @@ int Debug_PWM(void)
 			OLED_ShowString(0, 16, "=", OLED_8X16);
 			OLED_Update();
 			
+			// 左电机PWM值手动调节逻辑
 			while(1)
 			{
 				/* 按键解析*/
@@ -672,7 +713,7 @@ int Debug_PWM(void)
 				{
 					key_clear_state(KEY_DOWN);
 					LeftPWM -= 100;
-					if (LeftPWM > 10000)LeftPWM = 10000;
+					if (LeftPWM < -10000)LeftPWM = -10000;
 					motor_SetPWM(1, LeftPWM);
 					OLED_Printf(58, 16, OLED_8X16, "%d    ", LeftPWM);
 					OLED_Update();
@@ -693,6 +734,7 @@ int Debug_PWM(void)
 			OLED_ShowString(0, 32, "=", OLED_8X16);
 			OLED_Update();
 			
+			// 右电机PWM值手动调节逻辑
 			while(1)
 			{
 				/* 按键解析*/
@@ -701,7 +743,7 @@ int Debug_PWM(void)
 					key_clear_state(KEY_UP);
 					RightPWM += 100;
 					if (RightPWM > 10000)RightPWM = 10000;
-					motor_SetPWM(1, RightPWM);
+					motor_SetPWM(2, RightPWM);
 					OLED_Printf(58, 32, OLED_8X16, "%d    ", RightPWM);
 					OLED_Update();
 				}
@@ -709,8 +751,8 @@ int Debug_PWM(void)
 				{
 					key_clear_state(KEY_DOWN);
 					RightPWM -= 100;
-					if (RightPWM > 10000)RightPWM = 10000;
-					motor_SetPWM(1, RightPWM);
+					if (RightPWM < -10000)RightPWM = -10000;
+					motor_SetPWM(2, RightPWM);
 					OLED_Printf(58, 32, OLED_8X16, "%d    ", RightPWM);
 					OLED_Update();
 
