@@ -245,6 +245,14 @@ int Mode_2_Running(void)
 	PID_Init(&Turn__PID);
 	PID_Init(&Track_PID);
 	
+	// 防止周期计时乱飞
+	Time_Count1 = 0;
+	Time_Count2 = 0;
+	
+	// 清零编码器数值
+	Get_Encoder1();
+	Get_Encoder2();
+	
     while(1)
     {  
 		/* 按键处理*/
