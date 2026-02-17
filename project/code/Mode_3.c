@@ -10,6 +10,7 @@
 #include "zf_device_bluetooth_ch04.h"
 #include "PID.h"
 #include "OLED.h"
+#include "math.h"
 
 
 /*******************************************************************************************************************/
@@ -203,7 +204,7 @@ int Mode_3_Menu(void)
 
 int Mode_3_Running(void)
 {	 
-	
+		
 	/* 半阻塞式MPU6050零飘校准逻辑(此时请保持静止)*/
 	if (MPU6050_Calibration_Check() != 2)// 如果未校准
 	{
@@ -239,11 +240,11 @@ int Mode_3_Running(void)
 	OLED_Update();
 	
 	// 清零pid积分等参数
-	PID_Init(&Rate__PID);
-	PID_Init(&Angle_PID);
-	PID_Init(&Speed_PID);
-	PID_Init(&Turn__PID);
 	PID_Init(&Track_PID);
+	PID_Init(&Turn__PID);
+	PID_Init(&Speed_PID);
+	PID_Init(&Angle_PID);
+	PID_Init(&Rate__PID);
 	
 	// 防止周期计时乱飞
 	Time_Count1 = 0;
@@ -293,6 +294,7 @@ int Mode_3_Running(void)
 			Run_Flag = 0;
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			DifPWM  = 0;
 			
 			// PID参数存储
 			Param_Save();
@@ -300,6 +302,15 @@ int Mode_3_Running(void)
 			// 返回上一级菜单
             return 0;
         }
+		
+		
+		/* mpu6050数据接收与解析*/
+		if (mpu6050_analysis_enable)
+		{
+			mpu6050_get_data();
+			mpu6050_analysis_enable = 0;
+			MPU6050_Analysis();
+		}
 		
 		
 		/* 蓝牙模块*/
@@ -313,6 +324,7 @@ int Mode_3_Running(void)
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			DifPWM  = 0;
 			
 			OLED_ShowString(0, 0, "STOP", OLED_6X8);
 			OLED_Update();
@@ -320,52 +332,87 @@ int Mode_3_Running(void)
 		
 		
 		/* 速度计算*/
-		if (Time_Count2 > 20)// 20 * 5 ms调控周期
+		if (Time_Count2 > 10)// 10 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
 			
-			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
-			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;
+			LeftSpeed  = Get_Encoder1() * 0.8f + Pre_LeftSpeed  * 0.2f;
+			RightSpeed = Get_Encoder2() * 0.8f + Pre_RightSpeed * 0.2f;
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;
+			
+			// 实际速度换算
+			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
+			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
+			
+			// 转向环PID计算		
+			if (fabsf(Angle_Result) < 15.0f)// 小车应该站稳了
+			{
+				Turn__PID.Actual = DifSpeed;
+				PID_Update(&Turn__PID);
+				DifPWM = Turn__PID.Out;
+			}
+			// 看来没有
+			else 
+			{
+				PID_Init(&Turn__PID);
+			}
+	
+	
+			// 速度环PID计算
+			Speed_PID.Actual = AveSpeed;
+			PID_Update(&Speed_PID);
+			Angle_PID.Target = Speed_PID.Out;
 			
 		}
 
 		
-		/* PID*/
         if (Run_Flag)
 		{			
 			if (Time_Count1 > 2)// 2 * 5 ms调控周期
 			{
 				Time_Count1 = 0;
-				// PID调控
-				Balance_PID_Contorl();
+
+				// 角度环PID计算
+				Angle_PID.Actual = Angle_Result;
+				PID_Update(&Angle_PID);
+				Rate__PID.Target = Angle_PID.Out;
+				
+				// 角速度环PID计算
+				Rate__PID.Actual = GyroRate_Result;
+				PID_Update(&Rate__PID);
+				AvePWM = - Rate__PID.Out;
+				
+				// 输出PWM换算
+				LeftPWM  = AvePWM + DifPWM / 2.0f;
+				RightPWM = AvePWM - DifPWM / 2.0f;
+
+				// 输出限幅
+				if (LeftPWM  > 9000){LeftPWM  = 9000;}else if (LeftPWM  < -9000){LeftPWM  = -9000;}
+				if (RightPWM > 9000){RightPWM = 9000;}else if (RightPWM < -9000){RightPWM = -9000;}
+				
+				// 设置PWM
+				motor_SetPWM(1, LeftPWM);
+				motor_SetPWM(2, RightPWM);
 			}						
+			printf("%3.2f,%3.2f,%3.2f,%3.2f\r\n", Rate__PID.Target, GyroRate_Result, Angle_Result, Rate__PID.Out);
 		}
 		else
 		{		
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			DifPWM  = 0;
 		}
 			
 		
-		/* mpu6050数据接收与解析*/
-		if (mpu6050_analysis_enable)
-		{
-			mpu6050_get_data();
-			mpu6050_analysis_enable = 0;
-			MPU6050_Analysis();
-		}
-		
-		
-//		OLED_Printf(24, 8 , OLED_6X8, "%4.2f ", Speed_PID.Kp);
-//		OLED_Printf(24, 16, OLED_6X8, "%4.2f ", Speed_PID.Ki);
-//		OLED_Printf(24, 24, OLED_6X8, "%4.2f ", Speed_PID.Kd);
-//		OLED_Printf(24, 32, OLED_6X8, "%4.2f ", Speed_PID.Target);
-//		OLED_Printf(24, 40, OLED_6X8, "%4.2f ", Speed_PID.Actual);
-//		OLED_Printf(24, 48, OLED_6X8, "%4.2f ", Speed_PID.Out);
-//		OLED_Printf(24, 56, OLED_6X8, "%4.2f ", Speed_PID.ErrorInt);
-		OLED_Update();
+//		OLED_Printf(24, 8 , OLED_6X8, "%4.2f ", Rate__PID.Kp);
+//		OLED_Printf(24, 16, OLED_6X8, "%4.2f ", Rate__PID.Ki);
+//		OLED_Printf(24, 24, OLED_6X8, "%4.2f ", Rate__PID.Kd);
+//		OLED_Printf(24, 32, OLED_6X8, "%4.2f ", Rate__PID.Target);
+//		OLED_Printf(24, 40, OLED_6X8, "%4.2f ", GyroRate_Result);
+//		OLED_Printf(24, 48, OLED_6X8, "%4.2f ", Rate__PID.Out);
+//		OLED_Printf(24, 56, OLED_6X8, "%4.2f ", Rate__PID.ErrorInt);
+//		OLED_Update();
     }
 }
 

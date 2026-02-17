@@ -294,6 +294,7 @@ int Mode_1_Running(void)
 			Run_Flag = 0;
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			DifPWM  = 0;
 			
 			// PID参数存储
 			Param_Save();
@@ -301,6 +302,15 @@ int Mode_1_Running(void)
 			// 返回上一级菜单
             return 0;
         }
+		
+		
+		/* mpu6050数据接收与解析*/
+		if (mpu6050_analysis_enable)
+		{
+			mpu6050_get_data();
+			mpu6050_analysis_enable = 0;
+			MPU6050_Analysis();
+		}
 		
 		
 		/* 蓝牙模块*/
@@ -314,6 +324,7 @@ int Mode_1_Running(void)
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			DifPWM  = 0;
 			
 			OLED_ShowString(0, 0, "STOP", OLED_6X8);
 			OLED_Update();
@@ -334,10 +345,8 @@ int Mode_1_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-			// 转向环PID计算
-
-			// 小车应该站稳了
-			if (fabsf(Angle_Result) < 15.0f)
+			// 转向环PID计算		
+			if (fabsf(Angle_Result) < 15.0f)// 小车应该站稳了
 			{
 				Turn__PID.Actual = DifSpeed;
 				PID_Update(&Turn__PID);
@@ -358,14 +367,13 @@ int Mode_1_Running(void)
 		}
 
 		
-		/* PID*/
         if (Run_Flag)
 		{			
 			if (Time_Count1 > 2)// 2 * 5 ms调控周期
 			{
 				Time_Count1 = 0;
-				// PID调控
-					// 角度环PID计算
+
+				// 角度环PID计算
 				Angle_PID.Actual = Angle_Result;
 				PID_Update(&Angle_PID);
 				Rate__PID.Target = Angle_PID.Out;
@@ -380,8 +388,8 @@ int Mode_1_Running(void)
 				RightPWM = AvePWM - DifPWM / 2.0f;
 
 				// 输出限幅
-				if (LeftPWM  > 9500){LeftPWM  = 9500;}else if (LeftPWM  < -9500){LeftPWM  = -9500;}
-				if (RightPWM > 9500){RightPWM = 9500;}else if (RightPWM < -9500){RightPWM = -9500;}
+				if (LeftPWM  > 9000){LeftPWM  = 9000;}else if (LeftPWM  < -9000){LeftPWM  = -9000;}
+				if (RightPWM > 9000){RightPWM = 9000;}else if (RightPWM < -9000){RightPWM = -9000;}
 				
 				// 设置PWM
 				motor_SetPWM(1, LeftPWM);
@@ -393,17 +401,9 @@ int Mode_1_Running(void)
 		{		
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
+			DifPWM  = 0;
 		}
 			
-		
-		/* mpu6050数据接收与解析*/
-		if (mpu6050_analysis_enable)
-		{
-			mpu6050_get_data();
-			mpu6050_analysis_enable = 0;
-			MPU6050_Analysis();
-		}
-		
 		
 //		OLED_Printf(24, 8 , OLED_6X8, "%4.2f ", Rate__PID.Kp);
 //		OLED_Printf(24, 16, OLED_6X8, "%4.2f ", Rate__PID.Ki);
@@ -412,7 +412,7 @@ int Mode_1_Running(void)
 //		OLED_Printf(24, 40, OLED_6X8, "%4.2f ", GyroRate_Result);
 //		OLED_Printf(24, 48, OLED_6X8, "%4.2f ", Rate__PID.Out);
 //		OLED_Printf(24, 56, OLED_6X8, "%4.2f ", Rate__PID.ErrorInt);
-		OLED_Update();
+//		OLED_Update();
     }
 }
 
