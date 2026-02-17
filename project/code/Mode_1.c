@@ -332,7 +332,7 @@ int Mode_1_Running(void)
 		
 		
 		/* 速度计算*/
-		if (Time_Count2 > 10)// 10 * 5 ms调控周期
+		if (Time_Count2 >= 10)// 10 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
 			
@@ -369,7 +369,7 @@ int Mode_1_Running(void)
 		
         if (Run_Flag)
 		{			
-			if (Time_Count1 > 2)// 2 * 5 ms调控周期
+			if (Time_Count1 >= 2)// 2 * 5 ms调控周期
 			{
 				Time_Count1 = 0;
 
