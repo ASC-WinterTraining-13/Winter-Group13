@@ -15,8 +15,8 @@ float AveSpeed, DifSpeed;				//平均实际速度，差分实际速度
 
 
 // 调控周期计时器
-uint16_t Time_Count1 = 0;
-uint16_t Time_Count2 = 0;
+volatile uint16_t Time_Count1 = 0;
+volatile uint16_t Time_Count2 = 0;
 // 延时
 uint16_t BuzzerAndLED_Delay_Timer = 0;
 
@@ -47,7 +47,7 @@ PID_t Rate__PID = {
     .IntSepThresh = 0,   			// 积分分离阈值（误差大于阈值 积分清零）
     .ErrorIntMax = 0,				// 积分限幅（上限）
     .ErrorIntMin = 0,				// 积分限幅（下限）
-    .OutOffset = 300,					// 输出偏移
+    .OutOffset = 0,					// 输出偏移
 };
 // 角度环PID参数
 PID_t Angle_PID = {
@@ -71,7 +71,7 @@ PID_t Speed_PID = {
 PID_t Turn__PID = {	
 	.OutMax = 6000,					// 输出限幅（上限）
 	.OutMin = -6000,				// 输出限幅（下限）
-	.IntSepThresh = 5000,			// 积分分离阈值（误差大于阈值 积分清零）
+	.IntSepThresh = 50,			// 积分分离阈值（误差大于阈值 积分清零）
 	.ErrorIntMax = 3000,			// 积分限幅（上限）
 	.ErrorIntMin = -3000,			// 积分限幅（下限）
 	.OutOffset = 0,					// 输出偏移

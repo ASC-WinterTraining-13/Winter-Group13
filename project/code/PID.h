@@ -30,6 +30,6 @@ typedef struct {
 
 void 	PID_Init				(PID_t *p);
 void 	PID_Update				(PID_t *p);
-void 	Balance_PID_Contorl		(uint8_t Debug_Level);
+void 	Balance_PID_Contorl		(void);
 
 #endif

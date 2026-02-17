@@ -56,7 +56,7 @@ void PID_Update(PID_t *p)
 	/* 后续一旦Ki不为0，那么因为误差积分已经积累到很大的值了，这就导致积分项疯狂输出，不利于调试*/
 	if (p->Ki != 0)					// 如果Ki不为0
 	{
-		p->ErrorInt += p->Error0;	// 进行误差积分
+		p->ErrorInt += p->Error0 * C;	// 进行误差积分
 		// 积分限幅
 		if (p->ErrorInt > p->ErrorIntMax) p->ErrorInt = p->ErrorIntMax;
 		if (p->ErrorInt < p->ErrorIntMin) p->ErrorInt = p->ErrorIntMin;	
@@ -92,9 +92,9 @@ void PID_Update(PID_t *p)
 // 备注信息		目前为调试版本，传入参数将决定pid环启用级数
 //-------------------------------------------------------------------------------------------------------------------
 
-void Balance_PID_Contorl(uint8_t Debug_Level)
+void Balance_PID_Contorl()
 {
-	if (Debug_Level == 0){return;}
+
 	
 	// 失控保护
 	if (Angle_Result < - 50.0f || 50.0f < Angle_Result)
@@ -105,61 +105,51 @@ void Balance_PID_Contorl(uint8_t Debug_Level)
 		return;
 	}
 	
-	// 实际速度换算
-	AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
-	DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
-	
-	// 转向环PID计算
-	if (Debug_Level >= 4)
-	{
-		// 小车应该站稳了
-		if (fabsf(Angle_Result) < 15.0f)
-		{
-			Turn__PID.Actual = DifSpeed;
-			PID_Update(&Turn__PID);
-			DifPWM = Turn__PID.Out;
-		}
-		// 看来没有
-		else 
-		{
-			Turn__PID.ErrorInt = 0;
-			Turn__PID.Out = 0;
-		}
-	}
-	
-	// 速度环PID计算
-	if (Debug_Level >= 3)
-	{
-		Speed_PID.Actual = AveSpeed;
-		PID_Update(&Speed_PID);
-		Angle_PID.Target = Speed_PID.Out;
-	}
-	
-	// 角度环PID计算
-	if (Debug_Level >= 2)
-	{
-		Angle_PID.Actual = Angle_Result;
-		PID_Update(&Angle_PID);
-		Rate__PID.Target = Angle_PID.Out;
-	}
-	
-	// 角速度环PID计算
-	if (Debug_Level >= 1)
-	{
-		Rate__PID.Actual = GyroRate_Result;
-		PID_Update(&Rate__PID);
-		AvePWM = - Rate__PID.Out;
-	}
-	
-	// 输出PWM换算
-	LeftPWM  = AvePWM + DifPWM / 2.0f;
-	RightPWM = AvePWM - DifPWM / 2.0f;
+//	// 实际速度换算
+//	AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
+//	DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
+//	
+//	// 转向环PID计算
 
-	// 输出限幅
-	if (LeftPWM  > 9500){LeftPWM  = 9500;}else if (LeftPWM  < -9500){LeftPWM  = -9500;}
-	if (RightPWM > 9500){RightPWM = 9500;}else if (RightPWM < -9500){RightPWM = -9500;}
+//	// 小车应该站稳了
+//	if (fabsf(Angle_Result) < 15.0f)
+//	{
+//		Turn__PID.Actual = DifSpeed;
+//		PID_Update(&Turn__PID);
+//		DifPWM = Turn__PID.Out;
+//	}
+//	// 看来没有
+//	else 
+//	{
+//		Turn__PID.ErrorInt = 0;
+//		Turn__PID.Out = 0;
+//	}
+//	
+//	
+//	// 速度环PID计算
+//	Speed_PID.Actual = AveSpeed;
+//	PID_Update(&Speed_PID);
+//	Angle_PID.Target = Speed_PID.Out;
 	
-	// 设置PWM
-	motor_SetPWM(1, LeftPWM);
-	motor_SetPWM(2, RightPWM);
+//	// 角度环PID计算
+//	Angle_PID.Actual = Angle_Result;
+//	PID_Update(&Angle_PID);
+//	Rate__PID.Target = Angle_PID.Out;
+//	
+//	// 角速度环PID计算
+//	Rate__PID.Actual = GyroRate_Result;
+//	PID_Update(&Rate__PID);
+//	AvePWM = - Rate__PID.Out;
+//	
+//	// 输出PWM换算
+//	LeftPWM  = AvePWM + DifPWM / 2.0f;
+//	RightPWM = AvePWM - DifPWM / 2.0f;
+
+//	// 输出限幅
+//	if (LeftPWM  > 9500){LeftPWM  = 9500;}else if (LeftPWM  < -9500){LeftPWM  = -9500;}
+//	if (RightPWM > 9500){RightPWM = 9500;}else if (RightPWM < -9500){RightPWM = -9500;}
+//	
+//	// 设置PWM
+//	motor_SetPWM(1, LeftPWM);
+//	motor_SetPWM(2, RightPWM);
 }

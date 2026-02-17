@@ -332,7 +332,7 @@ int Mode_5_Running(void)
 			{
 				Time_Count1 = 0;
 				// PID调控
-				Balance_PID_Contorl(0);
+				Balance_PID_Contorl();
 			}						
 		}
 		else
