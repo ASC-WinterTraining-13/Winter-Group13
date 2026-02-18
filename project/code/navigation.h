@@ -2,7 +2,6 @@
 * 惯性导航系统，移植自https://gitee.com/Emma321/navigation
 * 移植涉及文件:
 * "nag_flash.c"		"nag_flash.h"
-* "kalman.c"		"kalman.h"
 * "navigation.c"	"navigation.h"
 * 
 * 本文件功能说明：
@@ -16,23 +15,23 @@
 #include "zf_common_typedef.h"
 
 // *********************用户可配置区域（最终版）****************************//
-#define MaxSize          256     // 每页最大存储数（MM32 Flash每页1K=256个int32）
-#define Read_MaxSize     10000   // 最大读取缓存（10000*4=40KB，MM32 RAM足够）
+#define MaxSize          256     // 保留
+#define Read_MaxSize     10000   // 保留
 
-// 核心：预留40个扇区给程序（0~39），惯导从40扇区开始
-#define Nag_End_Page     0       // 扇区内起始页（0-3，固定0）
-#define Nag_Start_Page   3       // 扇区内结束页（0-3，固定3）
-#define Nag_Start_Sector 40      // 惯导起始扇区（避开0~39的程序预留区）
-#define Nag_End_Sector   126     // 惯导结束扇区（避开127扇区的PID区）
+#define Nag_End_Page     0       // 保留
+#define Nag_Start_Page   3       // 保留
+#define Nag_Start_Sector 40      // 保留
+#define Nag_End_Sector   126     // 保留
 
-#define Nag_Set_mileage  2100    // 里程计触发阈值（5cm触发一次）
-#define Nag_Prev         200     // 前瞻数量
-#define Nag_Yaw          angle_Z // 偏航角来源（陀螺仪解算值）
+// 修改1：里程阈值改为浮点型（5cm=50mm，适配你的里程单位）
+#define Nag_Set_mileage  50.0f   
+#define Nag_Prev         200     // 保留
+#define Nag_Yaw          angle_Z // 保留
 
-// 修正：替换为逐飞标准编码器接口（你可根据实际编码器通道修改）
-// 编码器1=左轮，编码器2=右轮（逐飞库默认接口）
-#define L_Mileage        encoder_get_count(1)
-#define R_Mileage        encoder_get_count(2)
+// 修改2：删除原编码器宏定义（已整合到navigation.c的函数中）
+// 注释掉这两行：
+// #define L_Mileage        encoder_get_count(1)
+// #define R_Mileage        encoder_get_count(2)
 // ********************************************************//
 
 // 惯导控制结构体

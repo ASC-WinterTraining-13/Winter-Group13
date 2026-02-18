@@ -2,21 +2,79 @@
 * 惯性导航系统，移植自https://gitee.com/Emma321/navigation
 * 移植涉及文件:
 * "nag_flash.c"		"nag_flash.h"
-* "kalman.c"		"kalman.h"
 * "navigation.c"	"navigation.h"
 * 
 * 本文件功能说明：
-* 惯性导航上层调用
+* 惯性导航上层调用 + 适配你的MPU6050姿态解算（无新建文件）
 ********************************************************************************************************************/
 
 
 #include "zf_common_headfile.h"
 #include "navigation.h"
-#include "kalman.h"  
+#include "mpu6050_Analysis.h"  // 你的MPU6050姿态解算头文件
+#include "param_config.h"      // 你的全局变量头文件
 #include "nag_flash.h"  
+
+// 新增：适配你的变量（核心映射）
+static float last_yaw = 0.0f;  // 上一帧偏航角
+static int8 dir_change = 0;    // 偏航角跨0度计数
+// 编码器里程系数（根据你的硬件修改！）
+// 公式：每速度单位对应实际里程(mm) = (π×轮子直径mm) / (编码器线数×减速比)
+#define ENCODER_MILEAGE_COEFF 0.204f  
 
 int32 Nav_read[Read_MaxSize];
 Nag N;
+// 开源库依赖的全局变量（必须定义）
+float angle_Z = 0.0f;          
+
+// 新增：适配你的速度→里程转换函数
+static float Get_Left_Mileage(void)
+{
+    // 速度×5ms×系数 = 5ms内左轮行驶的里程(mm)
+    return LeftSpeed * 5.0f * ENCODER_MILEAGE_COEFF;
+}
+
+static float Get_Right_Mileage(void)
+{
+    return RightSpeed * 5.0f * ENCODER_MILEAGE_COEFF;
+}
+
+// 新增：惯导适配初始化（替换原gyroOffset_init）
+void Nav_Adapter_Init(void)
+{
+    // 1. 你的MPU6050零飘校准
+    MPU6050_Calibration_Start();
+    
+    // 2. 开源库原有初始化
+    Init_Nag();
+    
+    // 3. 初始化偏航角变量
+    last_yaw = 0.0f;
+    dir_change = 0;
+    angle_Z = 0.0f;
+}
+
+// 新增：惯导适配核心函数（主循环调用，处理中断标志位）
+void Nav_Adapter_Main(void)
+{
+    // 1. 检查你的MPU6050解算标志位
+    if(mpu6050_analysis_enable)
+    {
+        // 2. 执行你的姿态解算（更新Yaw_Result）
+        MPU6050_Analysis();
+        mpu6050_analysis_enable = 0;  // 清除标志位
+        
+        // 3. 映射你的偏航角到开源库的angle_Z（解决360°循环）
+        float current_yaw = Yaw_Result;
+        if ((current_yaw - last_yaw) < -350.0f) dir_change++;
+        else if ((current_yaw - last_yaw) > 350.0f) dir_change--;
+        angle_Z = 360.0f * dir_change + current_yaw;
+        last_yaw = current_yaw;
+    }
+    
+    // 4. 调用开源库核心逻辑
+    Nag_System();
+}
 
 // 惯导读取线程（记录/复现切换）
 void Nag_Read()
@@ -54,8 +112,8 @@ void Nag_Run()
 // 偏航角记录（调用三次包装Flash接口）
 void Run_Nag_Save()
 {
-    // 累计里程（左右编码器平均值）
-    N.Mileage_All+=(R_Mileage+L_Mileage)/2.0;
+    // 修改：适配你的速度里程，删除int强制转换
+    N.Mileage_All += (Get_Right_Mileage() + Get_Left_Mileage()) / 2.0f;
     
     // 每页存满后写入Flash
     if(N.size > MaxSize)
@@ -85,8 +143,8 @@ void Run_Nag_Save()
 // 偏航角复现（读取Flash）
 void Run_Nag_GPS()
 {
-    // 累计里程
-    N.Mileage_All+=(int)((R_Mileage+L_Mileage)/2.0);
+    // 修改：适配你的速度里程，删除int强制转换
+    N.Mileage_All += (Get_Right_Mileage() + Get_Left_Mileage()) / 2.0f;
     uint16 prospect=0;
     
     // 达到里程阈值，读取目标偏航角
@@ -117,7 +175,7 @@ void Run_Nag_GPS()
     }
 }
 
-// 惯导初始化
+// 惯导初始化（保留原函数）
 void Init_Nag()
 {
     memset(&N, 0, sizeof(N));

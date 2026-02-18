@@ -520,16 +520,6 @@
               <FilePath>..\code\mpu6050_Analysis.h</FilePath>
             </File>
             <File>
-              <FileName>kalman.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\kalman.c</FilePath>
-            </File>
-            <File>
-              <FileName>kalman.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\kalman.h</FilePath>
-            </File>
-            <File>
               <FileName>nag_flash.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\nag_flash.c</FilePath>
