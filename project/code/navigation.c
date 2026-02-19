@@ -155,7 +155,7 @@ void Init_Nag()
 // 备注信息
 //-------------------------------------------------------------------------------------------------------------------
 void Nag_System(){
-    //卫保护
+    // 保护
     if(!N.Nag_SystemRun_Index || N.Nag_Stop_f )  return;
 
     switch(N.Nag_SystemRun_Index)

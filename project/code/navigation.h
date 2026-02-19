@@ -53,24 +53,27 @@
 #define R_Mileage RightSpeed 		// 右轮编码器
 //********************************************************//
 
+
+// 混合了标志位、计数值、索引位、输入值、中间值、输出值的结构体
+// 实际上 Nag 结构体只被实例化为结构体变量 N 这一个
 typedef struct{
-       float Final_Out; 				// 最终输出
-       float Mileage_All;   			// 里程计数
-       float Angle_Run; 				// 读取的偏航角
-       bool Nag_Stop_f; 				// 惯导中止flag
-       uint8 Flash_read_f;				// 惯导读取flag
-       uint16 size; 					// 惯导数组索引通用计数
-       uint16 Run_index;
-       uint16 Save_count;
-       uint16 Save_index;				// 保存的flag
-       uint8 Save_state;
-       uint8 End_f;						// 中止flag
-       //与flash相关的
-       uint8 Flash_page_index;			// flash页面索引
-       uint8 Flash_Save_Page_Index;		// flash保存页码索引
-       uint8 Nag_SystemRun_Index;   	// 惯导执行索引
-       //暂时未开发部分
-       int Prev_mile[Nag_Prev]; 		// 前瞻
+	float Final_Out; 				// [输出]偏航角误差值
+	float Mileage_All;   			// [输入/计数]里程计数，用于触发存储
+	float Angle_Run; 				// [中间]读取的路径偏航角
+	bool Nag_Stop_f; 				// [标志]惯导中止flag（1为停止）
+	uint8 Flash_read_f;				// [标志]惯导读取flag
+	uint16 size; 					// [索引]falsh缓冲区索引
+	uint16 Run_index;				// [索引]复现路径的数组索引
+//	uint16 Save_count;				// []
+	uint16 Save_index;				// [计数]存储条数
+	uint8 Save_state;				// [标志]读取状态（1为完成）
+	uint8 End_f;					// [标志]记录状态（1为完成）
+	//与flash相关的
+	uint8 Flash_page_index;			// [索引]当前flash页面索引
+//	uint8 Flash_Save_Page_Index;	// []
+	uint8 Nag_SystemRun_Index;   	// [标志]惯导执行状态（1=记录路径，3=复现路径，0=停止）
+	//暂时未开发部分
+//	int Prev_mile[Nag_Prev]; 		// []
 }Nag;
 
 extern Nag N;   						// 整个变量的结构体，方便开发和移植
