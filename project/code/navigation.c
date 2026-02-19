@@ -5,230 +5,198 @@
 * "navigation.c"	"navigation.h"
 * 
 * 本文件功能说明：
-* 惯性导航上层调用 + 适配你的MPU6050姿态解算（无新建文件）
+* 惯性导航上层调用
 ********************************************************************************************************************/
 
 
+// 原有的开源库声明
+/*
+ * navigation.c
+ *
+ *  Created on: 2024年10月16日
+ *      Author: Monst
+ *
+ *
+ */
+ 
+
 #include "zf_common_headfile.h"
 #include "navigation.h"
-#include "mpu6050_Analysis.h"  // 你的MPU6050姿态解算头文件
-#include "param_config.h"      // 你的全局变量头文件
-#include "nag_flash.h"  
+#include "navi_flash.h"
 
-// 新增：适配你的变量（核心映射）
-static float last_yaw = 0.0f;  // 上一帧偏航角
-static int8 dir_change = 0;    // 偏航角跨0度计数
-// 编码器里程系数（根据你的硬件修改！）
-// 公式：每速度单位对应实际里程(mm) = (π×轮子直径mm) / (编码器线数×减速比)
-#define ENCODER_MILEAGE_COEFF 0.204f  
 
-int32 Nav_read[Read_MaxSize];
+int32 Nav_read[Read_MaxSize];// 按5cm算的话,1000可以跑50m
 Nag N;
-// 开源库依赖的全局变量（必须定义）
-float angle_Z = 0.0f;          
-
-// 新增：适配你的速度→里程转换函数
-static float Get_Left_Mileage(void)
-{
-    // 速度×5ms×系数 = 5ms内左轮行驶的里程(mm)
-    return LeftSpeed * 5.0f * ENCODER_MILEAGE_COEFF;
-}
-
-static float Get_Right_Mileage(void)
-{
-    return RightSpeed * 5.0f * ENCODER_MILEAGE_COEFF;
-}
-
-// 新增：惯导适配初始化（替换原gyroOffset_init）
-void Nav_Adapter_Init(void)
-{
-    // 1. 你的MPU6050零飘校准
-    MPU6050_Calibration_Start();
-    
-    // 2. 开源库原有初始化
-    Init_Nag();
-    
-    // 3. 初始化偏航角变量
-    last_yaw = 0.0f;
-    dir_change = 0;
-    angle_Z = 0.0f;
-}
-
-// 新增：惯导适配核心函数（主循环调用，处理中断标志位）
-void Nav_Adapter_Main(void)
-{
-    // 1. 检查你的MPU6050解算标志位
-    if(mpu6050_analysis_enable)
-    {
-        // 2. 执行你的姿态解算（更新Yaw_Result）
-        MPU6050_Analysis();
-        mpu6050_analysis_enable = 0;  // 清除标志位
-        
-        // 3. 映射你的偏航角到开源库的angle_Z（解决360°循环）
-        float current_yaw = Yaw_Result;
-        if ((current_yaw - last_yaw) < -350.0f) dir_change++;
-        else if ((current_yaw - last_yaw) > 350.0f) dir_change--;
-        angle_Z = 360.0f * dir_change + current_yaw;
-        last_yaw = current_yaw;
-    }
-    
-    // 4. 调用开源库核心逻辑
-    Nag_System();
-}
-
-// 惯导读取线程（记录/复现切换）
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     读取偏航角的线程函数
+// 参数说明     读取偏航角的线程函数，通过切换N.End_f来切换线程
+// 返回参数     void
+// 使用示例     用户无需调用
+// 备注信息
+//-------------------------------------------------------------------------------------------------------------------
 void Nag_Read()
 {
-    switch(N.End_f)
-    {
-        case 0: Run_Nag_Save();  // 记录模式
-            break;
-        case 1: 
-            nag_flash_write_data();   // 调用三次包装接口：写入惯导数据
-            N.End_f++;
-            break;
-        case 2: 
-            N.End_f++;          // 结束线程
-            break;
-    }
+        switch(N.End_f)
+        {
+            case 0:
+				Run_Nag_Save();  		// 默认执行函数
+                break;
+            case 1:
+				flash_Navi_Write();  	// 写入最后一页，保证falsh存储满
+				N.End_f++;
+				break;
+            case 2:
+				//Buzzer_check(500);   	// 蜂鸣器确认执行
+				N.End_f++;  			// 结束线程
+				break;
+        }
 }
-
-// 偏航角偏差计算
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     用于生成偏差计算
+// 参数说明     N.Final_Out为最终生成的偏差大小
+// 返回参数     void
+// 使用示例     用户无需调用
+// 备注信息
+//-------------------------------------------------------------------------------------------------------------------
 void Nag_Run()
 {
-    Run_Nag_GPS();  // 读取目标偏航角
-    
-    // 停止保护
-    if(N.Nag_Stop_f)
-    {
-        N.Final_Out=0;
-        return;
-    }
-    
-    // 计算当前偏航角与目标偏航角的偏差
-    N.Final_Out=angle_Z-N.Angle_Run;
-}
+	Run_Nag_GPS();  // 偏航角读取复现
+	
+	// 完成复现后清零输出，防止旋转
+	if(N.Nag_Stop_f) 
+	{
+		N.Final_Out = 0;
+		return;
+	}
+	
+	// 返回误差值，angle_Z为当前yaw角
+	N.Final_Out = Yaw_Result - N.Angle_Run;
 
-// 偏航角记录（调用三次包装Flash接口）
+}
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     偏航角存入
+// 参数说明     将读取的YAW存储到flash中存储
+// 返回参数     void
+// 使用示例     用户无需调用
+// 备注信息
+//-------------------------------------------------------------------------------------------------------------------
 void Run_Nag_Save()
 {
-    // 修改：适配你的速度里程，删除int强制转换
-    N.Mileage_All += (Get_Right_Mileage() + Get_Left_Mileage()) / 2.0f;
-    
-    // 每页存满后写入Flash
-    if(N.size > MaxSize)
+    N.Mileage_All+=(R_Mileage+L_Mileage) / 2.0;// 历程计读取，左右编码器，使用浮点数的话误差能保留下来
+    if(N.size > MaxSize)		// 当大于这页有的flash大小的时候，写入一次，防止重复写入
     {
-        nag_flash_write_data();  // 调用三次包装接口：写入数据
-        N.size=0;
-        N.Flash_sector_index--;
-        zf_assert(N.Flash_sector_index >= Nag_Start_Sector && N.Flash_sector_index <= Nag_End_Sector); // 越界保护
+        flash_Navi_Write();
+        N.size = 0;   				//索引重置为0从下一个缓冲区开始读取
+        N.Flash_page_index --;   	//flash页面索引减小
+        zf_assert(N.Flash_page_index >= Nag_End_Page && LOGIC_PAGE_TO_SECTOR(N.Flash_page_index) >= NAG_MIN_SECTOR);// 防止越界报错
     }
 
-    // 达到里程阈值，记录偏航角
-    if(N.Mileage_All >= Nag_Set_mileage)
+    if(N.Mileage_All >= Nag_Set_mileage)    // 大于你的设定值的时候
     {
-        // 偏航角放大100倍（避免浮点存储）
-        int32 Save=(int32)(Nag_Yaw*100);
-        flash_union_buffer[N.size++].int32_type = Save;
-        N.Save_index++;
+       int32 Save = (int32)(Nag_Yaw*100); // 读取的偏航角放大100倍，避免使用Float类型来存储
+       flash_union_buffer[N.size++].int32_type = Save;  // 将偏航角写入缓冲区
 
-        // 重置累计里程
-        if(N.Mileage_All > 0) 
-            N.Mileage_All -= Nag_Set_mileage;
-        else 
-            N.Mileage_All += Nag_Set_mileage;
+       N.Save_index ++;
+
+
+       if(N.Mileage_All > 0) N.Mileage_All -= Nag_Set_mileage;// 重置历程计数字//保存到flash
+       else N.Mileage_All += Nag_Set_mileage;// 倒车
     }
+
 }
-
-// 偏航角复现（读取Flash）
+// 偏航角复现
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     偏航角复现
+// 参数说明     读取flash中存储的YAW
+// 返回参数     void
+// 使用示例     用户无需调用
+// 备注信息
+//-------------------------------------------------------------------------------------------------------------------
 void Run_Nag_GPS()
 {
-    // 修改：适配你的速度里程，删除int强制转换
-    N.Mileage_All += (Get_Right_Mileage() + Get_Left_Mileage()) / 2.0f;
-    uint16 prospect=0;
-    
-    // 达到里程阈值，读取目标偏航角
+    N.Mileage_All += (int)((R_Mileage+L_Mileage)/2.0);// 历程计读取，左右编码器，使用浮点数的话误差能保留下来
+    uint16 prospect = 0;
     if(N.Mileage_All >= Nag_Set_mileage)
     {
-        // 越界保护
-        if(N.Run_index> N.Save_index-2)
-        {
-            N.Nag_Stop_f++;
-            return;
-        }
-        
-        N.Run_index++;
-        prospect=N.Run_index;
-        
-        // 前瞻越界保护
-        if(prospect >N.Save_index-2)  
-            prospect=N.Save_index-2;
-        
-        // 读取目标偏航角（缩小100倍）
-        N.Angle_Run = (Nav_read[prospect]/100.0f);  
-        
-        // 重置累计里程
-        if(N.Mileage_All > 0) 
-            N.Mileage_All -= Nag_Set_mileage;
-        else 
-            N.Mileage_All += Nag_Set_mileage;
+    if(N.Run_index> N.Save_index-2)
+    {
+        N.Nag_Stop_f ++;
+        return;
     }
-}
+       N.Run_index ++;// 如果需要跑两圈可以直接把这个赋值为0.
+    
+       prospect = N.Run_index ;// 前瞻
+       if(prospect >N.Save_index-2)  prospect = N.Save_index-2;// 越界保护
+       N.Angle_Run = (Nav_read[prospect]/100.0f);  
+       if(N.Mileage_All > 0) N.Mileage_All -= Nag_Set_mileage;// 重置历程计数字//保存到flash
+       else N.Mileage_All += Nag_Set_mileage;   // 倒车
+    }
 
-// 惯导初始化（保留原函数）
+
+}
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     惯导参数初始化
+// 返回参数     void
+// 使用示例     放入程序执行开始
+// 备注信息
+//-------------------------------------------------------------------------------------------------------------------
 void Init_Nag()
 {
     memset(&N, 0, sizeof(N));
-    N.Flash_sector_index = Nag_Start_Sector; // 从40扇区开始
-    N.Flash_page_index = Nag_Start_Page;     // 扇区内从3页开始
+    N.Flash_page_index = Nag_Start_Page;
     flash_buffer_clear();
 }
-
-// 惯导核心执行函数（放入中断）
-void Nag_System()
-{
-    // 停止保护
-    if(!N.Nag_SystemRun_Index || N.Nag_Stop_f )  
-        return;
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     惯性导航执行函数
+// 参数说明     index           索引
+// 参数说明     type            类型值
+// 返回参数     void
+// 使用示例     放入中断中
+// 备注信息
+//-------------------------------------------------------------------------------------------------------------------
+void Nag_System(){
+    //卫保护
+    if(!N.Nag_SystemRun_Index || N.Nag_Stop_f )  return;
 
     switch(N.Nag_SystemRun_Index)
     {
-        case 1 : Nag_Read();    // 记录/复现切换
+       case 1 : Nag_Read();    // 1是读取
             break;
-        case 3: Nag_Run();      // 偏差计算
+      case 3: Nag_Run();
             break;
     }
 }
 
-// 一次性读取Flash数据到数组
-void NagFlashRead()
-{
-    if(N.Save_state) return;
-    
-    nag_flash_read_data();  // 调用三次包装接口：读取惯导数据
-    uint8 page_trun=0;
-    
-    for(int index=0;index <= N.Save_index;index++)
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     一次性读取程序，只读取一次！
+// 参数说明     index           索引
+// 参数说明     type            类型值
+// 返回参数     void
+// 使用示例     放入主函数直接调用，demo中有示例。
+// 备注信息
+//-------------------------------------------------------------------------------------------------------------------
+void NagFlashRead(){
+  if(N.Save_state) return;
+  flash_Navi_Read();
+  uint8 page_trun = 0;
+  
+  for(int index=0;index <= N.Save_index;index++)
+  {
+    if(index >= N.Save_index)
     {
-        if(index >= N.Save_index)
-        {
-            N.Save_state=1;
-            break;
-        }
-        
-        int temp_index=index-(MaxSize*page_trun);
-        
-        // 页切换
-        if(temp_index >MaxSize)
-        {
-            N.Flash_sector_index--;
-            page_trun++;
-            nag_flash_read_data(); // 调用三次包装接口：读取新页数据
-        }
-        
-        // 读取数据到数组
-        Nav_read[index]= flash_union_buffer[index-(MaxSize*page_trun)].int32_type;
+        N.Save_state = 1;
+        break;
     }
-    
-    N.Nag_SystemRun_Index++;
+    int temp_index=index-( MaxSize * page_trun);
+    if(temp_index > MaxSize)    // 当大于设定的flsh大小的时候
+    {
+        N.Flash_page_index --;   // 页面减少
+        page_trun++;
+        flash_Navi_Read(); // 重新读取
+    }
+     Nav_read[index] = flash_union_buffer[index-(500*page_trun)].int32_type;
+  }
+  N.Nag_SystemRun_Index ++;
 }
+

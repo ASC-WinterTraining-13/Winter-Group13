@@ -530,8 +530,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\nag_flash.c</PathWithFileName>
-      <FilenameWithoutPath>nag_flash.c</FilenameWithoutPath>
+      <PathWithFileName>..\code\navigation.c</PathWithFileName>
+      <FilenameWithoutPath>navigation.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -542,8 +542,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\nag_flash.h</PathWithFileName>
-      <FilenameWithoutPath>nag_flash.h</FilenameWithoutPath>
+      <PathWithFileName>..\code\navigation.h</PathWithFileName>
+      <FilenameWithoutPath>navigation.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -554,8 +554,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\navigation.c</PathWithFileName>
-      <FilenameWithoutPath>navigation.c</FilenameWithoutPath>
+      <PathWithFileName>..\code\navi_flash.c</PathWithFileName>
+      <FilenameWithoutPath>navi_flash.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -566,8 +566,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\code\navigation.h</PathWithFileName>
-      <FilenameWithoutPath>navigation.h</FilenameWithoutPath>
+      <PathWithFileName>..\code\navi_flash.h</PathWithFileName>
+      <FilenameWithoutPath>navi_flash.h</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>
@@ -835,7 +835,7 @@
 
   <Group>
     <GroupName>zf_common</GroupName>
-    <tvExp>1</tvExp>
+    <tvExp>0</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -1011,7 +1011,7 @@
 
   <Group>
     <GroupName>zf_driver</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

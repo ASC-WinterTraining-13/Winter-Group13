@@ -520,16 +520,6 @@
               <FilePath>..\code\mpu6050_Analysis.h</FilePath>
             </File>
             <File>
-              <FileName>nag_flash.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\code\nag_flash.c</FilePath>
-            </File>
-            <File>
-              <FileName>nag_flash.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\code\nag_flash.h</FilePath>
-            </File>
-            <File>
               <FileName>navigation.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\code\navigation.c</FilePath>
@@ -538,6 +528,16 @@
               <FileName>navigation.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\code\navigation.h</FilePath>
+            </File>
+            <File>
+              <FileName>navi_flash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\code\navi_flash.c</FilePath>
+            </File>
+            <File>
+              <FileName>navi_flash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\code\navi_flash.h</FilePath>
             </File>
             <File>
               <FileName>bluetooth_ch04_example.c</FileName>
