@@ -51,27 +51,27 @@ PID_t Rate__PID = {
 };
 // 角度环PID参数
 PID_t Angle_PID = {
-	.OutMax = 50,					// 输出限幅（上限）
-	.OutMin = -50,					// 输出限幅（下限）
+	.OutMax = 100,					// 输出限幅（上限）
+	.OutMin = -100,					// 输出限幅（下限）
 	.IntSepThresh = 6,				// 积分分离阈值（误差大于阈值 积分清零）
-	.ErrorIntMax = 10,				// 积分限幅（上限）
-	.ErrorIntMin = -10,				// 积分限幅（下限）
+	.ErrorIntMax = 60,				// 积分限幅（上限）
+	.ErrorIntMin = -60,				// 积分限幅（下限）
 	.OutOffset = 0,					// 输出偏移
 };
 // 速度环PID参数
 PID_t Speed_PID = {	
-	.OutMax = 10,					// 输出限幅（上限）
-	.OutMin = -10,					// 输出限幅（下限）
-	.IntSepThresh = 20,				// 积分分离阈值（误差大于阈值 积分清零）
-	.ErrorIntMax = 5,				// 积分限幅（上限）
-	.ErrorIntMin = -5,				// 积分限幅（下限）
+	.OutMax = 5,					// 输出限幅（上限）
+	.OutMin = -5,					// 输出限幅（下限）
+	.IntSepThresh = 2,				// 积分分离阈值（误差大于阈值 积分清零）
+	.ErrorIntMax = 2,				// 积分限幅（上限）
+	.ErrorIntMin = -2,				// 积分限幅（下限）
 	.OutOffset = 0,					// 输出偏移
 };
 // 转向环PID参数
 PID_t Turn__PID = {	
 	.OutMax = 6000,					// 输出限幅（上限）
 	.OutMin = -6000,				// 输出限幅（下限）
-	.IntSepThresh = 50,			// 积分分离阈值（误差大于阈值 积分清零）
+	.IntSepThresh = 50,				// 积分分离阈值（误差大于阈值 积分清零）
 	.ErrorIntMax = 3000,			// 积分限幅（上限）
 	.ErrorIntMin = -3000,			// 积分限幅（下限）
 	.OutOffset = 0,					// 输出偏移

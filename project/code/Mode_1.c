@@ -336,8 +336,8 @@ int Mode_1_Running(void)
 		{
 			Time_Count2 = 0;
 			
-			LeftSpeed  = Get_Encoder1() * 0.8f + Pre_LeftSpeed  * 0.2f;
-			RightSpeed = Get_Encoder2() * 0.8f + Pre_RightSpeed * 0.2f;
+			LeftSpeed  = Get_Encoder1() * 0.9f + Pre_LeftSpeed  * 0.1f;
+			RightSpeed = Get_Encoder2() * 0.9f + Pre_RightSpeed * 0.1f;
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;
 			
@@ -346,7 +346,7 @@ int Mode_1_Running(void)
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
 			// 转向环PID计算		
-			if (fabsf(Angle_Result) < 15.0f)// 小车应该站稳了
+			if (fabsf(Angle_Result) < 10.0f)// 小车应该站稳了
 			{
 				Turn__PID.Actual = DifSpeed;
 				PID_Update(&Turn__PID);
