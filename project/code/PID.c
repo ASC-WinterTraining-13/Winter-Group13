@@ -31,6 +31,21 @@ void PID_Init(PID_t *p)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
+// 函数简介     PID计算中间量重置
+// 使用示例     All_PID_Init(&Angle_PID);
+// 备注信息     注意需要考虑多个调用位置
+//-------------------------------------------------------------------------------------------------------------------
+
+void All_PID_Init(void)
+{
+	PID_Init(&Track_PID);
+	PID_Init(&Turn__PID);
+	PID_Init(&Speed_PID);
+	PID_Init(&Angle_PID);
+	PID_Init(&Rate__PID);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
 // 函数简介     PID计算
 // 参数说明     PID_t *p	要传入的PID结构体变量名称
 // 使用示例     PID_Update(&Angle_PID);
@@ -85,6 +100,62 @@ void PID_Update(PID_t *p)
 }
 
 //-------------------------------------------------------------------------------------------------------------------
+// 函数简介     转向环+速度环：PID算法封装
+// 备注信息     可能需要注意在外部保证其他输入值的更新；
+// 备注信息		PID总架构：[转向环] + [速度环 -> 角度环 -> 角速度环]
+//-------------------------------------------------------------------------------------------------------------------
+void PID_Calc_Speed_And_Turn(void)
+{
+	// 转向环PID计算		
+	if (fabsf(Angle_Result) < 10.0f)// 小车应该站稳了
+	{
+		Turn__PID.Actual = DifSpeed;
+		PID_Update(&Turn__PID);
+		DifPWM = Turn__PID.Out;
+	}
+	// 看来没有
+	else 
+	{
+		PID_Init(&Turn__PID);
+	}
+
+	// 速度环PID计算
+	Speed_PID.Actual = AveSpeed;
+	PID_Update(&Speed_PID);
+	Angle_PID.Target = Speed_PID.Out;
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     转向环+速度环：PID算法封装
+// 备注信息     可能需要注意在外部保证其他输入值的更新；
+// 备注信息		PID总架构：[转向环] + [速度环 -> 角度环 -> 角速度环]
+//-------------------------------------------------------------------------------------------------------------------
+void PID_Calc_Angle_And_Rate(void)
+{
+	// 角度环PID计算
+	Angle_PID.Actual = Angle_Result;
+	PID_Update(&Angle_PID);
+	Rate__PID.Target = Angle_PID.Out;
+	
+	// 角速度环PID计算
+	Rate__PID.Actual = GyroRate_Result;
+	PID_Update(&Rate__PID);
+	AvePWM = - Rate__PID.Out;
+	
+	// 输出PWM换算
+	LeftPWM  = AvePWM + DifPWM / 2.0f;
+	RightPWM = AvePWM - DifPWM / 2.0f;
+
+	// 输出限幅
+	if (LeftPWM  > 9000){LeftPWM  = 9000;}else if (LeftPWM  < -9000){LeftPWM  = -9000;}
+	if (RightPWM > 9000){RightPWM = 9000;}else if (RightPWM < -9000){RightPWM = -9000;}
+	
+	// 设置PWM
+	motor_SetPWM(1, LeftPWM);
+	motor_SetPWM(2, RightPWM);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
 // 函数简介     平衡车平衡PID算法
 // 备注信息     注意在外部保证其他输入值的更新；
 // 备注信息		输入值的更新时间可以不严格与计算周期同步，这里更加看重数据质量
@@ -92,19 +163,19 @@ void PID_Update(PID_t *p)
 // 备注信息		目前为调试版本
 //-------------------------------------------------------------------------------------------------------------------
 
-void Balance_PID_Contorl()
-{
+//void Balance_PID_Contorl()
+//{
 
-	
-	// 失控保护
-	if (Angle_Result < - 50.0f || 50.0f < Angle_Result)
-	{
-		motor_SetPWM(1, 0);
-		motor_SetPWM(2, 0);
-		
-		return;
-	}
-	
+//	
+//	// 失控保护
+//	if (Angle_Result < - 50.0f || 50.0f < Angle_Result)
+//	{
+//		motor_SetPWM(1, 0);
+//		motor_SetPWM(2, 0);
+//		
+//		return;
+//	}
+//	
 //	// 实际速度换算
 //	AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 //	DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
@@ -152,4 +223,4 @@ void Balance_PID_Contorl()
 //	// 设置PWM
 //	motor_SetPWM(1, LeftPWM);
 //	motor_SetPWM(2, RightPWM);
-}
+//}

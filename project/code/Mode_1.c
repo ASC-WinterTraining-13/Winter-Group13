@@ -240,11 +240,7 @@ int Mode_1_Running(void)
 	OLED_Update();
 	
 	// 清零pid积分等参数
-	PID_Init(&Track_PID);
-	PID_Init(&Turn__PID);
-	PID_Init(&Speed_PID);
-	PID_Init(&Angle_PID);
-	PID_Init(&Rate__PID);
+	All_PID_Init();
 	
 	// 防止周期计时乱飞
 	Time_Count1 = 0;
@@ -277,11 +273,7 @@ int Mode_1_Running(void)
 			Param_Save();
 			
 			// 清零pid积分等参数
-			PID_Init(&Rate__PID);
-			PID_Init(&Angle_PID);
-			PID_Init(&Speed_PID);
-			PID_Init(&Turn__PID);
-			PID_Init(&Track_PID);	
+			All_PID_Init();	
 
 			if (Run_Flag) {OLED_ShowString(0, 0, "Run ", OLED_6X8);OLED_Update();}
 			else {OLED_ShowString(0, 0, "STOP", OLED_6X8);OLED_Update();}
@@ -345,57 +337,23 @@ int Mode_1_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-			// 转向环PID计算		
-			if (fabsf(Angle_Result) < 10.0f)// 小车应该站稳了
-			{
-				Turn__PID.Actual = DifSpeed;
-				PID_Update(&Turn__PID);
-				DifPWM = Turn__PID.Out;
-			}
-			// 看来没有
-			else 
-			{
-				PID_Init(&Turn__PID);
-			}
-	
-	
-			// 速度环PID计算
-			Speed_PID.Actual = AveSpeed;
-			PID_Update(&Speed_PID);
-			Angle_PID.Target = Speed_PID.Out;
+			/* 转向环+速度环PID计算*/
+			if (Run_Flag){PID_Calc_Speed_And_Turn();}
 			
 		}
 
+		
 		
         if (Run_Flag)
 		{			
 			if (Time_Count1 >= 2)// 2 * 5 ms调控周期
 			{
 				Time_Count1 = 0;
-
-				// 角度环PID计算
-				Angle_PID.Actual = Angle_Result;
-				PID_Update(&Angle_PID);
-				Rate__PID.Target = Angle_PID.Out;
 				
-				// 角速度环PID计算
-				Rate__PID.Actual = GyroRate_Result;
-				PID_Update(&Rate__PID);
-				AvePWM = - Rate__PID.Out;
-				
-				// 输出PWM换算
-				LeftPWM  = AvePWM + DifPWM / 2.0f;
-				RightPWM = AvePWM - DifPWM / 2.0f;
-
-				// 输出限幅
-				if (LeftPWM  > 9000){LeftPWM  = 9000;}else if (LeftPWM  < -9000){LeftPWM  = -9000;}
-				if (RightPWM > 9000){RightPWM = 9000;}else if (RightPWM < -9000){RightPWM = -9000;}
-				
-				// 设置PWM
-				motor_SetPWM(1, LeftPWM);
-				motor_SetPWM(2, RightPWM);
+				/* 角度环+角速度环PID计算（包括PWM设置）*/
+				PID_Calc_Angle_And_Rate();
 			}						
-			printf("%3.2f,%3.2f,%3.2f,%3.2f\r\n", Rate__PID.Target, GyroRate_Result, Angle_Result, Rate__PID.Out);
+//			printf("%3.2f,%3.2f,%3.2f,%3.2f\r\n", Rate__PID.Target, GyroRate_Result, Angle_Result, Rate__PID.Out);
 		}
 		else
 		{		
@@ -403,16 +361,6 @@ int Mode_1_Running(void)
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
 		}
-			
-		
-//		OLED_Printf(24, 8 , OLED_6X8, "%4.2f ", Rate__PID.Kp);
-//		OLED_Printf(24, 16, OLED_6X8, "%4.2f ", Rate__PID.Ki);
-//		OLED_Printf(24, 24, OLED_6X8, "%4.2f ", Rate__PID.Kd);
-//		OLED_Printf(24, 32, OLED_6X8, "%4.2f ", Rate__PID.Target);
-//		OLED_Printf(24, 40, OLED_6X8, "%4.2f ", GyroRate_Result);
-//		OLED_Printf(24, 48, OLED_6X8, "%4.2f ", Rate__PID.Out);
-//		OLED_Printf(24, 56, OLED_6X8, "%4.2f ", Rate__PID.ErrorInt);
-//		OLED_Update();
     }
 }
 

@@ -29,7 +29,10 @@ typedef struct {
 } PID_t;
 
 void 	PID_Init				(PID_t *p);
+void 	All_PID_Init			(void);
 void 	PID_Update				(PID_t *p);
+void 	PID_Calc_Speed_And_Turn	(void);
+void 	PID_Calc_Angle_And_Rate	(void);
 void 	Balance_PID_Contorl		(void);
 
 #endif
