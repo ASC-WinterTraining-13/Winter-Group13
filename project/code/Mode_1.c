@@ -250,6 +250,9 @@ int Mode_1_Running(void)
 	Get_Encoder1();
 	Get_Encoder2();
 	
+	// 小车距离累积
+	float car_move_length = 0.0f;
+	
     while(1)
     {  
 		/* 按键处理*/
@@ -322,6 +325,12 @@ int Mode_1_Running(void)
 			OLED_Update();
 		}		
 		
+
+		
+		
+		
+		
+		
 		
 		/* 速度计算*/
 		if (Time_Count2 >= 10)// 10 * 5 ms调控周期
@@ -337,11 +346,31 @@ int Mode_1_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
+			// 距离累积
+			car_move_length += AveSpeed;
+			
+			// （干脆用比较死板的方法）
+			if (car_move_length > 1000)
+			{
+				Speed_PID.Target = -20;
+			}
+			else if (car_move_length < -1000)
+			{
+				Speed_PID.Target = 20;
+			}
+			else if (-200 < car_move_length && car_move_length < 200)
+			{
+				Speed_PID.Target = 0;
+			}
+			
+			
 			/* 转向环+速度环PID计算*/
 			if (Run_Flag){PID_Calc_Speed_And_Turn();}
 			
 		}
 
+		
+		
 		
 		
         if (Run_Flag)

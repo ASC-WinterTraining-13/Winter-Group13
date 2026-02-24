@@ -10,8 +10,8 @@ extern int16_t RightPWM;						//右轮PWM
 extern int16_t AvePWM;							//平均PWM
 extern int16_t DifPWM;							//差分PWM
 
-extern float Pre_LeftSpeed, Pre_RightSpeed;	//左轮上次速度，右轮上次速度
-extern float LeftSpeed, RightSpeed;			//左轮实际速度，右轮实际速度
+extern float Pre_LeftSpeed, Pre_RightSpeed;		//左轮上次速度，右轮上次速度
+extern float LeftSpeed, RightSpeed;				//左轮实际速度，右轮实际速度
 extern float AveSpeed, DifSpeed;				//平均实际速度，差分实际速度
 
 
@@ -49,9 +49,10 @@ extern PID_t Angle_PID;				// 角度环PID参数
 extern PID_t Speed_PID;				// 速度环PID参数
 extern PID_t Turn__PID;				// 转向环PID参数
 extern PID_t Track_PID;				// 循迹环PID参数
+extern PID_t Head__PID;				// 航向角环PID参数
 
 // pid参数修改步长值（非蓝牙模块）
-extern const float PID_STEPS[5][3];
+extern const float PID_STEPS[6][3];
 
 /*******************************************************************************************************************/
 /*[E] PID [E]------------------------------------------------------------------------------------------------------*/

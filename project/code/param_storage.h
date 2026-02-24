@@ -8,32 +8,37 @@
 #define PARAM_FLASH_PAGE        (3)
 
 /* 五组PID参数在 flash_union_buffer[] 中的索引*/
-// Rate__PID (0-2)
+// Rate__PID (0-2)角速度环
 #define FLASH_RATE__KP      0
 #define FLASH_RATE__KI      1
 #define FLASH_RATE__KD      2
 
-// Angle_PID (3-5)
+// Angle_PID (3-5)角度环
 #define FLASH_ANGLE_KP      3
 #define FLASH_ANGLE_KI      4
 #define FLASH_ANGLE_KD      5
 
-// Speed_PID (6-8)
+// Speed_PID (6-8)速度环
 #define FLASH_SPEED_KP      6
 #define FLASH_SPEED_KI      7
 #define FLASH_SPEED_KD      8
 
-// Turn__pid (9-11)
+// Turn__pid (9-11)转向环
 #define FLASH_TURN__KP      9
 #define FLASH_TURN__KI      10
 #define FLASH_TURN__KD      11
 
-// Track_pid (12-14)
+// Track_pid (12-14)循迹环
 #define FLASH_TRACK_KP      12
 #define FLASH_TRACK_KI      13
 #define FLASH_TRACK_KD      14
 
-// 预留扩展 (15-255)
+// Head__pid (15-17)航向角环
+#define FLASH_HEAD__KP      15
+#define FLASH_HEAD__KI      16
+#define FLASH_HEAD__KD      17
+
+// 预留扩展 (18-255)
 // 可以继续添加其他参数...
 
 // 简化访问宏（直接操作缓冲区）
@@ -57,12 +62,22 @@
 #define TRACK_KI    flash_union_buffer[FLASH_TRACK_KI].float_type
 #define TRACK_KD    flash_union_buffer[FLASH_TRACK_KD].float_type
 
+#define HEAD__KP    flash_union_buffer[FLASH_HEAD__KP].float_type
+#define HEAD__KI    flash_union_buffer[FLASH_HEAD__KI].float_type
+#define HEAD__KD    flash_union_buffer[FLASH_HEAD__KD].float_type
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     同步pid参数至缓存区（仍然需要调用Param_Save();）
+// 使用示例     Param_SyncToPID();
+// 备注信息     一般是配合蓝牙调参使用的（针对需要将关键pid参数存入flash的要求）
+//-------------------------------------------------------------------------------------------------------------------
+void Param_SyncToPID(void);
+
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     初始化参数系统
 // 使用示例     Param_Init();  // 在 main() 函数开始时调用一次
 // 备注信息     首次使用时自动写入默认值，后续启动自动从Flash加载
 //-------------------------------------------------------------------------------------------------------------------
-
 void Param_Init(void);
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -70,7 +85,6 @@ void Param_Init(void);
 // 使用示例     Param_Save();  // 在退出参数修改时调用
 // 备注信息     将当前缓冲区的数据写入Flash
 //-------------------------------------------------------------------------------------------------------------------
-
 void Param_Save(void);
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -78,15 +92,6 @@ void Param_Save(void);
 // 使用示例     Param_Erase();  // 擦除后下次启动会重新写入默认值（默认值在本文件可以找到）
 // 备注信息     慎用！会清空所有保存的参数
 //-------------------------------------------------------------------------------------------------------------------
-
 void Param_Erase(void);		
-
-//-------------------------------------------------------------------------------------------------------------------
-// 函数简介     同步pid参数至缓存区（仍然需要调用Param_Save();）
-// 使用示例     Param_SyncToPID();
-// 备注信息     一般是配合蓝牙调参使用的（针对需要将关键pid参数存入flash的要求）
-//-------------------------------------------------------------------------------------------------------------------
-
-void Param_SyncToPID(void);
 
 #endif

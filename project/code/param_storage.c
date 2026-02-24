@@ -2,7 +2,7 @@
 #include "param_config.h"
 
 // 默认参数值（首次使用或恢复出厂设置时使用）
-static const float DEFAULT_PARAMS[15] = {
+static const float DEFAULT_PARAMS[18] = {
     // Rate__PID (索引 0-2)
     24.35f, 0.0f, 2.0f,
     
@@ -16,7 +16,10 @@ static const float DEFAULT_PARAMS[15] = {
     100.0f, 0.0f, 0.0f,
     
     // Track_PID (索引 12-14)
-    0.0f, 0.0f, 0.0f
+    0.0f, 0.0f, 0.0f,
+	
+	// Head__PID (索引 15-17)
+	0.0f, 0.0f, 0.0f
 };
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -30,75 +33,6 @@ static void load_default(void)
     {
         flash_union_buffer[i].float_type = DEFAULT_PARAMS[i];
     }
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// 函数简介     初始化参数系统
-// 使用示例     Param_Init();  // 在 main() 函数开始时调用一次
-// 备注信息     首次使用时自动写入默认值，后续启动自动从Flash加载
-//-------------------------------------------------------------------------------------------------------------------
-
-void Param_Init(void)
-{
-    if(flash_check(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE))  // 返回1 = 有数据
-    {
-        // 从Flash读取到缓冲区		
-        flash_read_page_to_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
-    }
-    else  // 返回0 = 没有数据（首次使用）
-    {
-        // 加载默认值到缓冲区
-        load_default();
-        
-        // 写入Flash
-        flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);		
-    }
-		// 角速度环PID
-		Rate__PID.Kp = RATE__KP;
-		Rate__PID.Ki = RATE__KI;
-		Rate__PID.Kd = RATE__KD;
-		
-		// 角度环PID
-		Angle_PID.Kp = ANGLE_KP;
-        Angle_PID.Ki = ANGLE_KI;
-        Angle_PID.Kd = ANGLE_KD;
-		
-		// 速度环PID
-		Speed_PID.Kp = SPEED_KP;
-        Speed_PID.Ki = SPEED_KI;
-        Speed_PID.Kd = SPEED_KD;
-		
-		// 转向环PID
-		Turn__PID.Kp = TURN__KP;
-        Turn__PID.Ki = TURN__KI;
-        Turn__PID.Kd = TURN__KD;
-		
-		// 循迹环PID
-		Track_PID.Kp = TRACK_KP;
-        Track_PID.Ki = TRACK_KI;
-        Track_PID.Kd = TRACK_KD;
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// 函数简介     保存参数到Flash
-// 使用示例     Param_Save();  // 在退出参数修改时调用
-// 备注信息     将当前缓冲区的数据写入Flash
-//-------------------------------------------------------------------------------------------------------------------
-
-void Param_Save(void)
-{
-    flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
-}
-
-//-------------------------------------------------------------------------------------------------------------------
-// 函数简介     擦除Flash存储区域
-// 使用示例     Param_Erase();  // 擦除后下次启动会重新写入默认值（默认值在本文件可以找到）
-// 备注信息     慎用！会清空所有保存的参数
-//-------------------------------------------------------------------------------------------------------------------
-
-void Param_Erase(void)
-{
-    flash_erase_page(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -133,4 +67,56 @@ void Param_SyncToPID(void)
     Track_PID.Kp = TRACK_KP;
     Track_PID.Ki = TRACK_KI;
     Track_PID.Kd = TRACK_KD;
+	
+	// 航向角环PID
+	Head__PID.Kp = HEAD__KP;
+	Head__PID.Ki = HEAD__KI;
+	Head__PID.Kd = HEAD__KD;
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     初始化参数系统
+// 使用示例     Param_Init();  // 在 main() 函数开始时调用一次
+// 备注信息     首次使用时自动写入默认值，后续启动自动从Flash加载
+//-------------------------------------------------------------------------------------------------------------------
+
+void Param_Init(void)
+{
+    if(flash_check(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE))  // 返回1 = 有数据
+    {
+        // 从Flash读取到缓冲区		
+        flash_read_page_to_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
+    }
+    else  // 返回0 = 没有数据（首次使用）
+    {
+        // 加载默认值到缓冲区
+        load_default();
+        
+        // 写入Flash
+        flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);		
+    }
+		// 同步pid参数至缓存区
+		Param_SyncToPID();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     保存参数到Flash
+// 使用示例     Param_Save();  // 在退出参数修改时调用
+// 备注信息     将当前缓冲区的数据写入Flash
+//-------------------------------------------------------------------------------------------------------------------
+
+void Param_Save(void)
+{
+    flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     擦除Flash存储区域
+// 使用示例     Param_Erase();  // 擦除后下次启动会重新写入默认值（默认值在本文件可以找到）
+// 备注信息     慎用！会清空所有保存的参数
+//-------------------------------------------------------------------------------------------------------------------
+
+void Param_Erase(void)
+{
+    flash_erase_page(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
 }

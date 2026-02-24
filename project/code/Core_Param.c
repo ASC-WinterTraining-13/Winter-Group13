@@ -23,6 +23,7 @@ void Core_Param_UI(uint8_t Page)
 			OLED_ShowString(10 , 32 , "Speed_PID", OLED_6X8);
 			OLED_ShowString(10 , 40 , "Turn__PID", OLED_6X8);
 			OLED_ShowString(10 , 48 , "Track_PID", OLED_6X8);
+			OLED_ShowString(10 , 56 , "Head__PID", OLED_6X8);
 			
 			break;
 		}
@@ -58,7 +59,7 @@ void Core_Param_Set_PID_UI(uint8_t Page, PID_t *p)
 // 同步PID结构体到Flash缓冲区（核心修复Flash存储）
 static void Sync_PID_To_Buffer(PID_t *p, uint8_t PID_Num)
 {
-    if (p == NULL || PID_Num < 1 || PID_Num > 5) return;
+    if (p == NULL || PID_Num < 1 || PID_Num > 6) return;
     uint8_t buf_idx = (PID_Num - 1) * 3;  // 转换为缓冲区索引（1→0, 2→3, 3→6...）
     flash_union_buffer[buf_idx + 0].float_type = p->Kp;
     flash_union_buffer[buf_idx + 1].float_type = p->Ki;
@@ -143,9 +144,6 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
 
 // [三级界面]PID参数更改界面
 
-// 参数设置选项数量
-#define OPT_NUM         3
-
 int Set_Core_Param(uint8_t PID_Num)
 {
     // 参数设置选项光标 标志位
@@ -170,14 +168,14 @@ int Set_Core_Param(uint8_t PID_Num)
             key_pressed = 1;
             key_clear_state(KEY_UP);
             Param_flag --;
-            if (Param_flag < 1)Param_flag = OPT_NUM;    
+            if (Param_flag < 1)Param_flag = 3;    
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {
             key_pressed = 1;
             key_clear_state(KEY_DOWN);
             Param_flag ++;
-            if (Param_flag > OPT_NUM)Param_flag = 1;
+            if (Param_flag > 3)Param_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -215,6 +213,10 @@ int Set_Core_Param(uint8_t PID_Num)
 				
 				case 5:
 					Set_Core_Param_PID(Param_flag_temp, &Track_PID, PID_Num);
+					break;
+				
+				case 6:
+					Set_Core_Param_PID(Param_flag_temp, &Head__PID, PID_Num);
 					break;
 				
 			}
@@ -260,14 +262,14 @@ int Core_Param_Menu(void)
             key_pressed = 1;
             key_clear_state(KEY_UP);
             Core_Param_flag --;
-            if (Core_Param_flag < 1)Core_Param_flag = 5;
+            if (Core_Param_flag < 1)Core_Param_flag = 6;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {
             key_pressed = 1;
             key_clear_state(KEY_DOWN);
             Core_Param_flag ++;
-            if (Core_Param_flag > 5)Core_Param_flag = 1;
+            if (Core_Param_flag > 6)Core_Param_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -283,7 +285,8 @@ int Core_Param_Menu(void)
 		
         
         /* 页面跳转*/
-        if (1 <= Core_Param_flag_temp && Core_Param_flag_temp <= 5)
+		// 根据排列位数判定参数是否为PID
+        if (1 <= Core_Param_flag_temp && Core_Param_flag_temp <= 6)
         {
             OLED_Clear();
 			switch (Core_Param_flag_temp)
@@ -322,6 +325,12 @@ int Core_Param_Menu(void)
 					OLED_Update();
 					break;
 				
+				case 6:
+					OLED_ShowString(8 , 0 , "Head__PID", OLED_6X8);
+					Core_Param_Set_PID_UI(1, &Head__PID);
+					OLED_ShowString(0 , 16 , ">", OLED_6X8);
+					OLED_Update();
+					break;				
 			}
 			Set_Core_Param(Core_Param_flag_temp);
 			
@@ -336,7 +345,7 @@ int Core_Param_Menu(void)
         /* 显示更新*/
         if (key_pressed)
         {
-			if (1 <= Core_Param_flag && Core_Param_flag <= 5)
+			if (1 <= Core_Param_flag && Core_Param_flag <= 6)
 			{
 				OLED_Clear();
 				Core_Param_UI(1);
