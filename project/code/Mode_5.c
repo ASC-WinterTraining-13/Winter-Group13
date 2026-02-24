@@ -230,13 +230,8 @@ int Mode_5_Running(void)
 	
 	Run_Flag = 0;	
 	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
-	OLED_ShowString(0, 8 , "Kp:", OLED_6X8);
-	OLED_ShowString(0, 16, "Ki:", OLED_6X8);
-	OLED_ShowString(0, 24, "Kd:", OLED_6X8);
-	OLED_ShowString(0, 32, "Tar:", OLED_6X8);
-	OLED_ShowString(0, 40, "Act:", OLED_6X8);
-	OLED_ShowString(0, 48, "Out:", OLED_6X8);
-	OLED_ShowString(0, 56, "Int:", OLED_6X8);
+	OLED_ShowString(0, 8 , "Yaw_Act:", OLED_6X8);
+	OLED_ShowString(0, 16, "Yaw_Tar:", OLED_6X8);
 	OLED_Update();
 	
 	// 清零pid积分等参数
@@ -249,6 +244,10 @@ int Mode_5_Running(void)
 	// 清零编码器数值
 	Get_Encoder1();
 	Get_Encoder2();
+	
+	// 航向角PID相关
+	Head_PID_control_enable = 0;
+	Yaw_Target = Yaw_Result;
 	
     while(1)
     {  
@@ -337,9 +336,22 @@ int Mode_5_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-			/* 转向环+速度环PID计算*/
-			if (Run_Flag){PID_Calc_Speed_And_Turn();}
 			
+			if (Run_Flag)
+			{
+				/* 航向角PID介入*/
+				if (Head_PID_control_enable)
+				{
+					if (fabs (Yaw_Target - Yaw_Result) < 2.0f){Head_PID_control_enable = 0;}				
+					Head__PID.Target = Yaw_Target;
+					Head__PID.Actual = Yaw_Result;
+					PID_Update(&Head__PID);
+					Turn__PID.Target = - Head__PID.Out;
+				}
+				
+				/* 转向环+速度环PID计算*/
+				PID_Calc_Speed_And_Turn();
+			}
 		}
 
 		
@@ -360,6 +372,16 @@ int Mode_5_Running(void)
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
 		}
+		OLED_Printf(48, 8 , OLED_6X8, "%3.2f", Yaw_Result);
+		if (Head_PID_control_enable)
+		{
+			OLED_Printf(48, 16, OLED_6X8, "%3.2f  ", Yaw_Target);
+		}
+		else
+		{
+			OLED_Printf(48, 16, OLED_6X8, "*%3.2f*", Yaw_Target);
+		}
+		OLED_Update();
     }
 }
 

@@ -38,6 +38,7 @@ void PID_Init(PID_t *p)
 
 void All_PID_Init(void)
 {
+	PID_Init(&Head__PID);
 	PID_Init(&Track_PID);
 	PID_Init(&Turn__PID);
 	PID_Init(&Speed_PID);

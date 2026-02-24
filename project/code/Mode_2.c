@@ -325,7 +325,7 @@ int Mode_2_Running(void)
 		
 		
 				
-		        /* 循迹处理*/
+		/* 循迹处理*/
         float Error = Track_Sensor_Get_Error();
         
 //        switch(Track_Sensor_State)//是否在线
@@ -427,12 +427,12 @@ int Mode_2_Running(void)
 //        if (BuzzerAndLED_Delay_Timer)
 //        {
 //            BUZ_SET(1);
-//            LED_SET(2);
+//            LED_SET(1);
 //        }
 //        else 
 //        {
-//            BUZ_SET(3);
-//            LED_SET(4);
+//            BUZ_SET(0);
+//            LED_SET(0);
 //        }
 //
 

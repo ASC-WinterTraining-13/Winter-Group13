@@ -17,6 +17,7 @@
 
 #include "param_config.h"
 #include "param_storage.h"
+#include "mpu6050_Analysis.h"
 
 #include "Track_Sensor.h"
 
@@ -79,6 +80,16 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
             else if(strcmp(name, "OF") == 0 && strcmp(action, "down") == 0)
             {
                 Run_Flag = 0;
+            }
+			else if(strcmp(name, "Y+45") == 0 && strcmp(action, "down") == 0)
+            {
+				Yaw_Target = Yaw_Result + 45.0f;
+				Head_PID_control_enable = 1;
+            }
+			else if(strcmp(name, "Y-45") == 0 && strcmp(action, "down") == 0)
+            {
+				Yaw_Target = Yaw_Result - 45.0f;
+				Head_PID_control_enable = 1;
             }
         }
     }
