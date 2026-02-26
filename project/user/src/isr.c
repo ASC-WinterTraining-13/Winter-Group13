@@ -36,6 +36,7 @@
 #include "isr.h"
 #include "Encoder.h"
 #include "param_config.h"
+#include "AI_tuning.h"
 
 uint16_t TIM_Time_Count = 0;
 
@@ -171,12 +172,8 @@ void UART1_IRQHandler (void)
     }
     if(UART1->ISR & 0x00000002)                                                 // 串口接收缓冲中断
     {
-#if DEBUG_UART_USE_INTERRUPT                                                    // 如果开启 debug 串口中断
-        debug_interrupr_handler();                                              // 调用 debug 串口接收处理函数 数据会被 debug 环形缓冲区读取
-#endif                                                                          // 如果修改了 DEBUG_UART_INDEX 那这段代码需要放到对应的串口中断去
-        // 此处编写用户代码
-        // 务必读取数据或者关闭中断 否则会一直触发串口接收中断
-
+        // 调用 AI 调参模块的串口回调函数
+        ai_tuning_uart_callback();
         // 此处编写用户代码
         UART1->ICR |= 0x00000002;                                               // 清除中断标志位
     }

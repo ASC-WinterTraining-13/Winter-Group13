@@ -203,8 +203,7 @@ int Mode_1_Menu(void)
 // [三级界面]模式小车运作界面
 
 int Mode_1_Running(void)
-{	 
-		
+{	 	
 	/* 半阻塞式MPU6050零飘校准逻辑(此时请保持静止)*/
 	if (MPU6050_Calibration_Check() != 2)// 如果未校准
 	{
@@ -251,8 +250,7 @@ int Mode_1_Running(void)
 	Get_Encoder2();
 	
 	// 小车距离累积
-	float car_move_length = 0.0f;
-	
+//	float car_move_length = 0.0f;
 	
 	
     while(1)
@@ -342,31 +340,28 @@ int Mode_1_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-			// 距离累积
-			car_move_length += AveSpeed;
+//			// 距离累积
+//			car_move_length += AveSpeed;
 			
-			// （干脆用比较死板的方法）
-			if (car_move_length > 1000)
-			{
-				Speed_PID.Target = -20;
-			}
-			else if (car_move_length < -1000)
-			{
-				Speed_PID.Target = 20;
-			}
-			else if (-200 < car_move_length && car_move_length < 200)
-			{
-				Speed_PID.Target = 0;
-			}
+//			// （干脆用比较死板的方法）
+//			if (car_move_length > 1000)
+//			{
+//				Speed_PID.Target = -20;
+//			}
+//			else if (car_move_length < -1000)
+//			{
+//				Speed_PID.Target = 20;
+//			}
+//			else if (-200 < car_move_length && car_move_length < 200)
+//			{
+//				Speed_PID.Target = 0;
+//			}
 			
 			
 			/* 转向环+速度环PID计算*/
 			if (Run_Flag){PID_Calc_Speed_And_Turn();}
 			
 		}
-
-		
-		
 		
 		
         if (Run_Flag)
@@ -378,7 +373,6 @@ int Mode_1_Running(void)
 				/* 角度环+角速度环PID计算（包括PWM设置）*/
 				PID_Calc_Angle_And_Rate();
 			}						
-//			printf("%3.2f,%3.2f,%3.2f,%3.2f\r\n", Rate__PID.Target, GyroRate_Result, Angle_Result, Rate__PID.Out);
 		}
 		else
 		{		

@@ -148,8 +148,8 @@ void PID_Calc_Angle_And_Rate(void)
 	RightPWM = AvePWM - DifPWM / 2.0f;
 
 	// 输出限幅
-	if (LeftPWM  > 9000){LeftPWM  = 9000;}else if (LeftPWM  < -9000){LeftPWM  = -9000;}
-	if (RightPWM > 9000){RightPWM = 9000;}else if (RightPWM < -9000){RightPWM = -9000;}
+	if (LeftPWM  > 8000){LeftPWM  = 8000;}else if (LeftPWM  < -8000){LeftPWM  = -8000;}
+	if (RightPWM > 8000){RightPWM = 8000;}else if (RightPWM < -8000){RightPWM = -8000;}
 	
 	// 设置PWM
 	motor_SetPWM(1, LeftPWM);
