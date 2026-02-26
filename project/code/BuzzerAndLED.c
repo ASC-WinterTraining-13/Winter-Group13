@@ -1,7 +1,7 @@
 #include "zf_driver_gpio.h"
 
 #define BEEP		D7
-#define LED2		B13
+#define LED2		B0
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     声光模块初始化
@@ -26,6 +26,6 @@ void BUZ_SET(uint8_t State)
 	
 void LED_SET(uint8_t State)
 {
-	if (State == 1)	{gpio_set_level (LED2, GPIO_LOW);}	// LED开
-	else 			{gpio_set_level (LED2, GPIO_HIGH);}	// LED关
+	if (State == 1)	{gpio_set_level (LED2, GPIO_HIGH);}	// LED开
+	else 			{gpio_set_level (LED2, GPIO_LOW);}	// LED关
 }

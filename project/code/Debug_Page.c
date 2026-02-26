@@ -363,7 +363,10 @@ int Debug_Encoder(void)
 	Debug_Encoder_UI();
 	OLED_Update();
 	
-	float Sum_LeftSpeed = 0.0f;
+	// 重置和初始化变量
+	LeftSpeed  = RightSpeed = 0.0f;
+	Pre_LeftSpeed = Pre_RightSpeed = 0.0f;
+	float Sum_LeftSpeed  = 0.0f;
 	float Sum_RightSpeed = 0.0f;
 	
 	// 清零编码器数值
@@ -409,8 +412,8 @@ int Debug_Encoder(void)
 
 			OLED_Printf(30, 16, OLED_6X8, "%2.2f  ", LeftSpeed);
 			OLED_Printf(30, 24, OLED_6X8, "%2.2f  ", RightSpeed);
-			OLED_Printf(30, 32, OLED_6X8, "%4.2f  ", Sum_LeftSpeed);
-			OLED_Printf(30, 40, OLED_6X8, "%4.2f  ", Sum_RightSpeed);
+			OLED_Printf(36, 32, OLED_6X8, "%4.2f  ", Sum_LeftSpeed);
+			OLED_Printf(36, 40, OLED_6X8, "%4.2f  ", Sum_RightSpeed);
 			
 			OLED_Update();
 		}
@@ -510,6 +513,9 @@ int Debug_Bluetooth(void)
 	static uint32 bluetooth_rx_length = 0;
 	
 	uint8_t test_state = 0;
+	
+	// 重置计时器分频计数
+	Time_Count2 = 0;
 	
 	while(1)
 	{

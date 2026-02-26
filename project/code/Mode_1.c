@@ -253,6 +253,8 @@ int Mode_1_Running(void)
 	// 小车距离累积
 	float car_move_length = 0.0f;
 	
+	
+	
     while(1)
     {  
 		/* 按键处理*/
@@ -324,12 +326,6 @@ int Mode_1_Running(void)
 			OLED_ShowString(0, 0, "STOP", OLED_6X8);
 			OLED_Update();
 		}		
-		
-
-		
-		
-		
-		
 		
 		
 		/* 速度计算*/
