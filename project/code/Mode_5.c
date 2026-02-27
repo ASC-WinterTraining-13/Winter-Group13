@@ -351,7 +351,7 @@ int Mode_5_Running(void)
 				/* 航向角PID介入（挪用的时候注意航向角环输出取反给转向环）*/
 				if (Head_PID_control_enable)
 				{
-					if (fabs (Yaw_Target - Yaw_Result) < 2.0f){Head_PID_control_enable = 0;}				
+//					if (fabs (Yaw_Target - Yaw_Result) < 2.0f){Head_PID_control_enable = 0;}				
 					Head__PID.Target = Yaw_Target;
 					Head__PID.Actual = Yaw_Result;
 					PID_Update(&Head__PID);

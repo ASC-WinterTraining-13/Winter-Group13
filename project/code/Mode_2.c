@@ -326,12 +326,35 @@ int Mode_2_Running(void)
 		
 		
 				
-		/* 循迹处理*/
+		/* 路径处理*/
         float Error = Track_Sensor_Get_Error();
+		
+		// 非任务模式：单巡线调试模式（麻烦暴力使用注释来更改模式）
+		switch(Track_Sensor_State)//是否在线
+		{
+			//  在线
+			case TRACK_STATE_ON_LINE:
+			{
+				Track_PID.Actual = Error;
+				PID_Update(&Track_PID);
+				Turn__PID.Target = - Track_PID.Out;
+			}
+			//  掉线
+			case TRACK_STATE_OFF_LINE:
+			{
+				
+			}
+		}
+		
+		
+		
+		
+		
+		// 任务模式：模式二
         
 //        switch(Track_Sensor_State)//是否在线
 //        {
-//            //  有线
+//            //  在线
 //            case TRACK_STATE_ON_LINE:
 //            {
 //                if (Mode_2_Cur_State == STATE_IDLE)
@@ -365,7 +388,7 @@ int Mode_2_Running(void)
 //                }
 //                break;
 //            }
-//            // 无线
+//            // 掉线
 //            case TRACK_STATE_OFF_LINE:
 //            {
 //                if (Mode_2_Cur_State == STATE_IDLE)

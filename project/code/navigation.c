@@ -19,6 +19,7 @@
 #include "zf_common_headfile.h"
 #include "navigation.h"
 #include "navi_flash.h"
+#include "BuzzerAndLED.h"
 #include "math.h"
 
 // 全局变量初始化
@@ -44,7 +45,6 @@ void Nag_Read(void)
             N.End_f++;
             break;
         case 2:
-            //Buzzer_check(500);   	// 蜂鸣器确认执行
             N.End_f++;  			// 结束记录
             break;
     }

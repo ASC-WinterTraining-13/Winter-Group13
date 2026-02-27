@@ -37,6 +37,7 @@
 #include "Encoder.h"
 #include "param_config.h"
 #include "AI_tuning.h"
+#include "navigation.h"
 
 uint16_t TIM_Time_Count = 0;
 
@@ -135,9 +136,15 @@ void TIM7_IRQHandler (void)
 	Time_Count1 = (Time_Count1 >= 3000) ? 0 : Time_Count1 + 1;
 	Time_Count2 = (Time_Count2 >= 3000) ? 0 : Time_Count2 + 1;
 	
-	if (BuzzerAndLED_Delay_Timer > 0) BuzzerAndLED_Delay_Timer --;
+	// 延时（倒计时）
+	if (Delay_Timer_1 > 0) Delay_Timer_1 --;
+	if (Delay_Timer_2 > 0) Delay_Timer_2 --;
+	if (Delay_Timer_3 > 0) Delay_Timer_3 --;
 	// MPU6050 分析使能（每5ms置1）
     mpu6050_analysis_enable = 1;
+	
+	// 惯性导航系统调用
+	Nag_System();
 	
     // 此处编写用户代码
     TIM7->SR &= ~TIM7->SR;                                                      // 清空中断状态

@@ -11,6 +11,8 @@
 #include "PID.h"
 #include "OLED.h"
 #include "math.h"
+#include "navigation.h"
+#include "navi_flash.h"
 
 
 /*******************************************************************************************************************/
@@ -22,8 +24,9 @@ void Mode_4_Menu_UI(void)
 {
 	OLED_ShowString(8 , 0 , "Mode_4_Menu", OLED_6X8);
 	OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
-	OLED_ShowString(10, 16, "Start", OLED_8X16);
-	OLED_ShowString(10, 32, "Param", OLED_8X16);
+	OLED_ShowString(10, 16, "Record", OLED_8X16);
+	OLED_ShowString(10, 32, "Replay", OLED_8X16);
+	OLED_ShowString(10, 48, "Param", OLED_8X16);
 }
 
 // [三级界面]模式内参数设置界面
@@ -92,7 +95,7 @@ int Mode_4_Set_Param(void)
 /*******************************************************************************************************************/
 
 // 函数提前声明
-int Mode_4_Running(void);
+int Mode_4_Running(uint8 navi_mode);
 
 // [二级界面]模式内菜单界面
 
@@ -120,14 +123,14 @@ int Mode_4_Menu(void)
             key_clear_state(KEY_UP);
 			key_pressed = 1;
             Mode_Menu_flag --;
-            if (Mode_Menu_flag < 1)Mode_Menu_flag = 2;
+            if (Mode_Menu_flag < 1)Mode_Menu_flag = 3;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {           
             key_clear_state(KEY_DOWN);
 			key_pressed = 1;
             Mode_Menu_flag ++;
-            if (Mode_Menu_flag > 2)Mode_Menu_flag = 1;
+            if (Mode_Menu_flag > 3)Mode_Menu_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -145,7 +148,7 @@ int Mode_4_Menu(void)
         if (Mode_Menu_flag_temp == 1)
         {
             OLED_Clear();
-            Mode_4_Running();
+            Mode_4_Running(1); // 1 = 记录模式
 			
             // 返回后重新显示菜单
             OLED_Clear();
@@ -156,12 +159,23 @@ int Mode_4_Menu(void)
 		else if (Mode_Menu_flag_temp == 2)
         {
             OLED_Clear();
-            Mode_4_Set_Param();
+            Mode_4_Running(3); // 3 = 回放模式
 			
             //返回后重新显示菜单
             OLED_Clear();
             Mode_4_Menu_UI();
             OLED_ShowString(0, 32, ">", OLED_8X16);  
+			OLED_Update();
+        }
+		else if (Mode_Menu_flag_temp == 3)
+        {
+            OLED_Clear();
+            Mode_4_Set_Param();
+			
+            //返回后重新显示菜单
+            OLED_Clear();
+            Mode_4_Menu_UI();
+            OLED_ShowString(0, 48, ">", OLED_8X16);  
 			OLED_Update();
         }
         
@@ -174,6 +188,7 @@ int Mode_4_Menu(void)
                 {
                     OLED_ShowString(0, 16, ">", OLED_8X16);
 					OLED_ShowString(0, 32, " ", OLED_8X16);
+					OLED_ShowString(0, 48, " ", OLED_8X16);
 					OLED_Update();
 					
                     break;
@@ -182,6 +197,16 @@ int Mode_4_Menu(void)
                 {
                     OLED_ShowString(0, 16, " ", OLED_8X16);
 					OLED_ShowString(0, 32, ">", OLED_8X16);  
+					OLED_ShowString(0, 48, " ", OLED_8X16);
+					OLED_Update();
+					
+                    break;
+                }
+				case 3:
+                {
+                    OLED_ShowString(0, 16, " ", OLED_8X16);
+					OLED_ShowString(0, 32, " ", OLED_8X16);
+					OLED_ShowString(0, 48, ">", OLED_8X16);  
 					OLED_Update();
 					
                     break;
@@ -202,9 +227,12 @@ int Mode_4_Menu(void)
 
 // [三级界面]模式小车运作界面
 
-int Mode_4_Running(void)
+int Mode_4_Running(uint8 navi_mode)
 {	 
-		
+	// 初始化惯性导航系统
+	Init_Nag();
+	N.Nag_SystemRun_Index = navi_mode; // 设置模式：1=记录，3=回放
+	
 	/* 半阻塞式MPU6050零飘校准逻辑(此时请保持静止)*/
 	if (MPU6050_Calibration_Check() != 2)// 如果未校准
 	{
@@ -229,14 +257,13 @@ int Mode_4_Running(void)
     }
 	
 	Run_Flag = 0;	
-	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
-	OLED_ShowString(0, 8 , "Kp:", OLED_6X8);
-	OLED_ShowString(0, 16, "Ki:", OLED_6X8);
-	OLED_ShowString(0, 24, "Kd:", OLED_6X8);
-	OLED_ShowString(0, 32, "Tar:", OLED_6X8);
-	OLED_ShowString(0, 40, "Act:", OLED_6X8);
-	OLED_ShowString(0, 48, "Out:", OLED_6X8);
-	OLED_ShowString(0, 56, "Int:", OLED_6X8);
+	// 根据模式显示不同的界面标题
+	if (navi_mode == 1) {
+		OLED_ShowString(0, 0, "REC:STOP", OLED_6X8);
+	} else if (navi_mode == 3) {
+		OLED_ShowString(0, 0, "PLY:STOP", OLED_6X8);
+	}
+	OLED_ShowString(0, 8, "Idx:", OLED_6X8);
 	OLED_Update();
 	
 	// 清零pid积分等参数
@@ -275,12 +302,35 @@ int Mode_4_Running(void)
 			// 清零pid积分等参数
 			All_PID_Init();	
 
-			if (Run_Flag) {OLED_ShowString(0, 0, "Run ", OLED_6X8);OLED_Update();}
-			else {OLED_ShowString(0, 0, "STOP", OLED_6X8);OLED_Update();}
+			if (Run_Flag) {
+				if (navi_mode == 1) {
+					OLED_ShowString(0, 0, "REC:Run ", OLED_6X8);
+				} else if (navi_mode == 3) {
+					OLED_ShowString(0, 0, "PLY:Run ", OLED_6X8);
+				}
+				OLED_Update();
+			}
+			else {
+				if (navi_mode == 1) {
+					// 记录模式停止时，标记为结束，写入最后一页数据
+					N.End_f = 1;
+					flash_Navi_Write();
+					OLED_ShowString(0, 0, "REC:STOP", OLED_6X8);
+				} else if (navi_mode == 3) {
+					OLED_ShowString(0, 0, "PLY:STOP", OLED_6X8);
+				}
+				OLED_Update();
+			}
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))// 返回键
         {
             key_clear_state(KEY_BACK);
+			
+			// 如果是记录模式且正在运行，先结束记录
+			if (navi_mode == 1 && Run_Flag) {
+				N.End_f = 1;
+				flash_Navi_Write();
+			}
 			
 			// 启停标志位置0
 			Run_Flag = 0;
@@ -313,12 +363,21 @@ int Mode_4_Running(void)
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
 			Run_Flag = 0;
+			// 如果是记录模式，结束记录
+			if (navi_mode == 1) {
+				N.End_f = 1;
+				flash_Navi_Write();
+			}
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
 			
-			OLED_ShowString(0, 0, "STOP", OLED_6X8);
+			if (navi_mode == 1) {
+				OLED_ShowString(0, 0, "REC:STOP", OLED_6X8);
+			} else if (navi_mode == 3) {
+				OLED_ShowString(0, 0, "PLY:STOP", OLED_6X8);
+			}
 			OLED_Update();
 		}		
 		
@@ -337,9 +396,18 @@ int Mode_4_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-			/* 转向环+速度环PID计算*/
-			if (Run_Flag){PID_Calc_Speed_And_Turn();}
+			/* 转向环+速度环PID计算 - 回放模式时使用惯导输出*/
+			if (Run_Flag) {
+				if (navi_mode == 3) {
+					// 回放模式：使用惯导的Final_Out作为转向偏差
+					Turn__PID.Target = N.Final_Out;
+				}
+				PID_Calc_Speed_And_Turn();
+			}
 			
+			// 更新OLED显示索引
+			OLED_ShowNum(32, 8, navi_mode == 1 ? N.Save_index : N.Run_index, 4, OLED_6X8);
+			OLED_Update();
 		}
 
 		
@@ -352,7 +420,6 @@ int Mode_4_Running(void)
 				/* 角度环+角速度环PID计算（包括PWM设置）*/
 				PID_Calc_Angle_And_Rate();
 			}						
-//			printf("%3.2f,%3.2f,%3.2f,%3.2f\r\n", Rate__PID.Target, GyroRate_Result, Angle_Result, Rate__PID.Out);
 		}
 		else
 		{		

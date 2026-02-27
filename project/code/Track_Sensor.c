@@ -75,11 +75,11 @@ static uint8_t Track_on_line_cnt  = 0;    // 有线计数（防抖）
 static uint8_t Track_off_line_cnt = 0;   // 无线计数（防抖）
 
 //-------------------------------------------------------------------------------------------------------------------
-// 函数简介     循迹传感器模块 获取加权误差值（并更新有线/无线状态）
+// 函数简介     循迹传感器模块 获取加权误差值（并更 新线/掉线 状态）
 // 返回参数     float           循迹误差值（左偏为负，右偏为正）
 // 使用示例     float error = Track_Sensor_Get_Error();
 // 备注信息     1. 内部包含三次采样平均滤波，提升数据稳定性
-//              2. 根据误差值更新Track_Sensor_State（有线/无线），包含防抖计数逻辑
+//              2. 根据误差值更新Track_Sensor_State（在线/掉线），包含防抖计数逻辑
 //-------------------------------------------------------------------------------------------------------------------
 
 float Track_Sensor_Get_Error(void)
@@ -108,7 +108,7 @@ float Track_Sensor_Get_Error(void)
 		+ inner_weight * sensor_avg[2]	//右1
 		+ outer_weight * sensor_avg[3];	//右2
 	
-	// 疑似无线
+	// 疑似掉线
 	if ( sensor_avg[0] < 0.4f && sensor_avg[1] < 0.4f && sensor_avg[2] < 0.4f && sensor_avg[3] < 0.4f )
 
 	{
@@ -120,7 +120,7 @@ float Track_Sensor_Get_Error(void)
 			Track_off_line_cnt = 0;
 		}		
 	}	
-	// 疑似有线
+	// 疑似在线
 	else
 	{
 		Track_on_line_cnt ++;

@@ -39,7 +39,7 @@
 #define Nag_End_Page    SECTOR_TO_LOGIC_PAGE(NAG_MAX_SECTOR)
 #define Nag_Start_Page  SECTOR_TO_LOGIC_PAGE(NAG_MIN_SECTOR)
 
-#define Nag_Set_mileage 2100 		// 里程阈值（5cm）
+#define Nag_Set_mileage 50 			// 里程阈值（5cm）
 #define Nag_Prev 200    			// 前瞻（未使用）
 #define Nag_Yaw Yaw_Result 			// 陀螺仪实时偏航角
 

@@ -229,13 +229,7 @@ int Mode_1_Running(void)
 	
 	Run_Flag = 0;	
 	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
-	OLED_ShowString(0, 8 , "Kp:", OLED_6X8);
-	OLED_ShowString(0, 16, "Ki:", OLED_6X8);
-	OLED_ShowString(0, 24, "Kd:", OLED_6X8);
-	OLED_ShowString(0, 32, "Tar:", OLED_6X8);
-	OLED_ShowString(0, 40, "Act:", OLED_6X8);
-	OLED_ShowString(0, 48, "Out:", OLED_6X8);
-	OLED_ShowString(0, 56, "Int:", OLED_6X8);
+	OLED_ShowString(0, 8 , "Distance:", OLED_6X8);
 	OLED_Update();
 	
 	// 清零pid积分等参数
@@ -250,7 +244,7 @@ int Mode_1_Running(void)
 	Get_Encoder2();
 	
 	// 小车距离累积
-//	float car_move_length = 0.0f;
+	float Car_Move_Distance = 0.0f;
 	
 	
     while(1)
@@ -340,22 +334,33 @@ int Mode_1_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-//			// 距离累积
-//			car_move_length += AveSpeed;
+			// 距离累积
+			Car_Move_Distance += AveSpeed;
 			
-//			// （干脆用比较死板的方法）
-//			if (car_move_length > 1000)
-//			{
-//				Speed_PID.Target = -20;
-//			}
-//			else if (car_move_length < -1000)
-//			{
-//				Speed_PID.Target = 20;
-//			}
-//			else if (-200 < car_move_length && car_move_length < 200)
-//			{
-//				Speed_PID.Target = 0;
-//			}
+			OLED_Printf(54, 8, OLED_6X8, "%4.1f   ", Car_Move_Distance);
+			OLED_Update();
+			
+			// （干脆用比较死板的方法）
+			if (Car_Move_Distance > 250)
+			{
+				Speed_PID.Target = -20;
+			}
+			else if (Car_Move_Distance > 150)
+			{
+				Speed_PID.Target = -16;
+			}
+			else if (Car_Move_Distance < -250)
+			{
+				Speed_PID.Target = 20;
+			}
+			else if (Car_Move_Distance < -150)
+			{
+				Speed_PID.Target = 16;
+			}
+			else if (-50 < Car_Move_Distance && Car_Move_Distance < 50)
+			{
+				Speed_PID.Target = 0;
+			}
 			
 			
 			/* 转向环+速度环PID计算*/

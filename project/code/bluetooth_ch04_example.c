@@ -41,7 +41,7 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
     char *action;			//（按键up/down）状态
     char *value;			//值
     int8 lh, lv, rh, rv;	//摇杆解析
-    uint8 int_value;		//解析值
+    int8 int_value;			//解析值
     float float_value;		//解析值
     
     // 创建可修改的副本（strtok 会修改原字符串）
@@ -103,75 +103,79 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         if(name != NULL && value != NULL)
         {
 			
-			if(strcmp(name, "Kp_1") == 0)
-			{
-				float_value = (float)atof(value);
-				RATE__KP = float_value;
-			}
-			else if(strcmp(name, "Ki_1") == 0)
-			{
-				float_value = (float)atof(value);
-				RATE__KI = float_value;
-			}
-			else if(strcmp(name, "Kd_1") == 0)
-			{
-				float_value = (float)atof(value);
-				RATE__KD = float_value;
-			}
+//			if(strcmp(name, "Kp_1") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				RATE__KP = float_value;
+//			}
+//			else if(strcmp(name, "Ki_1") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				RATE__KI = float_value;
+//			}
+//			else if(strcmp(name, "Kd_1") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				RATE__KD = float_value;
+//			}
+//			else 
+//				
+//			
+//			if(strcmp(name, "Kp_2") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				ANGLE_KP = float_value;
+//			}
+//			else if(strcmp(name, "Ki_2") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				ANGLE_KI = float_value;
+//			}
+//			else if(strcmp(name, "Kd_2") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				ANGLE_KD = float_value;
+//			}
+//			else 
+//				
+//			
+//			if(strcmp(name, "Kp_3") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				SPEED_KP = float_value;
+//			}
+//			else if(strcmp(name, "Ki_3") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				SPEED_KI = float_value;
+//			}
+//			else if(strcmp(name, "Kd_3") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				SPEED_KD = float_value;
+//			}	
+//			else 
+//				
+//			
+//			if(strcmp(name, "Kp_4") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TURN__KP = float_value;
+//			}
+//			else if(strcmp(name, "Ki_4") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TURN__KI = float_value;
+//			}
+//			else if(strcmp(name, "Kd_4") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TURN__KD = float_value;
+//			}
+//			else 
+				
 			
-			
-			else if(strcmp(name, "Kp_2") == 0)
-			{
-				float_value = (float)atof(value);
-				ANGLE_KP = float_value;
-			}
-			else if(strcmp(name, "Ki_2") == 0)
-			{
-				float_value = (float)atof(value);
-				ANGLE_KI = float_value;
-			}
-			else if(strcmp(name, "Kd_2") == 0)
-			{
-				float_value = (float)atof(value);
-				ANGLE_KD = float_value;
-			}
-			
-			
-			else if(strcmp(name, "Kp_3") == 0)
-			{
-				float_value = (float)atof(value);
-				SPEED_KP = float_value;
-			}
-			else if(strcmp(name, "Ki_3") == 0)
-			{
-				float_value = (float)atof(value);
-				SPEED_KI = float_value;
-			}
-			else if(strcmp(name, "Kd_3") == 0)
-			{
-				float_value = (float)atof(value);
-				SPEED_KD = float_value;
-			}
-			
-			
-			else if(strcmp(name, "Kp_4") == 0)
-			{
-				float_value = (float)atof(value);
-				TURN__KP = float_value;
-			}
-			else if(strcmp(name, "Ki_4") == 0)
-			{
-				float_value = (float)atof(value);
-				TURN__KI = float_value;
-			}
-			else if(strcmp(name, "Kd_4") == 0)
-			{
-				float_value = (float)atof(value);
-				TURN__KD = float_value;
-			}
-			
-			
-			else if(strcmp(name, "Kp_5") == 0)
+			if(strcmp(name, "Kp_5") == 0)
 			{
 				float_value = (float)atof(value);
 				TRACK_KP = float_value;
@@ -186,7 +190,32 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 				float_value = (float)atof(value);
 				TRACK_KD = float_value;
 			}
+			else 
+				
 			
+			if(strcmp(name, "Kp_6") == 0)
+			{
+				float_value = (float)atof(value);
+				HEAD__KP = float_value;
+			}
+			else if(strcmp(name, "Ki_6") == 0)
+			{
+				float_value = (float)atof(value);
+				HEAD__KI = float_value;
+			}
+			else if(strcmp(name, "Kd_6") == 0)
+			{
+				float_value = (float)atof(value);
+				HEAD__KD = float_value;
+			}
+			
+			else 
+			if(strcmp(name, "SET_Y") == 0)
+			{
+				int_value = (int)atoi(value);
+				Yaw_Target = int_value;
+				Head_PID_control_enable = 1;
+			}
 		
 			Param_SyncToPID();//同步pid到计算变量
 	
