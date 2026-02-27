@@ -23,7 +23,7 @@
 // [二级界面]模式内菜单界面
 void Mode_5_Menu_UI(void)
 {
-	OLED_ShowString(8 , 0 , "Mode_5_Menu", OLED_6X8);
+	OLED_ShowString(8 , 0 , "Mode_5_Menu[Ctrl]", OLED_6X8);
 	OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
 	OLED_ShowString(10, 16, "Start", OLED_8X16);
 	OLED_ShowString(10, 32, "Param", OLED_8X16);

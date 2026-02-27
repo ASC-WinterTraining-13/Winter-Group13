@@ -114,8 +114,13 @@ void Run_Nag_Save(void)
     // 达到里程阈值则存储偏航角
     if(N.Mileage_All >= Nag_Set_mileage)
     {
+        // 计算相对于起始点的yaw角（减去Yaw_Dif）
+        float relative_yaw = Nag_Yaw - N.Yaw_Dif;
+        // 处理-180~180范围
+        if (relative_yaw > 180.0f) relative_yaw -= 360.0f;
+        else if (relative_yaw < -180.0f) relative_yaw += 360.0f;
         // 偏航角放大100倍转int32，避免浮点存储误差
-        int32 Save = (int32)(Nag_Yaw * 100.0f);
+        int32 Save = (int32)(relative_yaw * 100.0f);
         flash_union_buffer[N.size++].int32_type = Save;
 
         N.Save_index++; // 存储总条数+1
@@ -173,8 +178,12 @@ void Run_Nag_GPS(void)
             current_read_page = target_page; // 更新当前页
         }
 
-        // 从当前页缓冲区读取目标偏航角（还原为float）
-        N.Angle_Run = flash_union_buffer[prospect % MaxSize].int32_type / 100.0f;
+        // 从当前页缓冲区读取目标偏航角（还原为float），并加上Yaw_Dif偏移量
+        float relative_angle = flash_union_buffer[prospect % MaxSize].int32_type / 100.0f;
+        N.Angle_Run = relative_angle + N.Yaw_Dif;
+        // 处理-180~180范围
+        if (N.Angle_Run > 180.0f) N.Angle_Run -= 360.0f;
+        else if (N.Angle_Run < -180.0f) N.Angle_Run += 360.0f;
 
         // 重置里程计（支持正/倒车）
         if(N.Mileage_All > 0) N.Mileage_All -= Nag_Set_mileage;

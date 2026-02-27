@@ -53,12 +53,13 @@ typedef struct{
     float Final_Out; 				// [输出]偏航角误差值（-180~180°）
     float Mileage_All;   			// [输入/计数]累计里程（触发存储）
     float Angle_Run; 				// [中间]复现用目标偏航角
+    float Yaw_Dif;                  // [偏移]yaw角偏移量（用于将记录的yaw角转换为相对于起始点的角度）
     bool Nag_Stop_f; 				// [标志]惯导停止（1=停止纠偏）
     uint8 Flash_read_f;				// [标志]Flash读取状态（预留）
     uint16 size; 					// [索引]Flash缓冲区索引
     uint16 Run_index;				// [索引]复现路径索引
     uint16 Save_index;				// [计数]偏航角总存储条数
-    uint8 Save_state;				// [标志]Flash读取完成（1=完成）
+    uint8 Save_state;				// [标志]Flash读取状态（预留）
     uint8 End_f;					// [标志]记录状态（0=记录中，1=写最后一页，2=结束）
     // Flash相关
     uint8 Flash_page_index;			// [索引]当前操作的Flash逻辑页

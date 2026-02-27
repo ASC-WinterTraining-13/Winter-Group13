@@ -22,7 +22,7 @@
 // [二级界面]模式内菜单界面
 void Mode_4_Menu_UI(void)
 {
-	OLED_ShowString(8 , 0 , "Mode_4_Menu", OLED_6X8);
+	OLED_ShowString(8 , 0 , "Mode_4_Menu[Navi]", OLED_6X8);
 	OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
 	OLED_ShowString(10, 16, "Record", OLED_8X16);
 	OLED_ShowString(10, 32, "Replay", OLED_8X16);
@@ -231,7 +231,7 @@ int Mode_4_Running(uint8 navi_mode)
 {	 
 	// 初始化惯性导航系统
 	Init_Nag();
-	N.Nag_SystemRun_Index = navi_mode; // 设置模式：1=记录，3=回放
+	N.Nag_SystemRun_Index = 0; // 先停止惯导，等待状态切换
 	
 	/* 半阻塞式MPU6050零飘校准逻辑(此时请保持静止)*/
 	if (MPU6050_Calibration_Check() != 2)// 如果未校准
@@ -256,14 +256,22 @@ int Mode_4_Running(uint8 navi_mode)
         }        
     }
 	
-	Run_Flag = 0;	
-	// 根据模式显示不同的界面标题
+	// 状态机：0=Balance:STOP, 1=Balance:RUN, 2=录制/回放中, 3=停止录制/回放(保持平衡)
+	uint8 state = 0;
+	uint8 balance_enable = 0;
+	uint8 navi_enable = 0;
+	
+	// 第一行显示Balance状态
+	OLED_ShowString(0, 0, "Bal:STOP", OLED_6X8);
+	// 第二行显示录制/回放状态
 	if (navi_mode == 1) {
-		OLED_ShowString(0, 0, "REC:STOP", OLED_6X8);
+		OLED_ShowString(0, 8, "REC:STOP", OLED_6X8);
 	} else if (navi_mode == 3) {
-		OLED_ShowString(0, 0, "PLY:STOP", OLED_6X8);
+		OLED_ShowString(0, 8, "PLY:STOP", OLED_6X8);
 	}
-	OLED_ShowString(0, 8, "Idx:", OLED_6X8);
+	OLED_ShowString(0, 16, "Yaw_Act:", OLED_6X8);
+	OLED_ShowString(0, 24, "Yaw_Tar:", OLED_6X8);
+	OLED_ShowString(0, 32, "Idx:", OLED_6X8);
 	OLED_Update();
 	
 	// 清零pid积分等参数
@@ -276,6 +284,10 @@ int Mode_4_Running(uint8 navi_mode)
 	// 清零编码器数值
 	Get_Encoder1();
 	Get_Encoder2();
+	
+	// 航向角PID相关
+	Head_PID_control_enable = 0;
+	Yaw_Target = Yaw_Result;
 	
     while(1)
     {  
@@ -293,47 +305,59 @@ int Mode_4_Running(uint8 navi_mode)
         {
             key_clear_state(KEY_CONFIRM);
 			
-			// 取反启动状态
-			Run_Flag = !Run_Flag;			
+			// 状态机循环：0→1→2→3→0
+			state = (state + 1) % 4;
+			
+			// 根据状态更新标志位
+			switch(state)
+			{
+				case 0: // Balance:STOP
+					balance_enable = 0;
+					navi_enable = 0;
+					N.Nag_SystemRun_Index = 0;
+					break;
+				case 1: // Balance:RUN
+					balance_enable = 1;
+					navi_enable = 0;
+					N.Nag_SystemRun_Index = 0;
+					break;
+				case 2: // 开始录制/回放
+					balance_enable = 1;
+					navi_enable = 1;
+					N.Nag_SystemRun_Index = navi_mode;
+					// 记录此时的yaw角作为偏移量
+					N.Yaw_Dif = Yaw_Result;
+					// 清零pid积分等参数
+					All_PID_Init();
+					break;
+				case 3: // 停止录制/回放，保持平衡
+					balance_enable = 1;
+					navi_enable = 0;
+					N.Nag_SystemRun_Index = 0;
+					// 如果是记录模式，写入最后一页数据
+					if (navi_mode == 1) {
+						N.End_f = 1;
+						flash_Navi_Write();
+					}
+					break;
+			}
 			
 			// PID参数存储
 			Param_Save();
-			
-			// 清零pid积分等参数
-			All_PID_Init();	
-
-			if (Run_Flag) {
-				if (navi_mode == 1) {
-					OLED_ShowString(0, 0, "REC:Run ", OLED_6X8);
-				} else if (navi_mode == 3) {
-					OLED_ShowString(0, 0, "PLY:Run ", OLED_6X8);
-				}
-				OLED_Update();
-			}
-			else {
-				if (navi_mode == 1) {
-					// 记录模式停止时，标记为结束，写入最后一页数据
-					N.End_f = 1;
-					flash_Navi_Write();
-					OLED_ShowString(0, 0, "REC:STOP", OLED_6X8);
-				} else if (navi_mode == 3) {
-					OLED_ShowString(0, 0, "PLY:STOP", OLED_6X8);
-				}
-				OLED_Update();
-			}
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))// 返回键
         {
             key_clear_state(KEY_BACK);
 			
-			// 如果是记录模式且正在运行，先结束记录
-			if (navi_mode == 1 && Run_Flag) {
+			// 如果是记录模式且正在录制，先结束记录
+			if (navi_mode == 1 && navi_enable) {
 				N.End_f = 1;
 				flash_Navi_Write();
 			}
 			
-			// 启停标志位置0
-			Run_Flag = 0;
+			// 停止所有运行
+			balance_enable = 0;
+			navi_enable = 0;
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
@@ -362,7 +386,9 @@ int Mode_4_Running(uint8 navi_mode)
 		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
-			Run_Flag = 0;
+			balance_enable = 0;
+			navi_enable = 0;
+			N.Nag_SystemRun_Index = 0;
 			// 如果是记录模式，结束记录
 			if (navi_mode == 1) {
 				N.End_f = 1;
@@ -373,11 +399,19 @@ int Mode_4_Running(uint8 navi_mode)
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
 			
-			if (navi_mode == 1) {
-				OLED_ShowString(0, 0, "REC:STOP", OLED_6X8);
-			} else if (navi_mode == 3) {
-				OLED_ShowString(0, 0, "PLY:STOP", OLED_6X8);
-			}
+			OLED_Update();
+		}
+		
+		/* 回放自动停止检测*/
+		if (navi_mode == 3 && navi_enable && N.Nag_Stop_f)
+		{
+			navi_enable = 0;
+			N.Nag_SystemRun_Index = 0;
+			// 保持平衡，不停止平衡控制
+			Speed_PID.Target = 0;
+			Turn__PID.Target = 0;
+			Head_PID_control_enable = 0;
+			
 			OLED_Update();
 		}		
 		
@@ -396,22 +430,73 @@ int Mode_4_Running(uint8 navi_mode)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-			/* 转向环+速度环PID计算 - 回放模式时使用惯导输出*/
-			if (Run_Flag) {
-				if (navi_mode == 3) {
-					// 回放模式：使用惯导的Final_Out作为转向偏差
-					Turn__PID.Target = N.Final_Out;
+			if (balance_enable)
+			{
+				// 记录模式：手推，不设置速度目标，只保持平衡
+				if (navi_mode == 1)
+				{
+					Speed_PID.Target = 0;
+					Turn__PID.Target = 0;
 				}
+				// 回放模式：自动行驶，设置速度和航向角控制
+				else if (navi_mode == 3)
+				{
+					if (navi_enable) {
+						Speed_PID.Target = 20;
+						Head_PID_control_enable = 1;
+						Yaw_Target = N.Angle_Run;
+						
+						/* 航向角PID介入（航向角环输出取反给转向环）*/
+						Head__PID.Target = Yaw_Target;
+						Head__PID.Actual = Yaw_Result;
+						PID_Update(&Head__PID);
+						Turn__PID.Target = - Head__PID.Out;
+					} else {
+						Speed_PID.Target = 0;
+						Turn__PID.Target = 0;
+					}
+				}
+				
+				/* 转向环+速度环PID计算*/
 				PID_Calc_Speed_And_Turn();
 			}
 			
-			// 更新OLED显示索引
-			OLED_ShowNum(32, 8, navi_mode == 1 ? N.Save_index : N.Run_index, 4, OLED_6X8);
+			// 更新OLED显示
+			OLED_Printf(48, 16, OLED_6X8, "%3.2f", Yaw_Result);
+			if (navi_mode == 3 && navi_enable) {
+				OLED_Printf(48, 24, OLED_6X8, "%3.2f  ", N.Angle_Run);
+			} else {
+				OLED_Printf(48, 24, OLED_6X8, "*%3.2f*", Yaw_Target);
+			}
+			OLED_ShowNum(32, 32, navi_mode == 1 ? N.Save_index : N.Run_index, 4, OLED_6X8);
+			
+			// 更新Balance状态显示（第一行）
+			if (balance_enable) {
+				OLED_ShowString(0, 0, "Bal:RUN ", OLED_6X8);
+			} else {
+				OLED_ShowString(0, 0, "Bal:STOP", OLED_6X8);
+			}
+			
+			// 更新录制/回放状态显示（第二行）
+			if (navi_mode == 1) {
+				if (navi_enable) {
+					OLED_ShowString(0, 8, "REC:RUN ", OLED_6X8);
+				} else {
+					OLED_ShowString(0, 8, "REC:STOP", OLED_6X8);
+				}
+			} else if (navi_mode == 3) {
+				if (navi_enable) {
+					OLED_ShowString(0, 8, "PLY:RUN ", OLED_6X8);
+				} else {
+					OLED_ShowString(0, 8, "PLY:STOP", OLED_6X8);
+				}
+			}
+			
 			OLED_Update();
 		}
 
 		
-        if (Run_Flag)
+        if (balance_enable)
 		{			
 			if (Time_Count1 >= 2)// 2 * 5 ms调控周期
 			{
