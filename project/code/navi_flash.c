@@ -35,9 +35,11 @@ void flash_Navi_Write(void)
 	// 检查操作是否越界
 	if(check_sector_valid(sector))
     {
-        // 想想是不是得返回什么
         return;
     }
+	
+	// 在每页的固定位置保存该页实际存储的数据条数
+	flash_union_buffer[MaxSize].uint32_type = N.size;
 	
 	// 校验 FLASH 是否有数据（1-有数据）
    if(flash_check(sector, page))
@@ -49,13 +51,19 @@ void flash_Navi_Write(void)
 	// 写入缓冲区数据到Flash
      flash_write_page_from_buffer(sector, page);
 	
-	// 如果
-    if(N.End_f == 1)// 惯导结构体的结束标志位
+	// 如果是结束记录
+    if(N.End_f == 1)
     {    
+		flash_buffer_clear();
 		flash_union_buffer[MaxSize+2].uint32_type = N.Save_index;
 		// 转换结束页的写保护块+页
 		uint32 end_sector = LOGIC_PAGE_TO_SECTOR(Nag_End_Page);
 		uint32 end_page = LOGIC_PAGE_TO_PAGE(Nag_End_Page);
+		
+		if(flash_check(end_sector, end_page))
+		{
+			flash_erase_page(end_sector, end_page);
+		}
 		flash_write_page_from_buffer(end_sector, end_page);
     }
     
@@ -88,5 +96,12 @@ void flash_Navi_Read(void)
     if(check_sector_valid(sector) == 0 && flash_check(sector, page))
     {        
         flash_read_page_to_buffer(sector, page);
+        // 读取当前页实际存储的数据条数
+        N.current_page_size = flash_union_buffer[MaxSize].uint32_type;
+        // 校验数据条数的有效性（防止非法数据）
+        if(N.current_page_size > MaxSize)
+        {
+            N.current_page_size = MaxSize;
+        }
     }
 }

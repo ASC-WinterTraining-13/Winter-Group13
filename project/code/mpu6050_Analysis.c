@@ -253,8 +253,8 @@ void MPU6050_Analysis(void)
     if(kalman_init_flag == 0 && USE_KALMAN_FILTER)
     {
         // 卡尔曼参数初始化（平衡车推荐值）
-        Kalman_Init(&kf_roll, 0.001f, 0.003f, 0.03f);
-        Kalman_Init(&kf_pitch, 0.001f, 0.003f, 0.03f);
+        Kalman_Init(&kf_roll, 0.003f, 0.003f, 0.03f);
+        Kalman_Init(&kf_pitch, 0.003f, 0.003f, 0.03f);
         kalman_init_flag = 1;
     }
 	

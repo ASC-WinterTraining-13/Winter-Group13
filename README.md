@@ -128,5 +128,5 @@
 ---
 
 
-惯性导航参考:[gitee/Emma/基于逐飞库的惯性导航适用于TC和CYT](https://gitee.com/Emma321/navigation)
-AI调参参考:[https://github.com/KINGSTON-115/llm-pid-tuner](https://github.com/KINGSTON-115/llm-pid-tuner)
+- 惯性导航参考:[gitee/Emma/基于逐飞库的惯性导航适用于TC和CYT](https://gitee.com/Emma321/navigation)
+- AI调参参考:[https://github.com/KINGSTON-115/llm-pid-tuner](https://github.com/KINGSTON-115/llm-pid-tuner)

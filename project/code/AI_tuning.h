@@ -31,10 +31,10 @@
 // ========== PID 环选择配置 ==========
 // 选择要调参的 PID 环（修改下面的宏来选择）
 // 1 = 角速度环 (Rate PID)
-// 2 = 角度环 (Angle PID) - 默认
-// 3 = 速度环 (Speed PID)
+// 2 = 角度环 (Angle PID)
+// 3 = 速度环 (Speed PID) - 默认
 // 4 = 转向环 (Turn PID)
-#define AI_TUNING_TARGET_PID_LOOP         ( 2 )
+#define AI_TUNING_TARGET_PID_LOOP         ( 3 )
 
 // ========== 函数声明 ==========
 uint32  ai_tuning_send_byte           (const uint8 data);

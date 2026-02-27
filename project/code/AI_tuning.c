@@ -271,6 +271,9 @@ void ai_tuning_process_data (uint8 *data_packet, uint32 length)
             
             // 同步PID到计算变量
             Param_SyncToPID();
+            
+            // 保存参数到Flash，确保界面显示最新参数
+            Param_Save();
         }
     }
 }
@@ -428,3 +431,48 @@ uint32 ai_tuning_printf(const char *format, ...)
     
     return (uint32)len;
 }
+
+
+// 串口数据输出格式参考
+
+//		/* 输出数据用于AI调参 (timestamp, setpoint, input, pwm, error, angle, rate, speed, Kp, Ki, Kd) */
+//		static uint32_t timestamp = 0;
+//		timestamp += 10; /* 每次调用增加10ms (约100Hz) */
+//		
+//#if AI_TUNING_TARGET_PID_LOOP == 1
+//		/* 角速度环 (Rate PID) */
+//		ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f\r\n", 
+//		       timestamp, 
+//		       Rate__PID.Target, GyroRate_Result, AvePWM, Rate__PID.Target - GyroRate_Result,
+//		       Angle_Result, GyroRate_Result, AveSpeed,
+//		       Rate__PID.Kp, Rate__PID.Ki, Rate__PID.Kd);
+//#elif AI_TUNING_TARGET_PID_LOOP == 2
+//		/* 角度环 (Angle PID) */
+//		ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f\r\n", 
+//		       timestamp, 
+//		       Angle_PID.Target, Angle_Result, AvePWM, Angle_PID.Target - Angle_Result,
+//		       Angle_Result, GyroRate_Result, AveSpeed,
+//		       Angle_PID.Kp, Angle_PID.Ki, Angle_PID.Kd);
+//#elif AI_TUNING_TARGET_PID_LOOP == 3
+//		/* 速度环 (Speed PID) */
+//		ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f\r\n", 
+//		       timestamp, 
+//		       Speed_PID.Target, AveSpeed, AvePWM, Speed_PID.Target - AveSpeed,
+//		       Angle_Result, GyroRate_Result, AveSpeed,
+//		       Speed_PID.Kp, Speed_PID.Ki, Speed_PID.Kd);
+//#elif AI_TUNING_TARGET_PID_LOOP == 4
+//		/* 转向环 (Turn PID) */
+//		ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f\r\n", 
+//		       timestamp, 
+//		       Turn__PID.Target, DifSpeed, DifPWM, Turn__PID.Target - DifSpeed,
+//		       Angle_Result, GyroRate_Result, AveSpeed,
+//		       Turn__PID.Kp, Turn__PID.Ki, Turn__PID.Kd);
+//#else
+//		/* 默认输出角度环数据 */
+//		ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f,%3.2f\r\n", 
+//		       timestamp, 
+//		       Angle_PID.Target, Angle_Result, AvePWM, Angle_PID.Target - Angle_Result,
+//		       Angle_Result, GyroRate_Result, AveSpeed,
+//		       Angle_PID.Kp, Angle_PID.Ki, Angle_PID.Kd);
+//#endif			
+		

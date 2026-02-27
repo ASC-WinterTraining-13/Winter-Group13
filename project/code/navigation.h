@@ -36,8 +36,8 @@
 #define LOGIC_PAGE_TO_PAGE(page)      ((page - NAG_START_PAGE_IN_SECTOR) % 4)
 
 // 起始/结束逻辑页（80号块3页 ~ 120号块0页）
-#define Nag_End_Page    SECTOR_TO_LOGIC_PAGE(NAG_MAX_SECTOR) + NAG_END_PAGE_IN_SECTOR
-#define Nag_Start_Page  SECTOR_TO_LOGIC_PAGE(NAG_MIN_SECTOR) + NAG_START_PAGE_IN_SECTOR
+#define Nag_End_Page    SECTOR_TO_LOGIC_PAGE(NAG_MAX_SECTOR)
+#define Nag_Start_Page  SECTOR_TO_LOGIC_PAGE(NAG_MIN_SECTOR)
 
 #define Nag_Set_mileage 2100 		// 里程阈值（5cm）
 #define Nag_Prev 200    			// 前瞻（未使用）
@@ -63,6 +63,7 @@ typedef struct{
     // Flash相关
     uint8 Flash_page_index;			// [索引]当前操作的Flash逻辑页
     uint8 Nag_SystemRun_Index;   	// [标志]运行模式（0=停止，1=记录，3=复现）
+    uint16 current_page_size;       // [索引]当前读取页的实际数据条数
 }Nag;
 
 // 全局变量声明
