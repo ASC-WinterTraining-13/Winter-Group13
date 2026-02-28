@@ -105,7 +105,7 @@ void Run_Nag_Save(void)
         
         // 严格校验Flash页号在80~120号扇区范围内
         zf_assert(
-            N.Flash_page_index >= Nag_End_Page && 
+            N.Flash_page_index >= Nag_Start_Page && 
             LOGIC_PAGE_TO_SECTOR(N.Flash_page_index) >= NAG_MIN_SECTOR && 
             LOGIC_PAGE_TO_SECTOR(N.Flash_page_index) <= NAG_MAX_SECTOR
         );
@@ -161,7 +161,7 @@ void Run_Nag_GPS(void)
 
         // 计算当前索引对应的Flash逻辑页
         uint16 page_offset = prospect / MaxSize; // 已存储的页数
-        uint8 target_page = Nag_Start_Page - page_offset; // 目标逻辑页
+        uint8 target_page = Nag_End_Page - page_offset; // 目标逻辑页
         
         // 校验目标页是否在80~120号扇区范围内
         if (LOGIC_PAGE_TO_SECTOR(target_page) < NAG_MIN_SECTOR || LOGIC_PAGE_TO_SECTOR(target_page) > NAG_MAX_SECTOR)
@@ -200,7 +200,7 @@ void Run_Nag_GPS(void)
 void Init_Nag(void)
 {
     memset(&N, 0, sizeof(N));
-    N.Flash_page_index = Nag_Start_Page;
+    N.Flash_page_index = Nag_End_Page;
     current_read_page = 0xFF; // 初始化当前读取页为无效值
     flash_buffer_clear();
 }
