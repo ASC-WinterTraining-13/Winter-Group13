@@ -241,6 +241,23 @@ int Mode_2_Running(void)
 	OLED_ShowString(0, 56, "Int:", OLED_6X8);
 	OLED_Update();
 	
+	// 模式2路径状态机
+	// 原有的通用性质的Run_Flag仍然在使用，状态机更多是一个方便写代码的标志
+typedef enum {
+    STATE_IDLE   		= 0,          	// 空闲（未启动）
+	STATE_BALANCE_ON 	= 1,			// 启用平衡控制
+	STATE_SEEK_A		= 2,			// A：起点准备（考虑到可能会一开始，A点可能碰到线）（暂时认为离开线的一刻，为找到A点）
+    STATE_A_TO_B 		= 3,        	// A→B：直线100cm
+    STATE_B_TO_C 		= 4,        	// B→C：右半圆弧（半径60cm，180°）
+    STATE_C_TO_D 		= 5,        	// C→D：直线100cm
+    STATE_D_TO_A 		= 6,        	// D→A：左半圆弧（半径40cm，180°）
+    STATE_STOP   		= 7,         	// 停车
+	STATE_BALANCE_OFF	= 8				// 中止平衡控制
+} Mode_2_State;
+
+Mode_2_State Mode_2_Cur_State = STATE_IDLE;
+	
+	
 	// 清零pid积分等参数
 	All_PID_Init();
 	
@@ -268,8 +285,29 @@ int Mode_2_Running(void)
         {
             key_clear_state(KEY_CONFIRM);
 			
-			// 取反启动状态
-			Run_Flag = !Run_Flag;			
+			/* 运行状态切换逻辑*/
+			if (Mode_2_Cur_State == STATE_IDLE)// 开启平衡控制
+			{
+				Mode_2_Cur_State = STATE_BALANCE_ON;
+				Head_PID_control_enable = 0;
+				Run_Flag = 1;
+			}
+			else if (Mode_2_Cur_State == STATE_BALANCE_ON)// 起点（A点）准备
+			{
+				Mode_2_Cur_State = STATE_SEEK_A;
+			}
+			else if (Mode_2_Cur_State == STATE_SEEK_A)// 直接开始跑车
+			{
+				Mode_2_Cur_State = STATE_A_TO_B;
+				Yaw_Target = Yaw_Result;
+			}
+			else// 其他阶段，按下确认键则直接停止
+			{
+				Mode_2_Cur_State = STATE_IDLE;
+				Head_PID_control_enable = 0;
+				Run_Flag = 0;
+			}
+			
 			
 			// PID参数存储
 			Param_Save();
@@ -314,6 +352,8 @@ int Mode_2_Running(void)
 		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
+			Mode_2_Cur_State = STATE_IDLE;
+			Head_PID_control_enable = 0;
 			Run_Flag = 0;
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
@@ -329,136 +369,157 @@ int Mode_2_Running(void)
 		/* 路径处理*/
         float Error = Track_Sensor_Get_Error();
 		
-		// 非任务模式：单巡线调试模式（麻烦暴力使用注释来更改模式）
-		switch(Track_Sensor_State)//是否在线
-		{
-			//  在线
-			case TRACK_STATE_ON_LINE:
-			{
-				Track_PID.Actual = Error;
-				PID_Update(&Track_PID);
-				Turn__PID.Target = - Track_PID.Out;
-			}
-			//  掉线
-			case TRACK_STATE_OFF_LINE:
-			{
-				
-			}
-		}
+//		// 非任务模式：单巡线调试模式（麻烦暴力使用注释来更改模式）
+//		switch(Track_Sensor_State)//是否在线
+//		{
+//			//  在线
+//			case TRACK_STATE_ON_LINE:
+//			{
+//				Track_PID.Actual = Error;
+//				PID_Update(&Track_PID);
+//				Turn__PID.Target = - Track_PID.Out;
+//			}
+//			//  掉线
+//			case TRACK_STATE_OFF_LINE:
+//			{
+//				
+//			}
+//		}
 		
 		
 		
 		
 		
-		// 任务模式：模式二
+		// 任务模式
         
-//        switch(Track_Sensor_State)//是否在线
-//        {
-//            //  在线
-//            case TRACK_STATE_ON_LINE:
-//            {
-//                if (Mode_2_Cur_State == STATE_IDLE)
-//                {
-//                    Speed_PID.Target = 20;
-//                    Turn_PID.Target = 0;
-//                }                    
-//                else if (Mode_2_Cur_State == STATE_A_TO_B)
-//                {
-//                    Mode_2_Cur_State = STATE_B_TO_C;
-//                    BuzzerAndLED_Delay_Timer = 200;
-//                }
-//                else if (Mode_2_Cur_State == STATE_B_TO_C)
-//                {
-//                    Speed_PID.Target = 20;
-//                    Track_PID.Actual = Error;
-//                    PID_Update(&Track_PID);
-//                    Turn_PID.Target = Track_PID.Out;
-//                }
-//                else if (Mode_2_Cur_State == STATE_C_TO_D)
-//                {
-//                    Mode_2_Cur_State = STATE_D_TO_A;
-//                    BuzzerAndLED_Delay_Timer = 200;
-//                }
-//                else if (Mode_2_Cur_State == STATE_D_TO_A)
-//                {
-//                    Speed_PID.Target = 20;
-//                    Track_PID.Actual = Error;
-//                    PID_Update(&Track_PID);
-//                    Turn_PID.Target = Track_PID.Out;
-//                }
-//                break;
-//            }
-//            // 掉线
-//            case TRACK_STATE_OFF_LINE:
-//            {
-//                if (Mode_2_Cur_State == STATE_IDLE)
-//                {
-//                    Mode_2_Cur_State = STATE_A_TO_B;
-//                }
-//                else if (Mode_2_Cur_State == STATE_A_TO_B) 
-//                {
-//                    Speed_PID.Target = 25;
-//                    Turn_PID.Target = 0;
-//                }
-//                else if (Mode_2_Cur_State == STATE_B_TO_C)
-//                {
-//                    Mode_2_Cur_State = STATE_C_TO_D;
-//                    BuzzerAndLED_Delay_Timer = 200;
-//                }
-//                else if (Mode_2_Cur_State == STATE_C_TO_D)
-//                {
-//                    Speed_PID.Target = 25;
-//                    Turn_PID.Target = 0;                    
-//                }
-//                else if (Mode_2_Cur_State == STATE_D_TO_A)
-//                {
-//                    Mode_2_Cur_State = STATE_STOP;
-//                    BuzzerAndLED_Delay_Timer = 200;
-//                    Speed_PID.Target = 0;
-//                    Turn_PID.Target = 0;
-//                }
-//                
-//                break;
-//            }            
-//        }
-//        switch(Track_Sensor_State)
-//        {
-//            case TRACK_STATE_ON_LINE:
-//            {
-//                Speed_PID.Target = 20;
-//                
-//                Track_PID.Actual = Error;
-//                PID_Update(&Track_PID);
-//                Turn_PID.Target = Track_PID.Out;
-//                
-//                oled_show_string(70, 1,"ON_LINE");
-//                
-//                
-//                break;
-//            }        
-//            case TRACK_STATE_OFF_LINE:
-//            {
-//                oled_show_string(70, 1,"OF_LINE");
-//                
-//                
-//                break;
-//            }        
-//        }
-//        
-//        
-//        
-//        /* 声光模块*/
-//        if (BuzzerAndLED_Delay_Timer)
-//        {
-//            BUZ_SET(1);
-//            LED_SET(1);
-//        }
-//        else 
-//        {
-//            BUZ_SET(0);
-//            LED_SET(0);
-//        }
-//
+        switch(Track_Sensor_State)//是否在线
+        {
+            //  在线
+            case TRACK_STATE_ON_LINE:
+            {
+                if (Mode_2_Cur_State == STATE_SEEK_A)
+                {
+                    Speed_PID.Target = 20;
+					// 先巡线吧（暂时认为离开线的一刻，为找到A点）
+					// 按下确认键来强制进入A->B（STATE_A_TO_B）
+                    Track_PID.Actual = Error;
+                    PID_Update(&Track_PID);
+                    Turn__PID.Target = Track_PID.Out;
+                }                    
+                else if (Mode_2_Cur_State == STATE_A_TO_B)
+                {
+					// 到达B点
+					Head_PID_control_enable = 0;
+                    Mode_2_Cur_State = STATE_B_TO_C;
+					// 声光提示
+                    Delay_Timer_1 = 200;
+                }
+                else if (Mode_2_Cur_State == STATE_B_TO_C)
+                {
+                    Speed_PID.Target = 20;
+                    Track_PID.Actual = Error;
+                    PID_Update(&Track_PID);
+                    Turn__PID.Target = Track_PID.Out;
+                }
+                else if (Mode_2_Cur_State == STATE_C_TO_D)
+                {
+					// 到达D点
+					Head_PID_control_enable = 0;
+                    Mode_2_Cur_State = STATE_D_TO_A;
+					// 声光提示
+                    Delay_Timer_1 = 200;
+                }
+                else if (Mode_2_Cur_State == STATE_D_TO_A)
+                {					
+                    Speed_PID.Target = 20;
+                    Track_PID.Actual = Error;
+                    PID_Update(&Track_PID);
+                    Turn__PID.Target = Track_PID.Out;
+                }
+                break;
+            }
+            // 掉线
+            case TRACK_STATE_OFF_LINE:
+            {
+                if (Mode_2_Cur_State == STATE_SEEK_A)
+                {
+					// 到达A点（暂时认为离开线的一刻，为找到A点）
+					// 按下确认键来强制进入A->B（STATE_A_TO_B）
+                    Mode_2_Cur_State = STATE_A_TO_B;
+					Yaw_Target = Yaw_Result;
+                }
+                else if (Mode_2_Cur_State == STATE_A_TO_B) 
+                {
+                    Speed_PID.Target = 20;
+                    Head__PID.Target = Yaw_Target;
+					Head_PID_control_enable = 1;
+                }
+                else if (Mode_2_Cur_State == STATE_B_TO_C)
+                {
+					// 到达C点
+                    Mode_2_Cur_State = STATE_C_TO_D;
+					// 声光提示
+                    Delay_Timer_1 = 200;
+                }
+                else if (Mode_2_Cur_State == STATE_C_TO_D)
+                {
+					Speed_PID.Target = 20;
+					Head__PID.Target = Yaw_Target - 180;
+					Head_PID_control_enable = 1;                  
+                }
+                else if (Mode_2_Cur_State == STATE_D_TO_A)
+                {
+					// 到达A点
+                    Mode_2_Cur_State = STATE_STOP;
+					Speed_PID.Target = 0;
+                    Turn__PID.Target = 0;
+					// 声光提示
+                    Delay_Timer_1 = 200;
+
+					
+                }
+                
+                break;
+            }            
+        }
+        switch(Track_Sensor_State)
+        {
+            case TRACK_STATE_ON_LINE:
+            {
+                Speed_PID.Target = 20;
+                
+                Track_PID.Actual = Error;
+                PID_Update(&Track_PID);
+                Turn__PID.Target = Track_PID.Out;
+                
+                oled_show_string(70, 1,"ON_LINE");
+                
+                
+                break;
+            }        
+            case TRACK_STATE_OFF_LINE:
+            {
+                oled_show_string(70, 1,"OF_LINE");
+                
+                
+                break;
+            }        
+        }
+        
+        
+        
+        /* 声光模块*/
+        if (Delay_Timer_1)// 基于5ms定时器的分频计数器
+        {
+            BUZ_SET(1);
+            LED_SET(1);
+        }
+        else 
+        {
+            BUZ_SET(0);
+            LED_SET(0);
+        }
+
 
 		
 		/* 速度计算*/
@@ -475,9 +536,21 @@ int Mode_2_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-			/* 转向环+速度环PID计算*/
-			if (Run_Flag){PID_Calc_Speed_And_Turn();}
-			
+			if (Run_Flag)
+			{
+				/* 航向角PID介入（挪用的时候注意航向角环输出取反给转向环）*/
+				if (Head_PID_control_enable)
+				{
+//					if (fabs (Yaw_Target - Yaw_Result) < 2.0f){Head_PID_control_enable = 0;}				
+					Head__PID.Target = Yaw_Target;
+					Head__PID.Actual = Yaw_Result;
+					PID_Update(&Head__PID);
+					Turn__PID.Target = - Head__PID.Out;
+				}
+				
+				/* 转向环+速度环PID计算*/
+				PID_Calc_Speed_And_Turn();
+			}
 		}
 
 		

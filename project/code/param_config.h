@@ -25,6 +25,7 @@ extern volatile uint16_t Time_Count1;
 extern volatile uint16_t Time_Count2;
 
 // 延时（倒计时）（干脆命名为1、2这些了，用的时候麻烦注意）
+// 基于5ms定时器的分频计数器
 extern uint16_t Delay_Timer_1;
 extern uint16_t Delay_Timer_2;
 extern uint16_t Delay_Timer_3;
