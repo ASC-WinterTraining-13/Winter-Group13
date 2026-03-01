@@ -1,5 +1,8 @@
 #include "param_storage.h"
 #include "param_config.h"
+#include "math.h"
+
+float param_cache[18] = {0};
 
 // 默认参数值（首次使用或恢复出厂设置时使用）
 
@@ -32,8 +35,58 @@ static void load_default(void)
 {
     for(uint8 i = 0; i < 18; i++)
     {
-        flash_union_buffer[i].float_type = DEFAULT_PARAMS[i];
+        param_cache[i] = DEFAULT_PARAMS[i];
     }
+}
+
+static void copy_cache_to_flash_buffer(void)
+{
+    for(uint8 i = 0; i < 18; i++)
+    {
+        flash_union_buffer[i].float_type = param_cache[i];
+    }
+}
+
+static void copy_flash_buffer_to_cache(void)
+{
+    for(uint8 i = 0; i < 18; i++)
+    {
+        param_cache[i] = flash_union_buffer[i].float_type;
+    }
+}
+
+static uint8 param_cache_is_valid(void)
+{
+    uint8 non_zero_kp_count = 0;
+    uint8 kp_index[6] = {FLASH_RATE__KP, FLASH_ANGLE_KP, FLASH_SPEED_KP, FLASH_TURN__KP, FLASH_TRACK_KP, FLASH_HEAD__KP};
+
+    for(uint8 i = 0; i < 18; i++)
+    {
+        if(!isfinite(param_cache[i]))
+        {
+            return 0;
+        }
+        if(fabsf(param_cache[i]) > 10000.0f)
+        {
+            return 0;
+        }
+    }
+
+    for(uint8 i = 0; i < 6; i++)
+    {
+        if(fabsf(param_cache[kp_index[i]]) > 0.0001f)
+        {
+            non_zero_kp_count++;
+        }
+    }
+
+    // 关键Kp几乎全为0，判定为无效参数页
+    if(non_zero_kp_count == 0)
+    {
+        return 0;
+    }
+
+    return 1;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -87,6 +140,15 @@ void Param_Init(void)
     {
         // 从Flash读取到缓冲区		
         flash_read_page_to_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
+        copy_flash_buffer_to_cache();
+
+        // 读取到异常/全零参数时，自动回退默认值并修复Flash页
+        if(!param_cache_is_valid())
+        {
+            load_default();
+            copy_cache_to_flash_buffer();
+            flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
+        }
     }
     else  // 返回0 = 没有数据（首次使用）
     {
@@ -94,6 +156,7 @@ void Param_Init(void)
         load_default();
         
         // 写入Flash
+        copy_cache_to_flash_buffer();
         flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);		
     }
 		// 同步pid参数至缓存区
@@ -108,6 +171,7 @@ void Param_Init(void)
 
 void Param_Save(void)
 {
+    copy_cache_to_flash_buffer();
     flash_write_page_from_buffer(PARAM_FLASH_SECTION, PARAM_FLASH_PAGE);
 }
 

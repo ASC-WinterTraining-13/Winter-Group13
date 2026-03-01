@@ -12,6 +12,11 @@
 #include "zf_driver_flash.h"
 #include "navi_flash.h"
 #include "navigation.h"
+#include "param_storage.h"
+
+#if (PARAM_FLASH_SECTION >= NAG_MIN_SECTOR) && (PARAM_FLASH_SECTION <= NAG_MAX_SECTOR)
+#error "Flash overlap: PARAM_FLASH_SECTION is inside navigation sector range"
+#endif
 
 #define FLASH_PAGE_LENGTH FLASH_DATA_BUFFER_SIZE
 

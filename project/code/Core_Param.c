@@ -60,10 +60,16 @@ void Core_Param_Set_PID_UI(uint8_t Page, PID_t *p)
 static void Sync_PID_To_Buffer(PID_t *p, uint8_t PID_Num)
 {
     if (p == NULL || PID_Num < 1 || PID_Num > 6) return;
-    uint8_t buf_idx = (PID_Num - 1) * 3;  // 转换为缓冲区索引（1→0, 2→3, 3→6...）
-    flash_union_buffer[buf_idx + 0].float_type = p->Kp;
-    flash_union_buffer[buf_idx + 1].float_type = p->Ki;
-    flash_union_buffer[buf_idx + 2].float_type = p->Kd;
+    switch (PID_Num)
+    {
+        case 1: RATE__KP = p->Kp; RATE__KI = p->Ki; RATE__KD = p->Kd; break;
+        case 2: ANGLE_KP = p->Kp; ANGLE_KI = p->Ki; ANGLE_KD = p->Kd; break;
+        case 3: SPEED_KP = p->Kp; SPEED_KI = p->Ki; SPEED_KD = p->Kd; break;
+        case 4: TURN__KP = p->Kp; TURN__KI = p->Ki; TURN__KD = p->Kd; break;
+        case 5: TRACK_KP = p->Kp; TRACK_KI = p->Ki; TRACK_KD = p->Kd; break;
+        case 6: HEAD__KP = p->Kp; HEAD__KI = p->Ki; HEAD__KD = p->Kd; break;
+        default: break;
+    }
 }
 
 
