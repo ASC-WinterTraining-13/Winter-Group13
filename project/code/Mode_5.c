@@ -102,7 +102,7 @@ int Mode_5_Running(void);
 int Mode_5_Menu(void)
 {
     // 模式菜单选项光标 标志位
-    static uint8_t Mode_Menu_flag = 1;
+    uint8_t Mode_Menu_flag = 1;
     
     // 显示
     Mode_5_Menu_UI();

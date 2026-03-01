@@ -65,6 +65,7 @@ typedef struct{
     uint8 Flash_page_index;			// [索引]当前操作的Flash逻辑页
     uint8 Nag_SystemRun_Index;   	// [标志]运行模式（0=停止，1=记录，3=复现）
     uint16 current_page_size;       // [索引]当前读取页的实际数据条数
+    uint8 Index_R_f;                // [标志]是否已读取结束页（替代静态变量）
 }Nag;
 
 // 全局变量声明
@@ -77,6 +78,7 @@ void NagFlashRead(void);   					// 废弃：一次性读取（保留定义）
 void Run_Nag_Save(void);    				// 偏航角记录函数
 void Nag_Read(void);    					// 偏航角记录总函数
 void Init_Nag(void);   						// 惯导初始化
+uint8 Nag_Replay_Start(void);               // 回放启动预加载（读取有效长度与首目标角）
 void Nag_System(void);  					// 惯导执行函数（中断调用）
 
 #endif /* _NAVIGATION_H_ */

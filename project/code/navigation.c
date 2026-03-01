@@ -70,18 +70,18 @@ void Nag_Run(void)
 
     // 计算误差值（当前yaw - 目标yaw）
     N.Final_Out = Yaw_Result - N.Angle_Run;
-    
-    // 先判断误差超限，再修正范围（避免冗余）
-    if (fabs(N.Final_Out) > 180.0f)
-    {
-        N.Nag_Stop_f = 1; // 误差超限，停止纠偏
-        N.Final_Out = 0;
-        return;
-    }
-    
+
     // 偏航角误差-180°~180°范围修正，处理350°-10°=340°→-20°
     if (N.Final_Out > 180.0f) N.Final_Out -= 360.0f;
     else if (N.Final_Out < -180.0f) N.Final_Out += 360.0f;
+
+    // 数据异常保护
+    if(!isfinite(N.Final_Out))
+    {
+        N.Nag_Stop_f = 1;
+        N.Final_Out = 0;
+        return;
+    }
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -146,6 +146,13 @@ void Run_Nag_GPS(void)
 
     if(N.Mileage_All >= Nag_Set_mileage)
     {
+        // 无有效录制数据，停止复现
+        if(N.Save_index < 2)
+        {
+            N.Nag_Stop_f = 1;
+            return;
+        }
+
         // 复现完成，停止纠偏
         if(N.Run_index > N.Save_index - 2)
         {
@@ -201,8 +208,46 @@ void Init_Nag(void)
 {
     memset(&N, 0, sizeof(N));
     N.Flash_page_index = Nag_End_Page;
-    current_read_page = 0xFF; // 初始化当前读取页为无效值
+    N.Index_R_f = 0;
+    current_read_page = 0xFF;
     flash_buffer_clear();
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     回放启动预加载（读取录制长度并装载首个目标角）
+// 返回参数     uint8 1=无有效数据，0=启动正常
+//-------------------------------------------------------------------------------------------------------------------
+uint8 Nag_Replay_Start(void)
+{
+    // 回放开始前清理状态
+    N.Nag_Stop_f = 0;
+    N.Run_index = 0;
+    N.Mileage_All = 0;
+    current_read_page = 0xFF;
+
+    // 先读取结束页获取总记录长度，再读取起始逻辑页数据
+    N.Flash_page_index = Nag_End_Page;
+    N.Index_R_f = 0;
+    flash_Navi_Read();
+
+    if(N.Save_index < 2)
+    {
+        N.Nag_Stop_f = 1;
+        N.Angle_Run = Yaw_Result;
+        return 1;
+    }
+
+    // 预加载首个目标角，避免起步阶段使用未初始化目标角
+    N.Flash_page_index = Nag_End_Page;
+    flash_Navi_Read();
+    {
+        float relative_angle = flash_union_buffer[0].int32_type / 100.0f;
+        N.Angle_Run = relative_angle + N.Yaw_Dif;
+        if (N.Angle_Run > 180.0f) N.Angle_Run -= 360.0f;
+        else if (N.Angle_Run < -180.0f) N.Angle_Run += 360.0f;
+    }
+
+    return 0;
 }
 
 //-------------------------------------------------------------------------------------------------------------------

@@ -102,7 +102,7 @@ int Mode_4_Running(uint8 navi_mode);
 int Mode_4_Menu(void)
 {
     // 模式菜单选项光标 标志位
-    static uint8_t Mode_Menu_flag = 1;
+    uint8_t Mode_Menu_flag = 1;
     
     // 显示
     Mode_4_Menu_UI();
@@ -329,6 +329,23 @@ int Mode_4_Running(uint8 navi_mode)
 					N.Yaw_Dif = Yaw_Result;
 					// 清零pid积分等参数
 					All_PID_Init();
+					// 回放模式：先预加载记录长度与首个目标角
+					if (navi_mode == 3)
+					{
+						if (Nag_Replay_Start())
+						{
+							navi_enable = 0;
+							N.Nag_SystemRun_Index = 0;
+							Speed_PID.Target = 0;
+							Turn__PID.Target = 0;
+							Head_PID_control_enable = 0;
+						}
+						else
+						{
+							// 回放启动预热：5ms计数基准，延时约30ms后再接入航向角控制
+							Delay_Timer_1 = 6;
+						}
+					}
 					break;
 				case 3: // 停止录制/回放，保持平衡
 					balance_enable = 1;
@@ -442,15 +459,24 @@ int Mode_4_Running(uint8 navi_mode)
 				else if (navi_mode == 3)
 				{
 					if (navi_enable) {
-						Speed_PID.Target = 20;
-						Head_PID_control_enable = 1;
-						Yaw_Target = N.Angle_Run;
-						
-						/* 航向角PID介入（航向角环输出取反给转向环）*/
-						Head__PID.Target = Yaw_Target;
-						Head__PID.Actual = Yaw_Result;
-						PID_Update(&Head__PID);
-						Turn__PID.Target = - Head__PID.Out;
+						if (Delay_Timer_1 == 0)
+						{
+							Speed_PID.Target = 20;
+							Head_PID_control_enable = 1;
+							Yaw_Target = N.Angle_Run;
+							
+							/* 航向角PID介入（航向角环输出取反给转向环）*/
+							Head__PID.Target = Yaw_Target;
+							Head__PID.Actual = Yaw_Result;
+							PID_Update(&Head__PID);
+							Turn__PID.Target = - Head__PID.Out;
+						}
+						else
+						{
+							Speed_PID.Target = 0;
+							Head_PID_control_enable = 0;
+							Turn__PID.Target = 0;
+						}
 					} else {
 						Speed_PID.Target = 0;
 						Turn__PID.Target = 0;
