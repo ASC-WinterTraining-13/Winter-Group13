@@ -284,6 +284,8 @@ int Mode_4_Running(uint8 navi_mode)
 	// 清零编码器数值
 	Get_Encoder1();
 	Get_Encoder2();
+	Encoder_Left = 0;
+	Encoder_Right = 0;
 	
 	// 航向角PID相关
 	Head_PID_control_enable = 0;
@@ -445,8 +447,10 @@ int Mode_4_Running(uint8 navi_mode)
 				else if (nav_yaw < -180.0f) nav_yaw += 360.0f;
 			}
 			
-			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
-			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;
+			Encoder_Left = Get_Encoder1();
+			Encoder_Right = Get_Encoder2();
+			LeftSpeed  = Encoder_Left * 0.6f + Pre_LeftSpeed  * 0.4f;
+			RightSpeed = Encoder_Right * 0.6f + Pre_RightSpeed * 0.4f;
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;
 			

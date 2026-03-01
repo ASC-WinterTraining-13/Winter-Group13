@@ -43,8 +43,8 @@
 #define Nag_Prev 200    			// 前瞻（未使用）
 #define Nag_Yaw Yaw_Result 			// 陀螺仪实时偏航角
 
-#define L_Mileage LeftSpeed   		// 左轮编码器
-#define R_Mileage RightSpeed 		// 右轮编码器
+#define L_Mileage Encoder_Left   		// 左轮编码器
+#define R_Mileage Encoder_Right 		// 右轮编码器
 //********************************************************//
 
 // 惯导核心结构体（混合：标志位/计数值/索引/输入/输出）

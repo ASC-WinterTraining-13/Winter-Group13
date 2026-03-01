@@ -15,6 +15,7 @@ extern int16_t RightPWM;						//右轮PWM
 extern int16_t AvePWM;							//平均PWM
 extern int16_t DifPWM;							//差分PWM
 
+extern int32_t Encoder_Left, Encoder_Right;		//左轮编码器值，右轮编码器值
 extern float Pre_LeftSpeed, Pre_RightSpeed;		//左轮上次速度，右轮上次速度
 extern float LeftSpeed, RightSpeed;				//左轮实际速度，右轮实际速度
 extern float AveSpeed, DifSpeed;				//平均实际速度，差分实际速度

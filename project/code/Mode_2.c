@@ -232,13 +232,9 @@ int Mode_2_Running(void)
 	
 	Run_Flag = 0;	
 	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
-	OLED_ShowString(0, 8 , "Kp:", OLED_6X8);
-	OLED_ShowString(0, 16, "Ki:", OLED_6X8);
-	OLED_ShowString(0, 24, "Kd:", OLED_6X8);
-	OLED_ShowString(0, 32, "Tar:", OLED_6X8);
-	OLED_ShowString(0, 40, "Act:", OLED_6X8);
-	OLED_ShowString(0, 48, "Out:", OLED_6X8);
-	OLED_ShowString(0, 56, "Int:", OLED_6X8);
+	OLED_ShowString(0, 8 , "Track:", OLED_6X8);
+	OLED_ShowString(0, 16, "State:", OLED_6X8);
+	OLED_ShowString(0, 24, "Error:", OLED_6X8);
 	OLED_Update();
 	
 	// 模式2路径状态机
@@ -268,6 +264,12 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 	// 清零编码器数值
 	Get_Encoder1();
 	Get_Encoder2();
+
+	// 声光模块相关
+	Delay_Timer_1  = 0;
+	BUZ_SET(0);
+	LED_SET(0);
+
 	
     while(1)
     {  
@@ -300,11 +302,16 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 			{
 				Mode_2_Cur_State = STATE_A_TO_B;
 				Yaw_Target = Yaw_Result;
+				OLED_ShowString(36, 16, "A->B", OLED_6X8);
+				OLED_Update();
 			}
 			else// 其他阶段，按下确认键则直接停止
 			{
 				Mode_2_Cur_State = STATE_IDLE;
 				Head_PID_control_enable = 0;
+				motor_SetPWM(1, 0);
+				motor_SetPWM(2, 0);
+				DifPWM  = 0;
 				Run_Flag = 0;
 			}
 			
@@ -327,6 +334,10 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
+			
+			// 关闭声光
+			BUZ_SET(0);
+            LED_SET(0);
 			
 			// PID参数存储
 			Param_Save();
@@ -369,34 +380,41 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 		/* 路径处理*/
         float Error = Track_Sensor_Get_Error();
 		
-//		// 非任务模式：单巡线调试模式（麻烦暴力使用注释来更改模式）
-//		switch(Track_Sensor_State)//是否在线
-//		{
-//			//  在线
-//			case TRACK_STATE_ON_LINE:
-//			{
-//				Track_PID.Actual = Error;
-//				PID_Update(&Track_PID);
-//				Turn__PID.Target = - Track_PID.Out;
-//			}
-//			//  掉线
-//			case TRACK_STATE_OFF_LINE:
-//			{
-//				
-//			}
-//		}
+		#if 1
+		// 非任务模式：单巡线调试模式（麻烦暴力使用注释来更改模式）
+		switch(Track_Sensor_State)//是否在线
+		{
+			//  在线
+			case TRACK_STATE_ON_LINE:
+			{
+				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
+				
+				Speed_PID.Target = 20;
+				Track_PID.Actual = Error;
+				PID_Update(&Track_PID);
+				Turn__PID.Target = - Track_PID.Out;
+			}
+			//  掉线
+			case TRACK_STATE_OFF_LINE:
+			{
+				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
+				
+				
+			}
+		}
+		#endif
 		
 		
-		
-		
-		
-		// 任务模式
-        
+		#if 0
+		// 任务模式	
+		OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);
         switch(Track_Sensor_State)//是否在线
         {
             //  在线
             case TRACK_STATE_ON_LINE:
             {
+				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
+				
                 if (Mode_2_Cur_State == STATE_SEEK_A)
                 {
                     Speed_PID.Target = 20;
@@ -411,8 +429,9 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 					// 到达B点
 					Head_PID_control_enable = 0;
                     Mode_2_Cur_State = STATE_B_TO_C;
+					OLED_ShowString(36, 16, "B->C", OLED_6X8);
 					// 声光提示
-                    Delay_Timer_1 = 200;
+                    Delay_Timer_1 = 100;
                 }
                 else if (Mode_2_Cur_State == STATE_B_TO_C)
                 {
@@ -426,8 +445,9 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 					// 到达D点
 					Head_PID_control_enable = 0;
                     Mode_2_Cur_State = STATE_D_TO_A;
+					OLED_ShowString(36, 16, "D->A", OLED_6X8);
 					// 声光提示
-                    Delay_Timer_1 = 200;
+                    Delay_Timer_1 = 100;
                 }
                 else if (Mode_2_Cur_State == STATE_D_TO_A)
                 {					
@@ -441,12 +461,15 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
             // 掉线
             case TRACK_STATE_OFF_LINE:
             {
+				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
+				
                 if (Mode_2_Cur_State == STATE_SEEK_A)
                 {
 					// 到达A点（暂时认为离开线的一刻，为找到A点）
 					// 按下确认键来强制进入A->B（STATE_A_TO_B）
                     Mode_2_Cur_State = STATE_A_TO_B;
 					Yaw_Target = Yaw_Result;
+					OLED_ShowString(36, 16, "A->B", OLED_6X8);
                 }
                 else if (Mode_2_Cur_State == STATE_A_TO_B) 
                 {
@@ -458,8 +481,9 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
                 {
 					// 到达C点
                     Mode_2_Cur_State = STATE_C_TO_D;
+					OLED_ShowString(36, 16, "C->D", OLED_6X8);
 					// 声光提示
-                    Delay_Timer_1 = 200;
+                    Delay_Timer_1 = 100;
                 }
                 else if (Mode_2_Cur_State == STATE_C_TO_D)
                 {
@@ -473,40 +497,16 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
                     Mode_2_Cur_State = STATE_STOP;
 					Speed_PID.Target = 0;
                     Turn__PID.Target = 0;
+					OLED_ShowString(36, 16, "STOP", OLED_6X8);
 					// 声光提示
-                    Delay_Timer_1 = 200;
-
-					
+                    Delay_Timer_1 = 100;				
                 }
-                
                 break;
-            }            
-        }
-        switch(Track_Sensor_State)
-        {
-            case TRACK_STATE_ON_LINE:
-            {
-                Speed_PID.Target = 20;
-                
-                Track_PID.Actual = Error;
-                PID_Update(&Track_PID);
-                Turn__PID.Target = Track_PID.Out;
-                
-                oled_show_string(70, 1,"ON_LINE");
-                
-                
-                break;
-            }        
-            case TRACK_STATE_OFF_LINE:
-            {
-                oled_show_string(70, 1,"OF_LINE");
-                
-                
-                break;
-            }        
-        }
-        
-        
+            }
+        }	
+		OLED_Update();
+        #endif
+		
         
         /* 声光模块*/
         if (Delay_Timer_1)// 基于5ms定时器的分频计数器

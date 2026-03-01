@@ -15,6 +15,7 @@ int16_t	AvePWM   = 0;					//平均PWM
 int16_t DifPWM   = 0;					//差分PWM
 
 
+int32_t Encoder_Left = 0, Encoder_Right = 0;			//左轮编码器值，右轮编码器值
 float Pre_LeftSpeed = 0.0f, Pre_RightSpeed = 0.0f;		//左轮上次速度，右轮上次速度
 float LeftSpeed     = 0.0f, RightSpeed     = 0.0f;		//左轮实际速度，右轮实际速度
 float AveSpeed      = 0.0f, DifSpeed       = 0.0f;		//平均实际速度，差分实际速度
