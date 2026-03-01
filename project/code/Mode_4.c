@@ -269,7 +269,7 @@ int Mode_4_Running(uint8 navi_mode)
 	} else if (navi_mode == 3) {
 		OLED_ShowString(0, 8, "PLY:STOP", OLED_6X8);
 	}
-	OLED_ShowString(0, 16, "Yaw_Act:", OLED_6X8);
+	OLED_ShowString(0, 16, "Yaw_Nav:", OLED_6X8);
 	OLED_ShowString(0, 24, "Yaw_Tar:", OLED_6X8);
 	OLED_ShowString(0, 32, "Idx:", OLED_6X8);
 	OLED_Update();
@@ -437,6 +437,13 @@ int Mode_4_Running(uint8 navi_mode)
 		if (Time_Count2 >= 10)// 10 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
+			float nav_yaw = 0.0f;
+			if (navi_enable)
+			{
+				nav_yaw = Yaw_Result - N.Yaw_Dif;
+				if (nav_yaw > 180.0f) nav_yaw -= 360.0f;
+				else if (nav_yaw < -180.0f) nav_yaw += 360.0f;
+			}
 			
 			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
 			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;
@@ -488,11 +495,14 @@ int Mode_4_Running(uint8 navi_mode)
 			}
 			
 			// 更新OLED显示
-			OLED_Printf(48, 16, OLED_6X8, "%3.2f", Yaw_Result);
+			OLED_Printf(48, 16, OLED_6X8, "%3.2f", nav_yaw);
 			if (navi_mode == 3 && navi_enable) {
-				OLED_Printf(48, 24, OLED_6X8, "%3.2f  ", N.Angle_Run);
+				float yaw_tar_rel = N.Angle_Run - N.Yaw_Dif;
+				if (yaw_tar_rel > 180.0f) yaw_tar_rel -= 360.0f;
+				else if (yaw_tar_rel < -180.0f) yaw_tar_rel += 360.0f;
+				OLED_Printf(48, 24, OLED_6X8, "%3.2f  ", yaw_tar_rel);
 			} else {
-				OLED_Printf(48, 24, OLED_6X8, "*%3.2f*", Yaw_Target);
+				OLED_ShowString(48, 24, "#####", OLED_6X8);
 			}
 			OLED_ShowNum(32, 32, navi_mode == 1 ? N.Save_index : N.Run_index, 4, OLED_6X8);
 			

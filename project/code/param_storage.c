@@ -2,6 +2,7 @@
 #include "param_config.h"
 
 // 默认参数值（首次使用或恢复出厂设置时使用）
+
 static const float DEFAULT_PARAMS[18] = {
     // Rate__PID (索引 0-2)
     29.58f, 0.0f, 0.0f,
@@ -29,7 +30,7 @@ static const float DEFAULT_PARAMS[18] = {
 
 static void load_default(void)
 {
-    for(uint8 i = 0; i < 15; i++)
+    for(uint8 i = 0; i < 18; i++)
     {
         flash_union_buffer[i].float_type = DEFAULT_PARAMS[i];
     }

@@ -3,11 +3,14 @@
 
 #include "zf_common_headfile.h"
 
-// Flash 存储位置
+// PID Flash 存储位置
 #define PARAM_FLASH_SECTION     (127)
 #define PARAM_FLASH_PAGE        (3)
 
-/* 五组PID参数在 flash_union_buffer[] 中的索引*/
+// PID参数缓存（与flash_union_buffer解耦）
+extern float param_cache[18];
+
+/* 六组PID参数在 param_cache[] 中的索引*/
 // Rate__PID (0-2)角速度环
 #define FLASH_RATE__KP      0
 #define FLASH_RATE__KI      1
@@ -41,30 +44,30 @@
 // 预留扩展 (18-255)
 // 可以继续添加其他参数...
 
-// 简化访问宏（直接操作缓冲区）
-#define RATE__KP    flash_union_buffer[FLASH_RATE__KP].float_type
-#define RATE__KI    flash_union_buffer[FLASH_RATE__KI].float_type
-#define RATE__KD    flash_union_buffer[FLASH_RATE__KD].float_type
+// 简化访问宏（直接操作参数缓存）
+#define RATE__KP    param_cache[FLASH_RATE__KP]
+#define RATE__KI    param_cache[FLASH_RATE__KI]
+#define RATE__KD    param_cache[FLASH_RATE__KD]
 
-#define ANGLE_KP    flash_union_buffer[FLASH_ANGLE_KP].float_type
-#define ANGLE_KI    flash_union_buffer[FLASH_ANGLE_KI].float_type
-#define ANGLE_KD    flash_union_buffer[FLASH_ANGLE_KD].float_type
+#define ANGLE_KP    param_cache[FLASH_ANGLE_KP]
+#define ANGLE_KI    param_cache[FLASH_ANGLE_KI]
+#define ANGLE_KD    param_cache[FLASH_ANGLE_KD]
 		
-#define SPEED_KP    flash_union_buffer[FLASH_SPEED_KP].float_type
-#define SPEED_KI    flash_union_buffer[FLASH_SPEED_KI].float_type
-#define SPEED_KD    flash_union_buffer[FLASH_SPEED_KD].float_type
+#define SPEED_KP    param_cache[FLASH_SPEED_KP]
+#define SPEED_KI    param_cache[FLASH_SPEED_KI]
+#define SPEED_KD    param_cache[FLASH_SPEED_KD]
 		
-#define TURN__KP    flash_union_buffer[FLASH_TURN__KP].float_type
-#define TURN__KI    flash_union_buffer[FLASH_TURN__KI].float_type
-#define TURN__KD    flash_union_buffer[FLASH_TURN__KD].float_type
+#define TURN__KP    param_cache[FLASH_TURN__KP]
+#define TURN__KI    param_cache[FLASH_TURN__KI]
+#define TURN__KD    param_cache[FLASH_TURN__KD]
 		
-#define TRACK_KP    flash_union_buffer[FLASH_TRACK_KP].float_type
-#define TRACK_KI    flash_union_buffer[FLASH_TRACK_KI].float_type
-#define TRACK_KD    flash_union_buffer[FLASH_TRACK_KD].float_type
+#define TRACK_KP    param_cache[FLASH_TRACK_KP]
+#define TRACK_KI    param_cache[FLASH_TRACK_KI]
+#define TRACK_KD    param_cache[FLASH_TRACK_KD]
 
-#define HEAD__KP    flash_union_buffer[FLASH_HEAD__KP].float_type
-#define HEAD__KI    flash_union_buffer[FLASH_HEAD__KI].float_type
-#define HEAD__KD    flash_union_buffer[FLASH_HEAD__KD].float_type
+#define HEAD__KP    param_cache[FLASH_HEAD__KP]
+#define HEAD__KI    param_cache[FLASH_HEAD__KI]
+#define HEAD__KD    param_cache[FLASH_HEAD__KD]
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     同步pid参数至缓存区（仍然需要调用Param_Save();）
