@@ -158,6 +158,9 @@ void TIM8_UP_IRQHandler (void)
 {
     tsl1401_collect_pit_handler();
     // 此处编写用户代码
+	
+	// 1ms计数递增
+    MPU6050_Time_Count_1ms++;
 
     // 此处编写用户代码
     TIM8->SR &= ~TIM8->SR;                                                      // 清空中断状态

@@ -7,6 +7,38 @@
 //Angle选择;1-Pitch，0-Roll
 #define USE_PITCH_AS_ANGLE	1
 
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     获取mpu6050姿态解算实际dt（1ms精度）
+//-------------------------------------------------------------------------------------------------------------------
+float MPU6050_Get_Real_dt(void)
+{
+    uint32_t current_count = MPU6050_Time_Count_1ms;
+    uint32_t count_diff;
+    
+    // 处理溢出
+    if (current_count >= MPU6050_Last_Count_1ms)
+    {
+        count_diff = current_count - MPU6050_Last_Count_1ms;
+    }
+    else
+    {
+        count_diff = (0xFFFFFFFF - MPU6050_Last_Count_1ms) + current_count + 1;
+    }
+    
+    // 计算dt：count_diff * 1ms = count_diff * 0.001s
+    float dt = (float)count_diff * 0.001f;
+    
+    // 限制dt范围
+    if (dt > 0.05f) dt = 0.05f;
+    if (dt < 0.001f) dt = 0.001f;
+    
+    // 更新
+    MPU6050_Last_Count_1ms = current_count;
+    MPU6050_Last_dt = dt;
+    
+    return dt;
+}
+
 
 /*******************************************************************************************************************/
 /*[S] 零飘校准 [S]-------------------------------------------------------------------------------------------------*/
@@ -296,20 +328,21 @@ void MPU6050_Analysis(void)
     kf_roll.R_measure  = Get_Dynamic_Rmeasure(mpu6050_acc_x, mpu6050_acc_y, mpu6050_acc_z);
     kf_pitch.R_measure = kf_roll.R_measure;
     
+	float dt = MPU6050_Get_Real_dt();
     // 卡尔曼滤波计算
-    Roll  = Kalman_Calculate(&kf_roll, RollAcc, gyro_roll_rate, MPU6050_SAMPLE_DT);
-    Pitch = Kalman_Calculate(&kf_pitch, PitchAcc, gyro_pitch_rate, MPU6050_SAMPLE_DT);
+    Roll  = Kalman_Calculate(&kf_roll, RollAcc, gyro_roll_rate, dt);
+    Pitch = Kalman_Calculate(&kf_pitch, PitchAcc, gyro_pitch_rate, dt);
 #else
     // 互补滤波模式
-	RollGyro  = Roll + mpu6050_gyro_x * mpu6050_const_data2 * MPU6050_SAMPLE_DT;
+	RollGyro  = Roll + mpu6050_gyro_x * mpu6050_const_data2 * dt;
 	Roll      = 0.005 * RollAcc + (1 - 0.005) * RollGyro;
 	
-	PitchGyro = Pitch + mpu6050_gyro_y * mpu6050_const_data2 * MPU6050_SAMPLE_DT;
+	PitchGyro = Pitch + mpu6050_gyro_y * mpu6050_const_data2 * dt;
 	Pitch     = 0.005 * PitchAcc + (1 - 0.005) * PitchGyro;
 #endif
 	
 	// 偏航角计算：仅陀螺仪积分（无加速度计校准，会漂移）
-	Yaw       += (float)mpu6050_gyro_z * mpu6050_const_data2 * MPU6050_SAMPLE_DT;
+	Yaw       += (float)mpu6050_gyro_z * mpu6050_const_data2 * dt;
 	
 	// 一阶低通滤波
 	Roll_Temp  = MPU6050_LOW_PASS_FILTER * Roll + (1 - MPU6050_LOW_PASS_FILTER) * Roll_Temp;

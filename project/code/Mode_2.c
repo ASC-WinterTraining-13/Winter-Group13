@@ -204,6 +204,10 @@ int Mode_2_Menu(void)
 
 // [三级界面]模式小车运作界面
 
+#define TRACK_SWITCH_COOLDOWN 200
+// 模式二启用状态：1完整;2仅巡线
+#define MODE_2_SET	1
+
 int Mode_2_Running(void)
 {	 
 		
@@ -235,6 +239,7 @@ int Mode_2_Running(void)
 	OLED_ShowString(0, 8 , "Track:", OLED_6X8);
 	OLED_ShowString(0, 16, "State:", OLED_6X8);
 	OLED_ShowString(0, 24, "Error:", OLED_6X8);
+	OLED_ShowString(0, 32, "Yaw_A:", OLED_6X8);
 	OLED_Update();
 	
 	// 模式2路径状态机
@@ -244,7 +249,7 @@ typedef enum {
 	STATE_BALANCE_ON 	= 1,			// 启用平衡控制
 	STATE_SEEK_A		= 2,			// A：起点准备（考虑到可能会一开始，A点可能碰到线）（暂时认为离开线的一刻，为找到A点）
     STATE_A_TO_B 		= 3,        	// A→B：直线100cm
-    STATE_B_TO_C 		= 4,        	// B→C：右半圆弧（半径60cm，180°）
+    STATE_B_TO_C 		= 4,        	// B→C：右半圆弧（半径40cm，180°）
     STATE_C_TO_D 		= 5,        	// C→D：直线100cm
     STATE_D_TO_A 		= 6,        	// D→A：左半圆弧（半径40cm，180°）
     STATE_STOP   		= 7,         	// 停车
@@ -270,7 +275,10 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 	BUZ_SET(0);
 	LED_SET(0);
 
+	// 平滑相关的算法
+	float Error_filtered = 0;
 	
+	// 正式运行
     while(1)
     {  
 		/* 按键处理*/
@@ -286,22 +294,26 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 		if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))// 确认键
         {
             key_clear_state(KEY_CONFIRM);
-			
+#if MODE_2_SET	== 1	
 			/* 运行状态切换逻辑*/
 			if (Mode_2_Cur_State == STATE_IDLE)// 开启平衡控制
 			{
 				Mode_2_Cur_State = STATE_BALANCE_ON;
 				Head_PID_control_enable = 0;
 				Run_Flag = 1;
+				OLED_ShowString(36, 16, "BAL ", OLED_6X8);
+				OLED_Update();
 			}
 			else if (Mode_2_Cur_State == STATE_BALANCE_ON)// 起点（A点）准备
 			{
 				Mode_2_Cur_State = STATE_SEEK_A;
+				OLED_ShowString(36, 16, "A:??", OLED_6X8);
 			}
 			else if (Mode_2_Cur_State == STATE_SEEK_A)// 直接开始跑车
 			{
 				Mode_2_Cur_State = STATE_A_TO_B;
 				Yaw_Target = Yaw_Result;
+				Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;  
 				OLED_ShowString(36, 16, "A->B", OLED_6X8);
 				OLED_Update();
 			}
@@ -313,7 +325,12 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 				motor_SetPWM(2, 0);
 				DifPWM  = 0;
 				Run_Flag = 0;
+				OLED_ShowString(36, 16, "IDLE", OLED_6X8);
+				OLED_Update();
 			}
+#else
+			Run_Flag = 1 - Run_Flag;
+#endif
 			
 			
 			// PID参数存储
@@ -379,8 +396,10 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 				
 		/* 路径处理*/
         float Error = Track_Sensor_Get_Error();
+		Error_filtered = 0.6 * Error + 0.4 * Error_filtered;
 		
-		#if 1
+#if MODE_2_SET == 0
+		
 		// 非任务模式：单巡线调试模式（麻烦暴力使用注释来更改模式）
 		switch(Track_Sensor_State)//是否在线
 		{
@@ -389,8 +408,8 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 			{
 				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
 				
-				Speed_PID.Target = 20;
-				Track_PID.Actual = Error;
+				Speed_PID.Target = 25;
+				Track_PID.Actual = Error_filtered;
 				PID_Update(&Track_PID);
 				Turn__PID.Target = - Track_PID.Out;
 			}
@@ -398,16 +417,18 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 			case TRACK_STATE_OFF_LINE:
 			{
 				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
-				
-				
+			
+			
 			}
 		}
-		#endif
+		OLED_Update();
+//		bluetooth_ch04_printf("[plot,%2.1f]\r\n", Turn__PID.Out);
 		
+#else
 		
-		#if 0
 		// 任务模式	
 		OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);
+		OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
         switch(Track_Sensor_State)//是否在线
         {
             //  在线
@@ -415,97 +436,112 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
             {
 				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
 				
-                if (Mode_2_Cur_State == STATE_SEEK_A)
-                {
-                    Speed_PID.Target = 20;
-					// 先巡线吧（暂时认为离开线的一刻，为找到A点）
-					// 按下确认键来强制进入A->B（STATE_A_TO_B）
-                    Track_PID.Actual = Error;
-                    PID_Update(&Track_PID);
-                    Turn__PID.Target = Track_PID.Out;
-                }                    
-                else if (Mode_2_Cur_State == STATE_A_TO_B)
-                {
-					// 到达B点
-					Head_PID_control_enable = 0;
-                    Mode_2_Cur_State = STATE_B_TO_C;
-					OLED_ShowString(36, 16, "B->C", OLED_6X8);
-					// 声光提示
-                    Delay_Timer_1 = 100;
-                }
-                else if (Mode_2_Cur_State == STATE_B_TO_C)
-                {
-                    Speed_PID.Target = 20;
-                    Track_PID.Actual = Error;
-                    PID_Update(&Track_PID);
-                    Turn__PID.Target = Track_PID.Out;
-                }
-                else if (Mode_2_Cur_State == STATE_C_TO_D)
-                {
-					// 到达D点
-					Head_PID_control_enable = 0;
-                    Mode_2_Cur_State = STATE_D_TO_A;
-					OLED_ShowString(36, 16, "D->A", OLED_6X8);
-					// 声光提示
-                    Delay_Timer_1 = 100;
-                }
-                else if (Mode_2_Cur_State == STATE_D_TO_A)
-                {					
-                    Speed_PID.Target = 20;
-                    Track_PID.Actual = Error;
-                    PID_Update(&Track_PID);
-                    Turn__PID.Target = Track_PID.Out;
-                }
-                break;
+				 if (Delay_Timer_2 == 0) 
+				 {
+					if (Mode_2_Cur_State == STATE_SEEK_A)
+					{
+						Speed_PID.Target = 25;
+						// 先巡线吧（暂时认为离开线的一刻，为找到A点）
+						// 按下确认键来强制进入A->B（STATE_A_TO_B）
+						Track_PID.Actual = Error_filtered;
+						PID_Update(&Track_PID);
+						Turn__PID.Target = -Track_PID.Out;
+					}                    
+					else if (Mode_2_Cur_State == STATE_A_TO_B)
+					{
+						// 到达B点
+						Head_PID_control_enable = 0;
+						Mode_2_Cur_State = STATE_B_TO_C;
+						OLED_ShowString(36, 16, "B->C", OLED_6X8);
+						// 声光提示
+						Delay_Timer_1 = 100;
+						// 设置冷却时间
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;
+					}
+					else if (Mode_2_Cur_State == STATE_B_TO_C)
+					{
+						Speed_PID.Target = 25;
+						Track_PID.Actual = Error_filtered;
+						PID_Update(&Track_PID);
+						Turn__PID.Target = -Track_PID.Out;
+					}
+					else if (Mode_2_Cur_State == STATE_C_TO_D)
+					{
+						// 到达D点
+						Head_PID_control_enable = 0;
+						Mode_2_Cur_State = STATE_D_TO_A;
+						OLED_ShowString(36, 16, "D->A", OLED_6X8);
+						// 声光提示
+						Delay_Timer_1 = 100;
+						// 设置冷却时间
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;  
+					}
+					else if (Mode_2_Cur_State == STATE_D_TO_A)
+					{					
+						Speed_PID.Target = 25;
+						Track_PID.Actual = Error_filtered;
+						PID_Update(&Track_PID);
+						Turn__PID.Target = -Track_PID.Out;
+					}
+				}
+					
+				break;
             }
             // 掉线
             case TRACK_STATE_OFF_LINE:
             {
 				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
-				
-                if (Mode_2_Cur_State == STATE_SEEK_A)
-                {
-					// 到达A点（暂时认为离开线的一刻，为找到A点）
-					// 按下确认键来强制进入A->B（STATE_A_TO_B）
-                    Mode_2_Cur_State = STATE_A_TO_B;
-					Yaw_Target = Yaw_Result;
-					OLED_ShowString(36, 16, "A->B", OLED_6X8);
-                }
-                else if (Mode_2_Cur_State == STATE_A_TO_B) 
-                {
-                    Speed_PID.Target = 20;
-                    Head__PID.Target = Yaw_Target;
-					Head_PID_control_enable = 1;
-                }
-                else if (Mode_2_Cur_State == STATE_B_TO_C)
-                {
-					// 到达C点
-                    Mode_2_Cur_State = STATE_C_TO_D;
-					OLED_ShowString(36, 16, "C->D", OLED_6X8);
-					// 声光提示
-                    Delay_Timer_1 = 100;
-                }
-                else if (Mode_2_Cur_State == STATE_C_TO_D)
-                {
-					Speed_PID.Target = 20;
-					Head__PID.Target = Yaw_Target - 180;
-					Head_PID_control_enable = 1;                  
-                }
-                else if (Mode_2_Cur_State == STATE_D_TO_A)
-                {
-					// 到达A点
-                    Mode_2_Cur_State = STATE_STOP;
-					Speed_PID.Target = 0;
-                    Turn__PID.Target = 0;
-					OLED_ShowString(36, 16, "STOP", OLED_6X8);
-					// 声光提示
-                    Delay_Timer_1 = 100;				
-                }
+				if (Delay_Timer_2 == 0) 
+				{
+					if (Mode_2_Cur_State == STATE_SEEK_A)
+					{
+						// 到达A点（暂时认为离开线的一刻，为找到A点）
+						// 按下确认键来强制进入A->B（STATE_A_TO_B）
+						Mode_2_Cur_State = STATE_A_TO_B;
+						Yaw_Target = Yaw_Result;
+						OLED_ShowString(36, 16, "A->B", OLED_6X8);
+						// 设置冷却时间
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;  
+					}
+					else if (Mode_2_Cur_State == STATE_A_TO_B) 
+					{
+						Speed_PID.Target = 25;
+						Head__PID.Target = Yaw_Target;
+						Head_PID_control_enable = 1;
+					}
+					else if (Mode_2_Cur_State == STATE_B_TO_C && ( Yaw_Target - 190 <= Yaw_Result && Yaw_Result <= -170))
+					{
+						// 到达C点
+						Mode_2_Cur_State = STATE_C_TO_D;
+						OLED_ShowString(36, 16, "C->D", OLED_6X8);
+						// 声光提示
+						Delay_Timer_1 = 100;
+						// 设置冷却时间
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN; 
+					}
+					else if (Mode_2_Cur_State == STATE_C_TO_D)
+					{
+						Speed_PID.Target = 25;
+						Head__PID.Target = Yaw_Target - 180;
+						Head_PID_control_enable = 1;                  
+					}
+					else if (Mode_2_Cur_State == STATE_D_TO_A && ( Yaw_Target - 370 <= Yaw_Result && Yaw_Result <= -350 ))
+					{
+						// 到达A点
+						Mode_2_Cur_State = STATE_STOP;
+						Speed_PID.Target = 0;
+						Turn__PID.Target = 0;
+						OLED_ShowString(36, 16, "STOP", OLED_6X8);
+						// 声光提示
+						Delay_Timer_1 = 100;				
+					}
+				}
                 break;
             }
         }	
 		OLED_Update();
-        #endif
+		
+#endif
 		
         
         /* 声光模块*/
@@ -563,7 +599,6 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 				/* 角度环+角速度环PID计算（包括PWM设置）*/
 				PID_Calc_Angle_And_Rate();
 			}						
-//			printf("%3.2f,%3.2f,%3.2f,%3.2f\r\n", Rate__PID.Target, GyroRate_Result, Angle_Result, Rate__PID.Out);
 		}
 		else
 		{		

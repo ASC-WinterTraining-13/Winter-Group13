@@ -235,7 +235,7 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
         rv = (int8)atoi(strtok(NULL, ","));
 		
 		// 速度环测试摇杆
-		Speed_PID.Target = lv / 5.0f ;	//控制目标速度
+		Speed_PID.Target = lv / 2.5f ;	//控制目标速度
 		// 转向环测试摇杆
 		Turn__PID.Target = rh / 2.0;		
         
