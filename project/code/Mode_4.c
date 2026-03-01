@@ -443,8 +443,12 @@ int Mode_4_Running(uint8 navi_mode)
 			if (navi_enable)
 			{
 				nav_yaw = Yaw_Result - N.Yaw_Dif;
+#ifdef USE_UNWRAPPED_YAW
+		// 无边界模式：直接使用原始相对角度
+#else
 				if (nav_yaw > 180.0f) nav_yaw -= 360.0f;
 				else if (nav_yaw < -180.0f) nav_yaw += 360.0f;
+#endif
 			}
 			
 			Encoder_Left = Get_Encoder1();
@@ -477,8 +481,24 @@ int Mode_4_Running(uint8 navi_mode)
 							Yaw_Target = N.Angle_Run;
 							
 							/* 航向角PID介入（航向角环输出取反给转向环）*/
-							Head__PID.Target = Yaw_Target;
-							Head__PID.Actual = Yaw_Result;
+							// 临时变量error，方便解决角度边界问题
+							float yaw_error = Yaw_Target - Yaw_Result;
+#ifdef USE_UNWRAPPED_YAW
+		// 无边界模式：直接使用原始相对角度
+#else
+							// 将角度差限制在[-180, 180]范围内，选择最短旋转方向
+							if (yaw_error > 180.0f) 
+							{
+								yaw_error -= 360.0f;  // 目标角度减360°
+							}
+							else if (yaw_error < -180.0f) 
+							{
+								yaw_error += 360.0f;  // 目标角度加360°
+							}
+#endif
+							
+							Head__PID.Target = 0;
+							Head__PID.Actual = -yaw_error;
 							PID_Update(&Head__PID);
 							Turn__PID.Target = - Head__PID.Out;
 						}
@@ -502,8 +522,14 @@ int Mode_4_Running(uint8 navi_mode)
 			OLED_Printf(48, 16, OLED_6X8, "%3.2f", nav_yaw);
 			if (navi_mode == 3 && navi_enable) {
 				float yaw_tar_rel = N.Angle_Run - N.Yaw_Dif;
+				
+#ifdef USE_UNWRAPPED_YAW
+		// 无边界模式：直接使用原始相对角度
+#else
 				if (yaw_tar_rel > 180.0f) yaw_tar_rel -= 360.0f;
 				else if (yaw_tar_rel < -180.0f) yaw_tar_rel += 360.0f;
+#endif
+				
 				OLED_Printf(48, 24, OLED_6X8, "%3.2f  ", yaw_tar_rel);
 			} else {
 				OLED_ShowString(48, 24, "#####", OLED_6X8);
