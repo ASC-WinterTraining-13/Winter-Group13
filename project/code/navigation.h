@@ -57,6 +57,7 @@ typedef struct{
     float Mileage_All;   			// [输入/计数]累计里程（触发存储）
     float Angle_Run; 				// [中间]复现用目标偏航角
     float Yaw_Dif;                  // [偏移]yaw角偏移量（用于将记录的yaw角转换为相对于起始点的角度）
+    int8 Speed_Dir;                 // [中间]速度方向（1=前进，-1=后退）
     bool Nag_Stop_f; 				// [标志]惯导停止（1=停止纠偏）
     uint8 Flash_read_f;				// [标志]Flash读取状态（预留）
     uint16 size; 					// [索引]Flash缓冲区索引

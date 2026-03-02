@@ -111,22 +111,25 @@ void Run_Nag_Save(void)
         );
     }
 
-    // 达到里程阈值则存储偏航角
-    if(N.Mileage_All >= Nag_Set_mileage)
+    // 达到里程阈值则存储偏航角和速度方向
+    if(fabs(N.Mileage_All) >= Nag_Set_mileage)
     {
         // 计算相对于起始点的yaw角（减去Yaw_Dif）
         float relative_yaw = Nag_Yaw - N.Yaw_Dif;
 		
 #ifdef USE_UNWRAPPED_YAW
-		// 无边界模式：直接使用原始相对角度
+	// 无边界模式：直接使用原始相对角度
 #else
         // 处理-180~180范围
         if (relative_yaw > 180.0f) relative_yaw -= 360.0f;
         else if (relative_yaw < -180.0f) relative_yaw += 360.0f;
 #endif
 		
-        // 偏航角放大100倍转int32，避免浮点存储误差
-        int32 Save = (int32)(relative_yaw * 100.0f);
+        // 计算速度方向（1=前进，-1=后退）
+        int8 speed_dir = ((R_Mileage + L_Mileage) / 2.0f) >= 0 ? 1 : -1;
+        
+        // 偏航角放大100倍转int32，速度方向存储在低8位
+        int32 Save = ((int32)(relative_yaw * 100.0f) << 8) | (speed_dir & 0xFF);
         flash_union_buffer[N.size++].int32_type = Save;
 
         N.Save_index++; // 存储总条数+1
@@ -150,7 +153,7 @@ void Run_Nag_GPS(void)
     N.Mileage_All += (R_Mileage + L_Mileage) / 2.0f;
     uint16 prospect = 0;
 
-    if(N.Mileage_All >= Nag_Set_mileage)
+    if(fabs(N.Mileage_All) >= Nag_Set_mileage)
     {
         // 无有效录制数据，停止复现
         if(N.Save_index < 2)
@@ -191,12 +194,17 @@ void Run_Nag_GPS(void)
             current_read_page = target_page; // 更新当前页
         }
 
-        // 从当前页缓冲区读取目标偏航角（还原为float），并加上Yaw_Dif偏移量
-        float relative_angle = flash_union_buffer[prospect % MaxSize].int32_type / 100.0f;
+        // 从当前页缓冲区读取目标偏航角和速度方向
+        int32 data = flash_union_buffer[prospect % MaxSize].int32_type;
+        float relative_angle = (data >> 8) / 100.0f;
+        int8 speed_dir = data & 0xFF;
+        if (speed_dir > 127) speed_dir -= 256; // 符号扩展
+        
         N.Angle_Run = relative_angle + N.Yaw_Dif;
+        N.Speed_Dir = speed_dir;
 		
 #ifdef USE_UNWRAPPED_YAW
-		// 无边界模式：直接使用原始相对角度
+	// 无边界模式：直接使用原始相对角度
 #else
         // 处理-180~180范围
         if (N.Angle_Run > 180.0f) N.Angle_Run -= 360.0f;
