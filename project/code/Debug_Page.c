@@ -364,14 +364,14 @@ int Debug_Encoder(void)
 	OLED_Update();
 	
 	// 重置和初始化变量
-	LeftSpeed  = RightSpeed = 0.0f;
-	Pre_LeftSpeed = Pre_RightSpeed = 0.0f;
-	float Sum_LeftSpeed  = 0.0f;
-	float Sum_RightSpeed = 0.0f;
+	int16_t Sum_LeftSpeed  = 0;
+	int16_t Sum_RightSpeed = 0;
 	
 	// 清零编码器数值
 	Get_Encoder1();
 	Get_Encoder2();
+	Encoder_Left = 0;
+	Encoder_Right = 0;
 	
 	while(1)
 	{
@@ -402,18 +402,16 @@ int Debug_Encoder(void)
 		{
 			Time_Count2 = 0;
 			
-			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
-			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;
-			Pre_LeftSpeed = LeftSpeed;
-			Pre_RightSpeed = RightSpeed;
+			Encoder_Left  = Get_Encoder1();
+			Encoder_Right = Get_Encoder2();
 			
-			Sum_LeftSpeed += LeftSpeed;
-			Sum_RightSpeed += RightSpeed;
+			Sum_LeftSpeed += Encoder_Left;
+			Sum_RightSpeed += Encoder_Right;
 
-			OLED_Printf(30, 16, OLED_6X8, "%2.2f  ", LeftSpeed);
-			OLED_Printf(30, 24, OLED_6X8, "%2.2f  ", RightSpeed);
-			OLED_Printf(36, 32, OLED_6X8, "%4.2f  ", Sum_LeftSpeed);
-			OLED_Printf(36, 40, OLED_6X8, "%4.2f  ", Sum_RightSpeed);
+			OLED_Printf(30, 16, OLED_6X8, "%d  ", Encoder_Left);
+			OLED_Printf(30, 24, OLED_6X8, "%d  ", Encoder_Right);
+			OLED_Printf(36, 32, OLED_6X8, "%d  ", Sum_LeftSpeed);
+			OLED_Printf(36, 40, OLED_6X8, "%d  ", Sum_RightSpeed);
 			
 			OLED_Update();
 		}

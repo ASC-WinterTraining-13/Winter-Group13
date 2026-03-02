@@ -230,25 +230,17 @@ int Mode_3_Running(void)
 	
 	Run_Flag = 0;	
 	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
-	OLED_ShowString(0, 8 , "Kp:", OLED_6X8);
-	OLED_ShowString(0, 16, "Ki:", OLED_6X8);
-	OLED_ShowString(0, 24, "Kd:", OLED_6X8);
-	OLED_ShowString(0, 32, "Tar:", OLED_6X8);
-	OLED_ShowString(0, 40, "Act:", OLED_6X8);
-	OLED_ShowString(0, 48, "Out:", OLED_6X8);
-	OLED_ShowString(0, 56, "Int:", OLED_6X8);
+
 	OLED_Update();
 	
-	// 清零pid积分等参数
-	All_PID_Init();
-	
-	// 防止周期计时乱飞
-	Time_Count1 = 0;
-	Time_Count2 = 0;
+	// 变量相关的重置部分整合
+	BIG_Init();
 	
 	// 清零编码器数值
 	Get_Encoder1();
 	Get_Encoder2();
+	Encoder_Left = 0;
+	Encoder_Right = 0;
 	
     while(1)
     {  
@@ -328,8 +320,10 @@ int Mode_3_Running(void)
 		{
 			Time_Count2 = 0;
 			
-			LeftSpeed  = Get_Encoder1() * 0.6f + Pre_LeftSpeed  * 0.4f;
-			RightSpeed = Get_Encoder2() * 0.6f + Pre_RightSpeed * 0.4f;
+			Encoder_Left = Get_Encoder1();
+			Encoder_Right = Get_Encoder2();
+			LeftSpeed  = Encoder_Left * 0.6f + Pre_LeftSpeed  * 0.4f;
+			RightSpeed = Encoder_Right * 0.6f + Pre_RightSpeed * 0.4f;
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;
 			
@@ -352,7 +346,6 @@ int Mode_3_Running(void)
 				/* 角度环+角速度环PID计算（包括PWM设置）*/
 				PID_Calc_Angle_And_Rate();
 			}						
-//			printf("%3.2f,%3.2f,%3.2f,%3.2f\r\n", Rate__PID.Target, GyroRate_Result, Angle_Result, Rate__PID.Out);
 		}
 		else
 		{		

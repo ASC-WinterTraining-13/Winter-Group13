@@ -342,7 +342,7 @@ void MPU6050_Analysis(void)
 #endif
 	
 	// 偏航角计算：仅陀螺仪积分（无加速度计校准，会漂移）
-	Yaw       += (float)mpu6050_gyro_z * mpu6050_const_data2 * dt;
+	Yaw       += (float)mpu6050_gyro_z * mpu6050_const_data2 * dt * 1.014f;
 	
 	// 一阶低通滤波
 	Roll_Temp  = MPU6050_LOW_PASS_FILTER * Roll + (1 - MPU6050_LOW_PASS_FILTER) * Roll_Temp;

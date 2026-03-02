@@ -232,12 +232,8 @@ int Mode_1_Running(void)
 	OLED_ShowString(0, 8 , "Distance:", OLED_6X8);
 	OLED_Update();
 	
-	// 清零pid积分等参数
-	All_PID_Init();
-	
-	// 防止周期计时乱飞
-	Time_Count1 = 0;
-	Time_Count2 = 0;
+	// 变量相关的重置部分整合
+	BIG_Init();
 	
 	// 清零编码器数值
 	Get_Encoder1();

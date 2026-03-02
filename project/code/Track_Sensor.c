@@ -63,8 +63,8 @@ void Track_Sensor_Get_All_Status(uint8 status_buf[])
     status_buf[3] = 1 - Track_Sensor_Get_Status(TRACK_X_4);// 右2
 }
 
-#define OUTER_WEIGHT				2		//外侧传感器权重
-#define INNER_WEIGHT				3		//内侧传感器权重
+#define OUTER_WEIGHT				4		//外侧传感器权重
+#define INNER_WEIGHT				2		//内侧传感器权重
 
 
 // 巡线状态 
@@ -92,32 +92,45 @@ float Track_Sensor_Get_Error(void)
 	Track_Sensor_Get_All_Status(sensor_data_2);
 	Track_Sensor_Get_All_Status(sensor_data_3);
 	
-    float sensor_avg[4] = {0};
-	
-	// 分别取算术平均，范围0~1
+	// 分别取算术平均，每个结果范围0~1
+    float sensor_avg[4] = {0};	
 	for(uint8 i=0; i<4; i++)
     {       
-        sensor_avg[i] = (sensor_data_1[i] + sensor_data_2[i] + sensor_data_3[i]) / 3.0f;
+        sensor_avg[i] = (sensor_data_1[i] 
+		+ sensor_data_2[i] + sensor_data_3[i]) / 3.0f;
     }
 	
+	// 平滑相关变量
+    static float sensor_avg_filtered[4] = {0};
+	
+	// 应用平滑
+    for (int i = 0; i < 4; i++) {
+        sensor_avg_filtered[i] = 0.4f * sensor_avg_filtered[i] 
+		+ 0.6f * sensor_avg[i];
+    }
+	
+	// 计算变化率
 	float Error = 
-		- OUTER_WEIGHT * sensor_avg[0]	//左2
-		- INNER_WEIGHT * sensor_avg[1]	//左1
-		+ INNER_WEIGHT * sensor_avg[2]	//右1
-		+ OUTER_WEIGHT * sensor_avg[3];	//右2
+		+ OUTER_WEIGHT * sensor_avg[0]	//左2
+		+ INNER_WEIGHT * sensor_avg[1]	//左1
+		- INNER_WEIGHT * sensor_avg[2]	//右1
+		- OUTER_WEIGHT * sensor_avg[3];	//右2
+	
+	// 计算传感器信号强度
+    float inner_signal = sensor_avg_filtered[1] + sensor_avg_filtered[2];
+    float outer_signal = sensor_avg_filtered[0] + sensor_avg_filtered[3];
 	
 	// 疑似掉线
-	if ( sensor_avg[0] < 0.4f && sensor_avg[1] < 0.4f && sensor_avg[2] < 0.4f && sensor_avg[3] < 0.4f )
-
+	if (inner_signal < 0.2f && outer_signal < 0.1f)
 	{
 		Track_off_line_cnt ++;
 		Track_on_line_cnt = 0;
-		if (Track_off_line_cnt > 3)
+		if (Track_off_line_cnt > 4)
 		{
 			Track_Sensor_State = TRACK_STATE_OFF_LINE;
 			Track_off_line_cnt = 0;
-		}		
-	}	
+		}
+	}
 	// 疑似在线
 	else
 	{
