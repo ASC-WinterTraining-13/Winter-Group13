@@ -275,6 +275,11 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 
 	// 平滑相关的算法
 	float Error_filtered = 0;
+
+	// 记录弯道行驶距离（左右编码器原始值直接累加）
+	uint16_t Turn_Encoder_Accum = 0;
+// 标志位，标记当前是否为转弯状态
+	uint8_t Turn_State_flag = 0;
 	
 	// 正式运行
     while(1)
@@ -446,9 +451,11 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 						Head_PID_control_enable = 0;
 						Mode_2_Cur_State = STATE_B_TO_C;
 						OLED_ShowString(36, 16, "B->C", OLED_6X8);
-						bluetooth_ch04_printf("B\r\n");
-						Delay_Timer_1 = 50;
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;
+//						bluetooth_ch04_printf("B\r\n");
+						Delay_Timer_1 = 50;// 声光触发
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+						Turn_Encoder_Accum = 0;
+						Turn_State_flag = 1;// 弯道行驶距离累积开启
 					}
 					else if (Mode_2_Cur_State == STATE_C_TO_D)
 					{
@@ -456,9 +463,11 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 						Head_PID_control_enable = 0;
 						Mode_2_Cur_State = STATE_D_TO_A;
 						OLED_ShowString(36, 16, "D->A", OLED_6X8);
-						bluetooth_ch04_printf("D\r\n");
-						Delay_Timer_1 = 50;
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;
+//						bluetooth_ch04_printf("D\r\n");
+						Delay_Timer_1 = 50;// 声光触发
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+						Turn_Encoder_Accum = 0;
+						Turn_State_flag = 1;// 弯道行驶距离累积开启
 					}
 				}
 				
@@ -489,29 +498,33 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 						Mode_2_Cur_State = STATE_A_TO_B;
 						Yaw_Target = Yaw_Result;
 						OLED_ShowString(36, 16, "A->B", OLED_6X8);
-						bluetooth_ch04_printf("A\r\n");
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;
+//						bluetooth_ch04_printf("A\r\n");
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 					}
 					else if (Mode_2_Cur_State == STATE_B_TO_C && 
-							 (Yaw_Target - 185 <= Yaw_Result && Yaw_Result <= -175))
+							 (Yaw_Target - 185 <= Yaw_Result && Yaw_Result <= -175) &&
+							Turn_Encoder_Accum >= 5400)
 					{
 						// 到达C
+						Turn_State_flag = 0;
 						Mode_2_Cur_State = STATE_C_TO_D;
 						OLED_ShowString(36, 16, "C->D", OLED_6X8);
-						bluetooth_ch04_printf("C\r\n");
-						Delay_Timer_1 = 50;
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;
+//						bluetooth_ch04_printf("C\r\n");
+						Delay_Timer_1 = 50;// 声光触发
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 					}
 					else if (Mode_2_Cur_State == STATE_D_TO_A && 
-							 (Yaw_Target - 365 <= Yaw_Result && Yaw_Result <= -355))
+							 (Yaw_Target - 365 <= Yaw_Result && Yaw_Result <= -355) &&
+							Turn_Encoder_Accum >= 5400)
 					{
 						// 到达A
+						Turn_State_flag = 0;
 						Mode_2_Cur_State = STATE_STOP;
 						Speed_PID.Target = 0;
 						Turn__PID.Target = 0;
 						OLED_ShowString(36, 16, "STOP", OLED_6X8);
-						bluetooth_ch04_printf("P\r\n");
-						Delay_Timer_1 = 50;
+//						bluetooth_ch04_printf("P\r\n");
+						Delay_Timer_1 = 50;// 声光触发
 					}
 				}
 				
@@ -556,12 +569,16 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 		{
 			Time_Count2 = 0;
 			
-			Encoder_Left = Get_Encoder1();
+			// 编码器数据接收与处理
+			Encoder_Left  = Get_Encoder1();
 			Encoder_Right = Get_Encoder2();
 			LeftSpeed  = Encoder_Left * 0.6f + Pre_LeftSpeed  * 0.4f;
 			RightSpeed = Encoder_Right * 0.6f + Pre_RightSpeed * 0.4f;
 			Pre_LeftSpeed = LeftSpeed;
 			Pre_RightSpeed = RightSpeed;
+			
+			// 弯道行驶距离累积
+			if (Turn_State_flag){Turn_Encoder_Accum += Encoder_Left + Encoder_Right;}
 			
 			// 实际速度换算
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
