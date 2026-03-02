@@ -12,6 +12,7 @@
 #include "OLED.h"
 #include "Track_Sensor.h"
 #include "BuzzerAndLED.h"
+
 #include "math.h"
 
 
@@ -204,11 +205,16 @@ int Mode_2_Menu(void)
 
 // [三级界面]模式小车运作界面
 
+// 点位切换冷却时间
 #define TRACK_SWITCH_COOLDOWN 600
+
 // 模式二启用状态：1完整;0仅巡线
 #define MODE_2_SET	1
 
-uint8_t pre_Track_Sensor_State;
+# if MODE_2_SET == 0
+	// 参与在线/掉线状态的发送（防止高频发送阻塞程序）
+	uint8_t pre_Track_Sensor_State;
+#endif
 
 int Mode_2_Running(void)
 {	 
@@ -238,7 +244,7 @@ int Mode_2_Running(void)
 	
 	Run_Flag = 0;	
 	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
-	OLED_ShowString(0, 8 , "Track:", OLED_6X8);
+//	OLED_ShowString(0, 8 , "Track:", OLED_6X8);
 	OLED_ShowString(0, 16, "State:", OLED_6X8);
 //	OLED_ShowString(0, 24, "Error:", OLED_6X8);
 	OLED_ShowString(0, 32, "Yaw_A:", OLED_6X8);
@@ -246,20 +252,21 @@ int Mode_2_Running(void)
 	OLED_Update();
 	
 	// 模式2路径状态机
-	// 原有的通用性质的Run_Flag仍然在使用，状态机更多是一个方便写代码的标志
-typedef enum {
-    STATE_IDLE   		= 0,          	// 空闲（未启动）
-	STATE_BALANCE_ON 	= 1,			// 启用平衡控制
-	STATE_SEEK_A		= 2,			// A：起点准备（考虑到可能会一开始，A点可能碰到线）（暂时认为离开线的一刻，为找到A点）
-    STATE_A_TO_B 		= 3,        	// A→B：直线100cm
-    STATE_B_TO_C 		= 4,        	// B→C：右半圆弧（半径40cm，180°）
-    STATE_C_TO_D 		= 5,        	// C→D：直线100cm
-    STATE_D_TO_A 		= 6,        	// D→A：左半圆弧（半径40cm，180°）
-    STATE_STOP   		= 7,         	// 停车
-	STATE_BALANCE_OFF	= 8				// 中止平衡控制
-} Mode_2_State;
+	// 原有的通用性质的Run_Flag仍然在起使能平衡车四环的作用
+	// 状态机更多起方便写代码的作用
+	typedef enum {
+		STATE_IDLE   		= 0,          	// 空闲（未启动）
+		STATE_BALANCE_ON 	= 1,			// 启用平衡控制
+		STATE_SEEK_A		= 2,			// A：起点准备（考虑到可能会一开始，A点可能碰到线）（暂时认为离开线的一刻，为找到A点）
+		STATE_A_TO_B 		= 3,        	// A→B：直线100cm
+		STATE_B_TO_C 		= 4,        	// B→C：右半圆弧（半径40cm，180°）
+		STATE_C_TO_D 		= 5,        	// C→D：直线100cm
+		STATE_D_TO_A 		= 6,        	// D→A：左半圆弧（半径40cm，180°）
+		STATE_STOP   		= 7,         	// 停车
+		STATE_BALANCE_OFF	= 8				// 中止平衡控制
+	} Mode_2_State;
 
-Mode_2_State Mode_2_Cur_State = STATE_IDLE;
+	Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 	
 	// 变量相关的重置部分整合
 	BIG_Init();
@@ -278,10 +285,10 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 
 	// 记录弯道行驶距离（左右编码器原始值直接累加）
 	uint16_t Turn_Encoder_Accum = 0;
-// 标志位，标记当前是否为转弯状态
+	// 标志位，标记当前是否为转弯状态
 	uint8_t Turn_State_flag = 0;
 	
-	// 正式运行
+	// 正式开始运行模式代码
     while(1)
     {  
 		/* 按键处理*/
@@ -320,7 +327,7 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 				OLED_ShowString(36, 16, "A->B", OLED_6X8);
 				OLED_Update();
 			}
-			else// 其他阶段，按下确认键则直接停止
+			else// 其他阶段，按下确认键则直接停止，重置状态
 			{
 				Mode_2_Cur_State = STATE_IDLE;
 				Head_PID_control_enable = 0;
@@ -340,7 +347,7 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 			Param_Save();
 			
 			// 清零pid积分等参数
-			All_PID_Init();	
+			BIG_Init();	
 
 			if (Run_Flag) {OLED_ShowString(0, 0, "Run ", OLED_6X8);OLED_Update();}
 			else {OLED_ShowString(0, 0, "STOP", OLED_6X8);OLED_Update();}
@@ -383,7 +390,7 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
-			Mode_2_Cur_State = STATE_IDLE;
+			Mode_2_Cur_State = STATE_BALANCE_OFF;
 			Head_PID_control_enable = 0;
 			Run_Flag = 0;
 			//强制停止（电机）运行
@@ -391,7 +398,8 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
 			
-			OLED_ShowString(0, 0, "STOP", OLED_6X8);
+			OLED_ShowString(36, 16, "BAOF", OLED_6X8);
+			OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
 			OLED_Update();
 		}		
 		
@@ -438,9 +446,10 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 		OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
         switch(Track_Sensor_State)//是否在线
         {
+			// 在线
 			case TRACK_STATE_ON_LINE:
 			{
-				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
+//				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
 				
 				// ========== 状态切换判定（受冷却影响）==========
 				if (Delay_Timer_2 == 0) 
@@ -448,26 +457,28 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 					if (Mode_2_Cur_State == STATE_A_TO_B)
 					{
 						// 到达B
-						Head_PID_control_enable = 0;
 						Mode_2_Cur_State = STATE_B_TO_C;
-						OLED_ShowString(36, 16, "B->C", OLED_6X8);
-//						bluetooth_ch04_printf("B\r\n");
+						Head_PID_control_enable = 0;				
 						Delay_Timer_1 = 50;// 声光触发
 						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 						Turn_Encoder_Accum = 0;
 						Turn_State_flag = 1;// 弯道行驶距离累积开启
+						
+						OLED_ShowString(36, 16, "B->C", OLED_6X8);
+//						bluetooth_ch04_printf("B\r\n");
 					}
 					else if (Mode_2_Cur_State == STATE_C_TO_D)
 					{
 						// 到达D
-						Head_PID_control_enable = 0;
 						Mode_2_Cur_State = STATE_D_TO_A;
-						OLED_ShowString(36, 16, "D->A", OLED_6X8);
-//						bluetooth_ch04_printf("D\r\n");
+						Head_PID_control_enable = 0;								
 						Delay_Timer_1 = 50;// 声光触发
 						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 						Turn_Encoder_Accum = 0;
 						Turn_State_flag = 1;// 弯道行驶距离累积开启
+						
+						OLED_ShowString(36, 16, "D->A", OLED_6X8);
+//						bluetooth_ch04_printf("D\r\n");
 					}
 				}
 				
@@ -484,10 +495,10 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 				
 				break;
 			}
-
+			// 掉线
 			case TRACK_STATE_OFF_LINE:
 			{
-				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
+//				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
 				
 				// ========== 状态切换判定（受冷却影响）==========
 				if (Delay_Timer_2 == 0) 
@@ -496,35 +507,38 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 					{
 						// 到达A
 						Mode_2_Cur_State = STATE_A_TO_B;
-						Yaw_Target = Yaw_Result;
+						Yaw_Target = Yaw_Result;// 标定发车Yaw角
+						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+						
 						OLED_ShowString(36, 16, "A->B", OLED_6X8);
 //						bluetooth_ch04_printf("A\r\n");
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 					}
 					else if (Mode_2_Cur_State == STATE_B_TO_C && 
 							 (Yaw_Target - 185 <= Yaw_Result && Yaw_Result <= -175) &&
 							Turn_Encoder_Accum >= 5400)
 					{
 						// 到达C
-						Turn_State_flag = 0;
 						Mode_2_Cur_State = STATE_C_TO_D;
-						OLED_ShowString(36, 16, "C->D", OLED_6X8);
-//						bluetooth_ch04_printf("C\r\n");
+						Turn_State_flag = 0;											
 						Delay_Timer_1 = 50;// 声光触发
 						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+						
+						OLED_ShowString(36, 16, "C->D", OLED_6X8);
+//						bluetooth_ch04_printf("C\r\n");
 					}
 					else if (Mode_2_Cur_State == STATE_D_TO_A && 
 							 (Yaw_Target - 365 <= Yaw_Result && Yaw_Result <= -355) &&
 							Turn_Encoder_Accum >= 5400)
 					{
 						// 到达A
-						Turn_State_flag = 0;
 						Mode_2_Cur_State = STATE_STOP;
+						Turn_State_flag = 0;						
 						Speed_PID.Target = 0;
-						Turn__PID.Target = 0;
+						Turn__PID.Target = 0;						
+						Delay_Timer_1 = 50;// 声光触发
+						
 						OLED_ShowString(36, 16, "STOP", OLED_6X8);
 //						bluetooth_ch04_printf("P\r\n");
-						Delay_Timer_1 = 50;// 声光触发
 					}
 				}
 				
@@ -562,9 +576,8 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
             LED_SET(0);
         }
 
-
 		
-		/* 速度计算*/
+		/* 外圈调控周期*/
 		if (Time_Count2 >= 10)// 10 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
@@ -589,7 +602,6 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 				/* 航向角PID介入（挪用的时候注意航向角环输出取反给转向环）*/
 				if (Head_PID_control_enable)
 				{
-//					if (fabs (Yaw_Target - Yaw_Result) < 2.0f){Head_PID_control_enable = 0;}
 					Head__PID.Actual = Yaw_Result;
 					PID_Update(&Head__PID);
 					Turn__PID.Target = - Head__PID.Out;
@@ -601,6 +613,7 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 		}
 
 		
+		/* 内圈调控周期*/
         if (Run_Flag)
 		{			
 			if (Time_Count1 >= 2)// 2 * 5 ms调控周期
