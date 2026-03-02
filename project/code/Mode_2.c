@@ -206,7 +206,7 @@ int Mode_2_Menu(void)
 
 #define TRACK_SWITCH_COOLDOWN 600
 // 模式二启用状态：1完整;0仅巡线
-#define MODE_2_SET	0
+#define MODE_2_SET	1
 
 uint8_t pre_Track_Sensor_State;
 
@@ -241,7 +241,8 @@ int Mode_2_Running(void)
 	OLED_ShowString(0, 8 , "Track:", OLED_6X8);
 	OLED_ShowString(0, 16, "State:", OLED_6X8);
 //	OLED_ShowString(0, 24, "Error:", OLED_6X8);
-//	OLED_ShowString(0, 32, "Yaw_A:", OLED_6X8);
+	OLED_ShowString(0, 32, "Yaw_A:", OLED_6X8);
+	
 	OLED_Update();
 	
 	// 模式2路径状态机
@@ -429,7 +430,7 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 		
 		// 任务模式	
 //		OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);
-//		OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
+		OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
         switch(Track_Sensor_State)//是否在线
         {
 			case TRACK_STATE_ON_LINE:
@@ -571,8 +572,7 @@ Mode_2_State Mode_2_Cur_State = STATE_IDLE;
 				/* 航向角PID介入（挪用的时候注意航向角环输出取反给转向环）*/
 				if (Head_PID_control_enable)
 				{
-//					if (fabs (Yaw_Target - Yaw_Result) < 2.0f){Head_PID_control_enable = 0;}				
-					Head__PID.Target = Yaw_Target;
+//					if (fabs (Yaw_Target - Yaw_Result) < 2.0f){Head_PID_control_enable = 0;}
 					Head__PID.Actual = Yaw_Result;
 					PID_Update(&Head__PID);
 					Turn__PID.Target = - Head__PID.Out;
