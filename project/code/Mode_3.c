@@ -361,16 +361,18 @@ int Mode_3_Running(void)
 		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
+			if (Run_Flag){OLED_ShowString(36, 16, "BAOF", OLED_6X8);
+			OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
+			OLED_Update();}
+			
 			Mode_3_Cur_State = STATE_BALANCE_OFF;
-			Run_Flag = 0;
+			Head_PID_control_enable = 0;
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
 			
-			OLED_ShowString(36, 16, "BAOF", OLED_6X8);
-			OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
-			OLED_Update();
+			Run_Flag = 0;
 		}		
 		
 		
@@ -419,7 +421,8 @@ int Mode_3_Running(void)
 				}
 				
 				// ========== 巡线执行（不受冷却影响）==========
-				if (Mode_3_Cur_State == STATE_C_TO_B ||
+				if (Mode_3_Cur_State == STATE_PREP ||
+					Mode_3_Cur_State == STATE_C_TO_B ||
 					Mode_3_Cur_State == STATE_D_TO_A)
 				{
 					Speed_PID.Target = 30;

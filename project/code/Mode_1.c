@@ -307,14 +307,14 @@ int Mode_1_Running(void)
 		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
-			Run_Flag = 0;
+			if (Run_Flag){OLED_ShowString(0, 0, "STOP", OLED_6X8);OLED_Update();}		
+			
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
 			
-			OLED_ShowString(0, 0, "STOP", OLED_6X8);
-			OLED_Update();
+			Run_Flag = 0;
 		}		
 		
 		

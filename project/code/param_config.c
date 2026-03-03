@@ -89,7 +89,7 @@ PID_t Angle_PID = {
 // 速度环PID参数
 PID_t Speed_PID = {	
 	.OutMax = 3,					// 输出限幅（上限）
-	.OutMin = -3,					// 输出限幅（下限）
+	.OutMin = -37,					// 输出限幅（下限）
 	.IntSepThresh = 20,				// 积分分离阈值（误差大于阈值 积分清零）
 	.ErrorIntMax = 2,				// 积分限幅（上限）
 	.ErrorIntMin = -2,				// 积分限幅（下限）

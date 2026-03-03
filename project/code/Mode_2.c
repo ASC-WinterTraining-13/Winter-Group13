@@ -209,7 +209,7 @@ int Mode_2_Menu(void)
 #define TRACK_SWITCH_COOLDOWN 600
 
 // 模式二启用状态：1完整;0仅巡线
-#define MODE_2_SET	1
+#define MODE_2_SET	0
 
 # if MODE_2_SET == 0
 	// 参与在线/掉线状态的发送（防止高频发送阻塞程序）
@@ -390,17 +390,18 @@ int Mode_2_Running(void)
 		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
+			if (Run_Flag){OLED_ShowString(36, 16, "BAOF", OLED_6X8);
+			OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
+			OLED_Update();}
+			
 			Mode_2_Cur_State = STATE_BALANCE_OFF;
-			Head_PID_control_enable = 0;
-			Run_Flag = 0;
+			Head_PID_control_enable = 0;		
 			//强制停止（电机）运行
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
 			
-			OLED_ShowString(36, 16, "BAOF", OLED_6X8);
-			OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
-			OLED_Update();
+			Run_Flag = 0;
 		}		
 		
 		
