@@ -76,5 +76,6 @@ void        bluetooth_ch04_dma_rx_handler      (void);
 uint8       bluetooth_ch04_init                (void);
 uint32      bluetooth_ch04_printf              (const char *format, ...);
 uint8       bluetooth_ch04_tx_dequeue          (uint8 *data);                  // 从TX FIFO取出一字节（供TX中断使用）
+void        bluetooth_ch04_tx_flush            (void);                         // 清空TX FIFO并停止发送（退出调试模式时使用）
 
 #endif

@@ -58,6 +58,7 @@ static  uint8           bluetooth_ch04_data = 0;                                
 // ========== 发送FIFO（非阻塞发送）==========
 static  fifo_struct     bluetooth_ch04_tx_fifo;
 static  uint8           bluetooth_ch04_tx_buffer[BLUETOOTH_CH04_TX_BUFFER_SIZE]; // 发送FIFO缓冲区
+static  uint8           bluetooth_ch04_tx_busy = 0;                              // TX是否正在发送（1-发送中 0-空闲）
 
 // ========== 接收相关静态变量 ==========
 static  uint8           bluetooth_ch04_rx_packet[BLUETOOTH_CH04_BUFFER_SIZE];   // 接收缓冲数组
@@ -98,7 +99,22 @@ uint32 bluetooth_ch04_send_buffer (const uint8 *buff, uint32 len)
             break;                                                              // FIFO已满，停止入队
     }
     if(i > 0)
+    {
+        if(!bluetooth_ch04_tx_busy)                                             // TX空闲时，直接发送首字节启动传输
+        {
+            bluetooth_ch04_tx_busy = 1;
+            uint8 first_byte;
+            if(fifo_read_element(&bluetooth_ch04_tx_fifo, &first_byte, FIFO_READ_AND_CLEAN) == FIFO_SUCCESS)
+            {
+                uart_write_byte(BLUETOOTH_CH04_INDEX, first_byte);
+            }
+            else
+            {
+                bluetooth_ch04_tx_busy = 0;                                     // 读取失败，恢复空闲状态
+            }
+        }
         uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 1);                             // 使能TX中断触发发送
+    }
     return len - i;
 }
 
@@ -120,7 +136,22 @@ uint32 bluetooth_ch04_send_string (const char *str)
         i++;
     }
     if(i > 0)
+    {
+        if(!bluetooth_ch04_tx_busy)                                             // TX空闲时，直接发送首字节启动传输
+        {
+            bluetooth_ch04_tx_busy = 1;
+            uint8 first_byte;
+            if(fifo_read_element(&bluetooth_ch04_tx_fifo, &first_byte, FIFO_READ_AND_CLEAN) == FIFO_SUCCESS)
+            {
+                uart_write_byte(BLUETOOTH_CH04_INDEX, first_byte);
+            }
+            else
+            {
+                bluetooth_ch04_tx_busy = 0;                                     // 读取失败，恢复空闲状态
+            }
+        }
         uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 1);                             // 使能TX中断触发发送
+    }
     return (str[i] != '\0') ? 1 : 0;                                           // 返回0表示全部入队，1表示FIFO溢出
 }
 
@@ -191,7 +222,24 @@ void bluetooth_ch04_clear_rx_flag (void)
 //-------------------------------------------------------------------------------------------------------------------
 uint8 bluetooth_ch04_tx_dequeue (uint8 *data)
 {
-    return (fifo_read_element(&bluetooth_ch04_tx_fifo, data, FIFO_READ_AND_CLEAN) == FIFO_SUCCESS) ? 1 : 0;
+    if(fifo_read_element(&bluetooth_ch04_tx_fifo, data, FIFO_READ_AND_CLEAN) == FIFO_SUCCESS)
+        return 1;
+    bluetooth_ch04_tx_busy = 0;                                                 // FIFO已空，标记TX为空闲
+    return 0;
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     蓝牙转串口模块 清空发送缓冲区并停止发送
+// 参数说明     void
+// 返回参数     void
+// 使用示例     bluetooth_ch04_tx_flush();
+// 备注信息     退出调试模式时调用，防止退出后继续发送
+//-------------------------------------------------------------------------------------------------------------------
+void bluetooth_ch04_tx_flush (void)
+{
+    uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 0);                                 // 关闭TX中断
+    fifo_clear(&bluetooth_ch04_tx_fifo);                                        // 清空发送FIFO
+    bluetooth_ch04_tx_busy = 0;                                                 // 标记TX为空闲
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -266,6 +314,7 @@ uint8 bluetooth_ch04_init (void)
     bluetooth_ch04_rx_state = 0;
     bluetooth_ch04_rx_index = 0;
     bluetooth_ch04_rx_flag = 0;
+    bluetooth_ch04_tx_busy = 0;
     
     // 注册串口中断回调函数
     set_wireless_type(BLUETOOTH_CH04, bluetooth_ch04_uart_callback);
@@ -326,7 +375,22 @@ uint32 bluetooth_ch04_printf(const char *format, ...)
         i++;
     }
     if(i > 0)
-        uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 1);                             // 使能TX中断触发发送
+    {
+        if(!bluetooth_ch04_tx_busy)                                             // TX空闲时，直接发送首字节启动传输（解决首字符丢失问题）
+        {
+            bluetooth_ch04_tx_busy = 1;
+            uint8 first_byte;
+            if(fifo_read_element(&bluetooth_ch04_tx_fifo, &first_byte, FIFO_READ_AND_CLEAN) == FIFO_SUCCESS)
+            {
+                uart_write_byte(BLUETOOTH_CH04_INDEX, first_byte);              // 阻塞发送首字节，确保可靠启动
+            }
+            else
+            {
+                bluetooth_ch04_tx_busy = 0;                                     // 读取失败，恢复空闲状态
+            }
+        }
+        uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 1);                             // 使能TX中断发送FIFO中剩余字节
+    }
     
     return (uint32)len;
 }

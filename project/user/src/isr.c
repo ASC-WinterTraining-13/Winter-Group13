@@ -313,7 +313,7 @@ void UART6_IRQHandler (void)
         {
             uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 0);                         // FIFO为空，关闭TX中断
         }
-        UART6->ICR |= 0x00000001;                                               // 清除中断标志位
+        UART6->ICR = 0x00000001;                                                // 清除中断标志位（直接赋值，避免读-改-写误清除RX标志）
     }
     if(UART6->ISR & 0x00000002)                                                 // 串口接收缓冲中断
     {      
@@ -323,7 +323,7 @@ void UART6_IRQHandler (void)
 		wireless_module_uart_handler();
 		
         // 此处编写用户代码
-        UART6->ICR |= 0x00000002;                                               // 清除中断标志位
+        UART6->ICR = 0x00000002;                                                // 清除中断标志位（直接赋值，避免读-改-写误清除TX标志）
     }
 }
 

@@ -535,6 +535,9 @@ int Debug_Bluetooth(void)
 		{
 			key_clear_state(KEY_BACK);
 			
+			// 清空蓝牙发送缓冲区，防止退出后继续发送
+			bluetooth_ch04_tx_flush();
+			
 			// 返回上一级菜单
 			return 0;
 		}
@@ -585,10 +588,11 @@ int Debug_Bluetooth(void)
 		}
 		
 		
-		if (test_state == 0 || Time_Count2 > 1000 && test_state == 2)
+		if (test_state == 0 || (Time_Count2 > 1000 && test_state == 2))
 		{
 			test_state = 1;
 			int16_t TEST_A = Time_Count2;
+			Time_Count2 = 0;                                                    // 重置计时器，防止立即触发第二次发送
 			bluetooth_ch04_printf("TEST:%d\r\n", TEST_A);
 			OLED_Printf(24, 16, OLED_8X16, "TSET:%d ", TEST_A);
 			OLED_Update();
