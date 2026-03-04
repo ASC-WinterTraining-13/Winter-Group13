@@ -266,7 +266,7 @@ float Angle_Result    = 0.0f;					// 倾斜角 最终调用值
 float GyroRate_Result = 0.0f;					// 角速度 最终调用值
 
 // 低通滤波系数（0.2 = 强滤波，0.5 = 中等，0.8 = 弱滤波）
-#define MPU6050_LOW_PASS_FILTER 0.4f
+#define MPU6050_LOW_PASS_FILTER 0.3f
 // 输出死区系数
 #define MPU6050_OUTPUT_DEAD_ZONE 0.05f
 //// 采样时间（5ms = 0.005s）
@@ -285,8 +285,8 @@ void MPU6050_Analysis(void)
     if(kalman_init_flag == 0 && USE_KALMAN_FILTER)
     {
         // 卡尔曼参数初始化（平衡车推荐值）
-        Kalman_Init(&kf_roll, 0.002f, 0.003f, 0.03f);
-        Kalman_Init(&kf_pitch, 0.002f, 0.003f, 0.03f);
+        Kalman_Init(&kf_roll, 0.003f, 0.003f, 0.03f);
+        Kalman_Init(&kf_pitch, 0.003f, 0.003f, 0.03f);
         kalman_init_flag = 1;
     }
 	

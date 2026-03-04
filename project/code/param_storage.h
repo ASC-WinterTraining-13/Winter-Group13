@@ -8,7 +8,7 @@
 #define PARAM_FLASH_PAGE        (3)
 
 // PID参数缓存（与flash_union_buffer解耦）
-extern float param_cache[18];
+extern float param_cache[21];
 
 /* 六组PID参数在 param_cache[] 中的索引*/
 // Rate__PID (0-2)角速度环
@@ -41,7 +41,12 @@ extern float param_cache[18];
 #define FLASH_HEAD__KI      16
 #define FLASH_HEAD__KD      17
 
-// 预留扩展 (18-255)
+// POSI__pid (18-20)位置环
+#define FLASH_POSI__KP      18
+#define FLASH_POSI__KI      19
+#define FLASH_POSI__KD      20
+
+// 预留扩展 (21-255)
 // 可以继续添加其他参数...
 
 // 简化访问宏（直接操作参数缓存）
@@ -68,6 +73,10 @@ extern float param_cache[18];
 #define HEAD__KP    param_cache[FLASH_HEAD__KP]
 #define HEAD__KI    param_cache[FLASH_HEAD__KI]
 #define HEAD__KD    param_cache[FLASH_HEAD__KD]
+
+#define POSI__KP    param_cache[FLASH_POSI__KP]
+#define POSI__KI    param_cache[FLASH_POSI__KI]
+#define POSI__KD    param_cache[FLASH_POSI__KD]
 
 //-------------------------------------------------------------------------------------------------------------------
 // 函数简介     同步pid参数至缓存区（仍然需要调用Param_Save();）

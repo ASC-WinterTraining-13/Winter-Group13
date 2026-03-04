@@ -426,7 +426,7 @@ int Mode_2_Running(void)
 #if MODE_2_SET == 0
 		
 		// 非任务模式：单巡线调试模式
-		Speed_PID.Target = 35;
+		Speed_PID.Target = 40;
 		switch(Track_Sensor_State)//是否在线
 		{
 			//  在线

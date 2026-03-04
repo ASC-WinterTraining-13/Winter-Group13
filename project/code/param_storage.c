@@ -2,11 +2,11 @@
 #include "param_config.h"
 #include "math.h"
 
-float param_cache[18] = {0};
+float param_cache[21] = {0};
 
 // 默认参数值（首次使用或恢复出厂设置时使用）
 
-static const float DEFAULT_PARAMS[18] = {
+static const float DEFAULT_PARAMS[21] = {
     // Rate__PID (索引 0-2)
     29.58f, 0.0f, 0.0f,
     
@@ -23,7 +23,10 @@ static const float DEFAULT_PARAMS[18] = {
     0.0f, 0.0f, 0.0f,
 	
 	// Head__PID (索引 15-17)
-	4.0f, 0.0f, 0.0f
+	4.0f, 0.0f, 0.0f,
+	
+	// Posi__PID (索引 18-20)
+	1.0f, 0.0f, 0.0f
 };
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -33,7 +36,7 @@ static const float DEFAULT_PARAMS[18] = {
 
 static void load_default(void)
 {
-    for(uint8 i = 0; i < 18; i++)
+    for(uint8 i = 0; i < 21; i++)
     {
         param_cache[i] = DEFAULT_PARAMS[i];
     }
@@ -41,7 +44,7 @@ static void load_default(void)
 
 static void copy_cache_to_flash_buffer(void)
 {
-    for(uint8 i = 0; i < 18; i++)
+    for(uint8 i = 0; i < 21; i++)
     {
         flash_union_buffer[i].float_type = param_cache[i];
     }
@@ -49,7 +52,7 @@ static void copy_cache_to_flash_buffer(void)
 
 static void copy_flash_buffer_to_cache(void)
 {
-    for(uint8 i = 0; i < 18; i++)
+    for(uint8 i = 0; i < 21; i++)
     {
         param_cache[i] = flash_union_buffer[i].float_type;
     }
@@ -58,9 +61,9 @@ static void copy_flash_buffer_to_cache(void)
 static uint8 param_cache_is_valid(void)
 {
     uint8 non_zero_kp_count = 0;
-    uint8 kp_index[6] = {FLASH_RATE__KP, FLASH_ANGLE_KP, FLASH_SPEED_KP, FLASH_TURN__KP, FLASH_TRACK_KP, FLASH_HEAD__KP};
+    uint8 kp_index[7] = {FLASH_RATE__KP, FLASH_ANGLE_KP, FLASH_SPEED_KP, FLASH_TURN__KP, FLASH_TRACK_KP, FLASH_HEAD__KP, FLASH_POSI__KP};
 
-    for(uint8 i = 0; i < 18; i++)
+    for(uint8 i = 0; i < 21; i++)
     {
         if(!isfinite(param_cache[i]))
         {
@@ -72,7 +75,7 @@ static uint8 param_cache_is_valid(void)
         }
     }
 
-    for(uint8 i = 0; i < 6; i++)
+    for(uint8 i = 0; i < 7; i++)
     {
         if(fabsf(param_cache[kp_index[i]]) > 0.0001f)
         {
@@ -126,6 +129,11 @@ void Param_SyncToPID(void)
 	Head__PID.Kp = HEAD__KP;
 	Head__PID.Ki = HEAD__KI;
 	Head__PID.Kd = HEAD__KD;
+	
+	// 位置环PID
+	Posi__PID.Kp = POSI__KP;
+	Posi__PID.Ki = POSI__KI;
+	Posi__PID.Kd = POSI__KD;
 }
 
 //-------------------------------------------------------------------------------------------------------------------

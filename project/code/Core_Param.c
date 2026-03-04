@@ -16,7 +16,7 @@ void Core_Param_UI(uint8_t Page)
 		 // 第一页
 		case 1:
 		{
-			OLED_ShowString(8  , 0  , "Param_Setting", OLED_6X8);
+			OLED_ShowString(8  , 0  , "Param_Set[1/2]", OLED_6X8);
 			OLED_ShowString(0  , 8  , "=====================", OLED_6X8);
 			OLED_ShowString(10 , 16 , "Rate__PID", OLED_6X8);
 			OLED_ShowString(10 , 24 , "Angle_PID", OLED_6X8);
@@ -27,6 +27,14 @@ void Core_Param_UI(uint8_t Page)
 			
 			break;
 		}
+		
+		// 第二页
+		case 2:
+			OLED_ShowString(8  , 0  , "Param_Set[1/2]", OLED_6X8);
+			OLED_ShowString(0  , 8  , "=====================", OLED_6X8);
+			OLED_ShowString(10 , 16 , "Posi__PID", OLED_6X8);
+		
+			break;
 	}
 }
 
@@ -59,7 +67,7 @@ void Core_Param_Set_PID_UI(uint8_t Page, PID_t *p)
 // 同步PID结构体到Flash缓冲区（核心修复Flash存储）
 static void Sync_PID_To_Buffer(PID_t *p, uint8_t PID_Num)
 {
-    if (p == NULL || PID_Num < 1 || PID_Num > 6) return;
+    if (p == NULL || PID_Num < 1 || PID_Num > 7) return;
     switch (PID_Num)
     {
         case 1: RATE__KP = p->Kp; RATE__KI = p->Ki; RATE__KD = p->Kd; break;
@@ -68,6 +76,7 @@ static void Sync_PID_To_Buffer(PID_t *p, uint8_t PID_Num)
         case 4: TURN__KP = p->Kp; TURN__KI = p->Ki; TURN__KD = p->Kd; break;
         case 5: TRACK_KP = p->Kp; TRACK_KI = p->Ki; TRACK_KD = p->Kd; break;
         case 6: HEAD__KP = p->Kp; HEAD__KI = p->Ki; HEAD__KD = p->Kd; break;
+		case 7: POSI__KP = p->Kp; POSI__KI = p->Ki; POSI__KD = p->Kd; break;
         default: break;
     }
 }
@@ -225,6 +234,9 @@ int Set_Core_Param(uint8_t PID_Num)
 					Set_Core_Param_PID(Param_flag_temp, &Head__PID, PID_Num);
 					break;
 				
+				case 7:
+					Set_Core_Param_PID(Param_flag_temp, &Posi__PID, PID_Num);
+					break;				
 			}
         }        
         
@@ -268,14 +280,14 @@ int Core_Param_Menu(void)
             key_pressed = 1;
             key_clear_state(KEY_UP);
             Core_Param_flag --;
-            if (Core_Param_flag < 1)Core_Param_flag = 6;
+            if (Core_Param_flag < 1)Core_Param_flag = 7;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {
             key_pressed = 1;
             key_clear_state(KEY_DOWN);
             Core_Param_flag ++;
-            if (Core_Param_flag > 6)Core_Param_flag = 1;
+            if (Core_Param_flag > 7)Core_Param_flag = 1;
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))
         {
@@ -292,7 +304,7 @@ int Core_Param_Menu(void)
         
         /* 页面跳转*/
 		// 根据排列位数判定参数是否为PID
-        if (1 <= Core_Param_flag_temp && Core_Param_flag_temp <= 6)
+        if (1 <= Core_Param_flag_temp && Core_Param_flag_temp <= 7)
         {
             OLED_Clear();
 			switch (Core_Param_flag_temp)
@@ -336,7 +348,14 @@ int Core_Param_Menu(void)
 					Core_Param_Set_PID_UI(1, &Head__PID);
 					OLED_ShowString(0 , 16 , ">", OLED_6X8);
 					OLED_Update();
-					break;				
+					break;	
+
+				case 7:
+					OLED_ShowString(8 , 0 , "Posi__PID", OLED_6X8);
+					Core_Param_Set_PID_UI(1, &Posi__PID);
+					OLED_ShowString(0 , 16 , ">", OLED_6X8);
+					OLED_Update();
+					break;
 			}
 			Set_Core_Param(Core_Param_flag_temp);
 			
@@ -356,6 +375,13 @@ int Core_Param_Menu(void)
 				OLED_Clear();
 				Core_Param_UI(1);
 				OLED_ShowString(0 , (Core_Param_flag+1)*8 , ">", OLED_6X8);
+				OLED_Update();
+			}
+			else if (Core_Param_flag == 7)
+			{
+				OLED_Clear();
+				Core_Param_UI(2);
+				OLED_ShowString(0 , (Core_Param_flag-5)*8 , ">", OLED_6X8);
 				OLED_Update();
 			}
         } 

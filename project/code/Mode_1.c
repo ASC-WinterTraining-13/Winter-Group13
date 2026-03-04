@@ -244,6 +244,8 @@ int Mode_1_Running(void)
 	// 小车距离累积
 	float Car_Move_Distance = 0.0f;
 	
+	// 模式一启用延时（提前设置一个）
+	Delay_Timer_1 = 400;
 	
     while(1)
     {  
@@ -264,7 +266,13 @@ int Mode_1_Running(void)
             key_clear_state(KEY_CONFIRM);
 			
 			// 取反启动状态
-			Run_Flag = !Run_Flag;			
+			Run_Flag = !Run_Flag;
+
+			if (Run_Flag)// 如果是开启运作
+			{
+				// 模式一启用延时
+				Delay_Timer_1 = 400;
+			}
 			
 			// PID参数存储
 			Param_Save();
@@ -336,38 +344,45 @@ int Mode_1_Running(void)
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
 			DifSpeed = LeftSpeed - RightSpeed;			// 实际差分速度
 			
-			// 距离累积
-			Car_Move_Distance += (Encoder_Left + Encoder_Right)/ 2.0f;
-			
-			OLED_Printf(54, 8, OLED_6X8, "%4.1f   ", Car_Move_Distance);
-			OLED_Update();
-			
-			// （干脆用比较死板的方法）
-			if (Car_Move_Distance > 250)
+			if (Delay_Timer_1 == 0)
 			{
-				Speed_PID.Target = -20;
-			}
-			else if (Car_Move_Distance > 150)
-			{
-				Speed_PID.Target = -16;
-			}
-			else if (Car_Move_Distance < -250)
-			{
-				Speed_PID.Target = 20;
-			}
-			else if (Car_Move_Distance < -150)
-			{
-				Speed_PID.Target = 16;
-			}
-			else if (-50 < Car_Move_Distance && Car_Move_Distance < 50)
-			{
-				Speed_PID.Target = 0;
-			}
+				// 距离累积
+				Car_Move_Distance += (Encoder_Left + Encoder_Right)/ 2.0f;
+				
+				OLED_Printf(54, 8, OLED_6X8, "%4.1f   ", Car_Move_Distance);
+				OLED_Update();
 			
-			
-			/* 转向环+速度环PID计算*/
-			if (Run_Flag){PID_Calc_Speed_And_Turn();}
-			
+			// （比较死板的方法，一般还是别用了）
+//			if (Car_Move_Distance > 250)
+//			{
+//				Speed_PID.Target = -20;
+//			}
+//			else if (Car_Move_Distance > 150)
+//			{
+//				Speed_PID.Target = -16;
+//			}
+//			else if (Car_Move_Distance < -250)
+//			{
+//				Speed_PID.Target = 20;
+//			}
+//			else if (Car_Move_Distance < -150)
+//			{
+//				Speed_PID.Target = 16;
+//			}
+//			else if (-50 < Car_Move_Distance && Car_Move_Distance < 50)
+//			{
+//				Speed_PID.Target = 0;
+//			}
+
+
+				Posi__PID.Actual = Car_Move_Distance;
+				PID_Update(&Posi__PID);
+				Speed_PID.Target = Posi__PID.Out;
+				
+				
+				/* 转向环+速度环PID计算*/
+				if (Run_Flag){PID_Calc_Speed_And_Turn();}
+			}
 		}
 		
 		

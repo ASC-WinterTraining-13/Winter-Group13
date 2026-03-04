@@ -51,12 +51,14 @@ void motor_SetPWM(uint8_t motor_id, int PWM)
 	{
 		if (PWM >= 0)
 		{
+			PWM += 50;
 			gpio_set_level (B10,0);
 			gpio_set_level (B11,1);//正反转可调.
 			pwm_set_duty(TIM5_PWM_CH4_A3,PWM);
 		}
 		else
 		{
+			PWM -= 50;
 			gpio_set_level (B10,1);
 			gpio_set_level (B11,0);//正反转可调.
 			pwm_set_duty(TIM5_PWM_CH4_A3,-PWM);

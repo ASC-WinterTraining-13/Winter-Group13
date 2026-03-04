@@ -43,6 +43,7 @@ void All_PID_Init(void)
 	PID_Init(&Speed_PID);
 	PID_Init(&Angle_PID);
 	PID_Init(&Rate__PID);
+	PID_Init(&Posi__PID);
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -130,17 +131,17 @@ void PID_Update(PID_t *p)
 void PID_Calc_Speed_And_Turn(void)
 {
 	// 转向环PID计算		
-	if (fabsf(Angle_Result) < 10.0f)// 小车应该站稳了
-	{
+//	if (fabsf(Angle_Result) < 10.0f)// 小车应该站稳了
+//	{
 		Turn__PID.Actual = DifSpeed;
 		PID_Update(&Turn__PID);
 		DifPWM = Turn__PID.Out;
-	}
-	// 看来没有
-	else 
-	{
-		PID_Init(&Turn__PID);
-	}
+//	}
+//	// 看来没有
+//	else 
+//	{
+//		PID_Init(&Turn__PID);
+//	}
 
 	// 速度环PID计算
 	Speed_PID.Actual = AveSpeed;

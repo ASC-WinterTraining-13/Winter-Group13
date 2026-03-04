@@ -77,9 +77,10 @@ extern PID_t Speed_PID;				// 速度环PID参数
 extern PID_t Turn__PID;				// 转向环PID参数
 extern PID_t Track_PID;				// 循迹环PID参数
 extern PID_t Head__PID;				// 航向角环PID参数
+extern PID_t Posi__PID;				// 位置环PID参数
 
 // pid参数修改步长值（非蓝牙模块）
-extern const float PID_STEPS[6][3];
+extern const float PID_STEPS[7][3];
 
 /*******************************************************************************************************************/
 /*[E] PID [E]------------------------------------------------------------------------------------------------------*/

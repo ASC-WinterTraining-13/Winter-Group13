@@ -122,15 +122,25 @@ PID_t Head__PID = {
 	.ErrorIntMin = -0,				// 积分限幅（下限）
 	.OutOffset = 0,					// 输出偏移
 };
+// 位置环PID参数
+PID_t Posi__PID = {
+	.OutMax = 30,					// 输出限幅（上限）
+	.OutMin = -30,					// 输出限幅（下限）
+	.IntSepThresh = 50,				// 积分分离阈值（误差大于阈值 积分清零）
+	.ErrorIntMax = 50,				// 积分限幅（上限）
+	.ErrorIntMin = -50,				// 积分限幅（下限）
+	.OutOffset = 0,					// 输出偏移
+};
 
 // PID参数修改步长值（非蓝牙模块）
-const float PID_STEPS[6][3] = {
-    {1.0f, 0.1f, 1.0f},   	// Rate__PID：Kp, Ki, Kd
-    {0.1f, 0.1f, 0.1f}, 	// Angle_PID：Kp, Ki, Kd
-    {0.1f, 0.1f, 0.1f},  	// Speed_PID：Kp, Ki, Kd
-    {0.1f, 0.1f, 0.1f},  	// Turn__PID：Kp, Ki, Kd
-    {0.1f, 0.1f, 0.1f},   	// Track_PID：Kp, Ki, Kd
-	{0.1f, 0.1f, 0.1f}   	// Head__PID：Kp, Ki, Kd
+const float PID_STEPS[7][3] = {
+    {1.0f, 0.1f, 1.0f},    	// Rate__PID：Kp, Ki, Kd
+    {0.1f, 0.1f, 0.1f},  	// Angle_PID：Kp, Ki, Kd
+    {0.1f, 0.1f, 0.1f},   	// Speed_PID：Kp, Ki, Kd
+    {0.1f, 0.1f, 0.1f},   	// Turn__PID：Kp, Ki, Kd
+    {0.1f, 0.1f, 0.1f},    	// Track_PID：Kp, Ki, Kd
+	{0.1f, 0.1f, 0.1f},   	// Head__PID：Kp, Ki, Kd
+	{0.1f, 0.1f, 0.1f}    	// Posi__PID：Kp, Ki, Kd
 };
 
 /*******************************************************************************************************************/
