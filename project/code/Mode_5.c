@@ -434,8 +434,8 @@ int Mode_5_Running(void)
 			DifPWM  = 0;
 		}
 		OLED_Printf(48, 8 , OLED_6X8, "%3.2f", Yaw_Result);
-//		OLED_Printf(48, 24 , OLED_6X8, "%3.2f", Speed_PID.Actual);
-//		OLED_Printf(48, 32 , OLED_6X8, "%3.2f", Speed_PID.Target);
+		OLED_Printf(48, 24 , OLED_6X8, "%d", LeftPWM);
+		OLED_Printf(48, 32 , OLED_6X8, "%d", RightPWM);
 //		OLED_Printf(48, 40 , OLED_6X8, "%3.2f", Speed_PID.Out);
 		if (Head_PID_control_enable)
 		{

@@ -287,6 +287,14 @@ int Mode_3_Running(void)
 	// 标志位，标记当前是否为直线状态（当然指的不是所有的直线，这里是指从A→C，B→D中考虑的一段路径） 0/1
 	uint8_t Straight_State_flag = 0;
 	
+	// 分步控制子状态
+	typedef enum {
+		SUBSTATE_TURN_RIGHT = 0,
+		SUBSTATE_GO_STRAIGHT = 1,
+		SUBSTATE_TURN_LEFT = 2
+	} SubState;
+	SubState Current_SubState = SUBSTATE_TURN_RIGHT;
+	
 	
 	// 正式开始运行模式代码
     while(1)
@@ -405,7 +413,7 @@ int Mode_3_Running(void)
 				// ========== 状态切换判定（受冷却影响）==========
 				if (Delay_Timer_2 == 0)
 				{
-					if (Mode_3_Cur_State == STATE_A_TO_C)
+					if (Mode_3_Cur_State == STATE_A_TO_C && Current_SubState == SUBSTATE_GO_STRAIGHT)
 					{
 						// 到达C
 						Mode_3_Cur_State = STATE_C_TO_B;
@@ -414,11 +422,12 @@ int Mode_3_Running(void)
 						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 						Turn_Encoder_Accum = 0;
 						Turn_State_flag = 1;// 弯道行驶距离累积开启
+						Straight_State_flag = 0;// 关闭直线行驶距离累积
 						
 						OLED_ShowString(36, 16, "C->B", OLED_6X8);
-//						bluetooth_ch04_printf("C\r\n");						
+//						bluetooth_ch04_printf("C\r\n						");						
 					}
-					else if (Mode_3_Cur_State == STATE_B_TO_D)
+					else if (Mode_3_Cur_State == STATE_B_TO_D && Current_SubState == SUBSTATE_GO_STRAIGHT)
 					{
 						// 到达D
 						Mode_3_Cur_State = STATE_D_TO_A;
@@ -427,9 +436,10 @@ int Mode_3_Running(void)
 						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 						Turn_Encoder_Accum = 0;
 						Turn_State_flag = 1;// 弯道行驶距离累积开启
+						Straight_State_flag = 0;// 关闭直线行驶距离累积
 						
 						OLED_ShowString(36, 16, "D->A", OLED_6X8);
-//						bluetooth_ch04_printf("D\r\n");	
+//						bluetooth_ch04_printf("D\r\n						");						
 					}
 				}
 				
@@ -478,20 +488,116 @@ int Mode_3_Running(void)
 				}
 				
 				// ========== 航向角控制（不受冷却影响）==========
-				if (Mode_3_Cur_State == STATE_A_TO_C)
+			if (Mode_3_Cur_State == STATE_A_TO_C)
+			{
+				switch(Current_SubState)
 				{
-					
-					
+					case SUBSTATE_TURN_RIGHT:
+					{
+						// 右转固定角度（约37度，根据地图计算）
+						Head_PID_control_enable = 1;
+						Head__PID.Target = Yaw_Target + 37;
+						Speed_PID.Target = 0; // 原地转向
+						
+						// 检查是否完成转向
+						if (fabs(Yaw_Result - Head__PID.Target) < 2)
+						{
+							Current_SubState = SUBSTATE_GO_STRAIGHT;
+							Straight_Encoder_Accum = 0;
+							Straight_State_flag = 1;
+						}
+						break;
+					}
+					case SUBSTATE_GO_STRAIGHT:
+					{
+						// 直线行驶（约160cm）
+						Head_PID_control_enable = 1;
+						Speed_PID.Target = 30;
+						
+						// 检查是否到达目标距离
+						if (Straight_Encoder_Accum > 1600) // 假设编码器单位为0.1cm
+						{
+							Current_SubState = SUBSTATE_TURN_LEFT;
+							Straight_State_flag = 0;
+						}
+						break;
+					}
+					case SUBSTATE_TURN_LEFT:
+					{
+						// 左转固定角度（约37度）
+						Head_PID_control_enable = 1;
+						Head__PID.Target = Yaw_Target;
+						Speed_PID.Target = 0; // 原地转向
+						
+						// 检查是否完成转向
+						if (fabs(Yaw_Result - Head__PID.Target) < 2)
+						{
+							// 转向完成，等待寻到线
+							Current_SubState = SUBSTATE_GO_STRAIGHT;
+							Straight_Encoder_Accum = 0;
+							Straight_State_flag = 1;
+						}
+						break;
+					}
 				}
-				else if (Mode_3_Cur_State == STATE_B_TO_D)
+			}
+			else if (Mode_3_Cur_State == STATE_B_TO_D)
+			{
+				switch(Current_SubState)
 				{
-					
-					
-				}				
+					case SUBSTATE_TURN_RIGHT:
+					{
+						// 右转固定角度（约37度）
+						Head_PID_control_enable = 1;
+						Head__PID.Target = Yaw_Target - 37;
+						Speed_PID.Target = 0; // 原地转向
+						
+						// 检查是否完成转向
+						if (fabs(Yaw_Result - Head__PID.Target) < 2)
+						{
+							Current_SubState = SUBSTATE_GO_STRAIGHT;
+							Straight_Encoder_Accum = 0;
+							Straight_State_flag = 1;
+						}
+						break;
+					}
+					case SUBSTATE_GO_STRAIGHT:
+					{
+						// 直线行驶（约160cm）
+						Head_PID_control_enable = 1;
+						Speed_PID.Target = 30;
+						
+						// 检查是否到达目标距离
+						if (Straight_Encoder_Accum > 1600) // 假设编码器单位为0.1cm
+						{
+							Current_SubState = SUBSTATE_TURN_LEFT;
+							Straight_State_flag = 0;
+						}
+						break;
+					}
+					case SUBSTATE_TURN_LEFT:
+					{
+						// 左转固定角度（约37度）
+						Head_PID_control_enable = 1;
+						Head__PID.Target = Yaw_Target;
+						Speed_PID.Target = 0; // 原地转向
+						
+						// 检查是否完成转向
+						if (fabs(Yaw_Result - Head__PID.Target) < 2)
+						{
+							// 转向完成，等待寻到线
+							Current_SubState = SUBSTATE_GO_STRAIGHT;
+							Straight_Encoder_Accum = 0;
+							Straight_State_flag = 1;
+						}
+						break;
+					}
+				}
+			}
 				
 				break;
 			}
-		}			
+		}
 		if (Mode_3_Turns_Count >= 4)
 		{
 			// 跑完四圈

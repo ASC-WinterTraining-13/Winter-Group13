@@ -209,7 +209,7 @@ int Mode_2_Menu(void)
 #define TRACK_SWITCH_COOLDOWN 600
 
 // 模式二启用状态：1完整;0仅巡线
-#define MODE_2_SET	1
+#define MODE_2_SET	0
 
 # if MODE_2_SET == 0
 	// 参与在线/掉线状态的发送（防止高频发送阻塞程序）
@@ -425,8 +425,8 @@ int Mode_2_Running(void)
 		
 #if MODE_2_SET == 0
 		
-		// 非任务模式：单巡线调试模式（麻烦暴力使用注释来更改模式）
-		Speed_PID.Target = 40;
+		// 非任务模式：单巡线调试模式
+		Speed_PID.Target = 35;
 		switch(Track_Sensor_State)//是否在线
 		{
 			//  在线
