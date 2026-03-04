@@ -476,7 +476,7 @@ int Mode_4_Running(uint8 navi_mode)
 					if (navi_enable) {
 						if (Delay_Timer_1 == 0)
 						{
-							Speed_PID.Target = 20 * N.Speed_Dir;
+							Speed_PID.Target = 40 * N.Speed_Dir;
 							Head_PID_control_enable = 1;
 							Yaw_Target = N.Angle_Run;
 							

@@ -76,28 +76,23 @@ static uint8_t Track_off_line_cnt = 0;   // 无线计数（防抖）
 // 函数简介     循迹传感器模块 获取加权误差值（并更 新线/掉线 状态）
 // 返回参数     float           循迹误差值（左偏为负，右偏为正）
 // 使用示例     float error = Track_Sensor_Get_Error();
-// 备注信息     1. 内部包含三次采样平均滤波，提升数据稳定性
+// 备注信息     1. 内部包含一阶低通滤波，提升数据稳定性
 //              2. 根据误差值更新Track_Sensor_State（在线/掉线），包含防抖计数逻辑
 //-------------------------------------------------------------------------------------------------------------------
 
 float Track_Sensor_Get_Error(void)
 {
-	// 用于存储三次读取的临时数组
-	uint8 sensor_data_1[4] = {0};
-	uint8 sensor_data_2[4] = {0};
-	uint8 sensor_data_3[4] = {0};
+	// 用于存储一次读取的数组
+	uint8 sensor_data[4] = {0};
 	
-	// 三次连续读取
-	Track_Sensor_Get_All_Status(sensor_data_1);
-	Track_Sensor_Get_All_Status(sensor_data_2);
-	Track_Sensor_Get_All_Status(sensor_data_3);
+	// 一次读取
+	Track_Sensor_Get_All_Status(sensor_data);
 	
-	// 分别取算术平均，每个结果范围0~1
+	// 直接转换为float，每个结果范围0~1
     float sensor_avg[4] = {0};	
 	for(uint8 i=0; i<4; i++)
     {       
-        sensor_avg[i] = (sensor_data_1[i] 
-		+ sensor_data_2[i] + sensor_data_3[i]) / 3.0f;
+        sensor_avg[i] = (float)sensor_data[i];
     }
 	
 	// 平滑相关变量

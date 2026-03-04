@@ -48,5 +48,6 @@ void    ai_tuning_handle_receive      (void);
 void    ai_tuning_process_data        (uint8 *data_packet, uint32 length);
 uint8   ai_tuning_init                (void);
 uint32  ai_tuning_printf              (const char *format, ...);
+void    ai_tuning_send_flash_params   (void);
 
 #endif

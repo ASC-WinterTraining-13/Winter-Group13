@@ -181,6 +181,13 @@ void ai_tuning_process_data (uint8 *data_packet, uint32 length)
     
     // ===== 第二步：根据标签类型处理数据 =====
     
+    // ========== 请求 Flash 参数指令 ==========
+    if(strcmp(tag, "get_flash_params") == 0)
+    {
+        ai_tuning_send_flash_params();
+        return;
+    }
+    
     // ========== 滑杆事件处理 - PID 参数调整 ==========
     if(strcmp(tag, "slider") == 0)
     {
@@ -432,6 +439,45 @@ uint32 ai_tuning_printf(const char *format, ...)
     return (uint32)len;
 }
 
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     AI 调参模块 上报Flash中存储的所有PID参数
+// 返回参数     void
+// 使用示例     ai_tuning_send_flash_params();
+// 备注信息     在系统启动时调用，将所有PID环的参数发送给上位机
+//-------------------------------------------------------------------------------------------------------------------
+void ai_tuning_send_flash_params(void)
+{
+    ai_tuning_send_string("# FLASH_PARAMS_START\r\n");
+    
+    // 上报当前调整的 PID 环
+    ai_tuning_printf("# TARGET_LOOP,%d\r\n", AI_TUNING_TARGET_PID_LOOP);
+    
+    // 上报角速度环 (Rate PID) - 角速度环PID参数
+    ai_tuning_printf("# PID_RATE,Kp=%.4f,Ki=%.4f,Kd=%.4f\r\n", 
+                     Rate__PID.Kp, Rate__PID.Ki, Rate__PID.Kd);
+    
+    // 上报角度环 (Angle PID) - 角度环PID参数
+    ai_tuning_printf("# PID_ANGLE,Kp=%.4f,Ki=%.4f,Kd=%.4f\r\n", 
+                     Angle_PID.Kp, Angle_PID.Ki, Angle_PID.Kd);
+    
+    // 上报速度环 (Speed PID) - 速度环PID参数
+    ai_tuning_printf("# PID_SPEED,Kp=%.4f,Ki=%.4f,Kd=%.4f\r\n", 
+                     Speed_PID.Kp, Speed_PID.Ki, Speed_PID.Kd);
+    
+    // 上报转向环 (Turn PID) - 转向环PID参数
+    ai_tuning_printf("# PID_TURN,Kp=%.4f,Ki=%.4f,Kd=%.4f\r\n", 
+                     Turn__PID.Kp, Turn__PID.Ki, Turn__PID.Kd);
+    
+    // 上报循迹环 (Track PID) - 循迹环PID参数
+    ai_tuning_printf("# PID_TRACK,Kp=%.4f,Ki=%.4f,Kd=%.4f\r\n", 
+                     Track_PID.Kp, Track_PID.Ki, Track_PID.Kd);
+    
+    // 上报航向角环 (Head PID) - 航向角环PID参数
+    ai_tuning_printf("# PID_HEAD,Kp=%.4f,Ki=%.4f,Kd=%.4f\r\n", 
+                     Head__PID.Kp, Head__PID.Ki, Head__PID.Kd);
+    
+    ai_tuning_send_string("# FLASH_PARAMS_END\r\n");
+}
 
 // 串口数据输出格式参考
 

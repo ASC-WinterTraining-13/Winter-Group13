@@ -209,7 +209,7 @@ int Mode_2_Menu(void)
 #define TRACK_SWITCH_COOLDOWN 600
 
 // 模式二启用状态：1完整;0仅巡线
-#define MODE_2_SET	0
+#define MODE_2_SET	1
 
 # if MODE_2_SET == 0
 	// 参与在线/掉线状态的发送（防止高频发送阻塞程序）
@@ -282,6 +282,7 @@ int Mode_2_Running(void)
 
 	// 平滑相关的算法
 	float Error_filtered = 0;
+	float Track_Out_filtered = 0;
 
 	// 记录弯道行驶距离（左右编码器原始值直接累加）
 	uint16_t Turn_Encoder_Accum = 0;
@@ -413,6 +414,7 @@ int Mode_2_Running(void)
 #if MODE_2_SET == 0
 		
 		// 非任务模式：单巡线调试模式（麻烦暴力使用注释来更改模式）
+		Speed_PID.Target = 40;
 		switch(Track_Sensor_State)//是否在线
 		{
 			//  在线
@@ -420,21 +422,28 @@ int Mode_2_Running(void)
 			{
 //				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
 				
-				Speed_PID.Target = 30;
 				Track_PID.Actual = Error_filtered;
 				PID_Update(&Track_PID);
-				Turn__PID.Target = Track_PID.Out;
+				Track_Out_filtered = 0.6 * Track_PID.Out + 0.4 * Track_Out_filtered;
+				Turn__PID.Target = Track_Out_filtered;
 				
-				if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("N\r\n");}
-				pre_Track_Sensor_State = Track_Sensor_State;
+//				if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("N\r\n");}
+//				pre_Track_Sensor_State = Track_Sensor_State;
+				
+				break;
 			}
 			//  掉线
 			case TRACK_STATE_OFF_LINE:
 			{
 //				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
 				
-				if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("F\r\n");}
-				pre_Track_Sensor_State = Track_Sensor_State;
+				Track_Out_filtered = 0.6 * Track_Out_filtered + 0.4 * 0;
+				Turn__PID.Target = Track_Out_filtered;
+				
+//				if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("F\r\n");}
+//				pre_Track_Sensor_State = Track_Sensor_State;
+				
+				break;
 			}
 		}
 //		OLED_Update();
@@ -488,10 +497,11 @@ int Mode_2_Running(void)
 					Mode_2_Cur_State == STATE_B_TO_C || 
 					Mode_2_Cur_State == STATE_D_TO_A)
 				{
-					Speed_PID.Target = 30;
+					Speed_PID.Target = 40;
 					Track_PID.Actual = Error_filtered;
 					PID_Update(&Track_PID);
-					Turn__PID.Target = Track_PID.Out;
+					Track_Out_filtered = 0.6 * Track_PID.Out + 0.4 * Track_Out_filtered;
+					Turn__PID.Target = Track_Out_filtered;
 				}
 				
 				break;
@@ -543,16 +553,25 @@ int Mode_2_Running(void)
 					}
 				}
 				
+				// ========== 平滑处理（不受冷却影响）==========
+				// 在转弯状态掉线时，保持循迹环输出的平滑衰减
+				if (Mode_2_Cur_State == STATE_B_TO_C || 
+					Mode_2_Cur_State == STATE_D_TO_A)
+				{
+					Track_Out_filtered = 0.6 * Track_Out_filtered + 0.4 * 0;
+					Turn__PID.Target = Track_Out_filtered;
+				}
+				
 				// ========== 航向角控制（不受冷却影响）==========
 				if (Mode_2_Cur_State == STATE_A_TO_B)
 				{
-					Speed_PID.Target = 30;
+					Speed_PID.Target = 40;
 					Head__PID.Target = Yaw_Target;
 					Head_PID_control_enable = 1;
 				}
 				else if (Mode_2_Cur_State == STATE_C_TO_D)
 				{
-					Speed_PID.Target = 30;
+					Speed_PID.Target = 40;
 					Head__PID.Target = Yaw_Target - 180;
 					Head_PID_control_enable = 1;
 				}
