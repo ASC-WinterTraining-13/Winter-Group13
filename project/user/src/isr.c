@@ -38,6 +38,7 @@
 #include "param_config.h"
 #include "AI_tuning.h"
 #include "navigation.h"
+#include "zf_device_bluetooth_ch04.h"
 
 uint16_t TIM_Time_Count = 0;
 
@@ -174,10 +175,17 @@ void UART1_IRQHandler (void)
 {
     if(UART1->ISR & 0x00000001)                                                 // 串口发送缓冲空中断
     {
-        // 此处编写用户代码
-        // 务必填写数据或者关闭中断 否则会一直触发串口发送中断
-
-        // 此处编写用户代码
+        // 非阻塞发送：从AI调参TX FIFO取出数据写入TDR，FIFO空则关闭TX中断
+        // TX中断仅在TDR为空时触发，因此此处写TDR无需检查就绪状态
+        uint8 tx_data;
+        if(ai_tuning_tx_dequeue(&tx_data))
+        {
+            UART1->TDR = tx_data;                                               // 直接写入TDR，无需等待
+        }
+        else
+        {
+            uart_tx_interrupt(AI_TUNING_INDEX, 0);                              // FIFO为空，关闭TX中断
+        }
         UART1->ICR |= 0x00000001;                                               // 清除中断标志位
     }
     if(UART1->ISR & 0x00000002)                                                 // 串口接收缓冲中断
@@ -294,10 +302,17 @@ void UART6_IRQHandler (void)
 {
     if(UART6->ISR & 0x00000001)                                                 // 串口发送缓冲空中断
     {
-        // 此处编写用户代码
-        // 务必填写数据或者关闭中断 否则会一直触发串口发送中断
-
-        // 此处编写用户代码
+        // 非阻塞发送：从蓝牙TX FIFO取出数据写入TDR，FIFO空则关闭TX中断
+        // TX中断仅在TDR为空时触发，因此此处写TDR无需检查就绪状态
+        uint8 tx_data;
+        if(bluetooth_ch04_tx_dequeue(&tx_data))
+        {
+            UART6->TDR = tx_data;                                               // 直接写入TDR，无需等待
+        }
+        else
+        {
+            uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 0);                         // FIFO为空，关闭TX中断
+        }
         UART6->ICR |= 0x00000001;                                               // 清除中断标志位
     }
     if(UART6->ISR & 0x00000002)                                                 // 串口接收缓冲中断

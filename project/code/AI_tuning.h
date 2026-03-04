@@ -22,6 +22,7 @@
 
 // ========== 缓冲区配置 ==========
 #define AI_TUNING_BUFFER_SIZE             ( 100 )                         // 接收缓冲区大小
+#define AI_TUNING_TX_BUFFER_SIZE          ( 512 )                         // 发送FIFO缓冲区大小（非阻塞发送）
 
 // ========== 协议格式定义 ==========
 #define AI_TUNING_PACKET_HEADER           ( '[' )                         // 数据包头
@@ -49,5 +50,6 @@ void    ai_tuning_process_data        (uint8 *data_packet, uint32 length);
 uint8   ai_tuning_init                (void);
 uint32  ai_tuning_printf              (const char *format, ...);
 void    ai_tuning_send_flash_params   (void);
+uint8   ai_tuning_tx_dequeue          (uint8 *data);                  // 从TX FIFO取出一字节（供TX中断使用）
 
 #endif

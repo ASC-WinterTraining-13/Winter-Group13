@@ -55,6 +55,10 @@ static  fifo_struct     bluetooth_ch04_fifo;
 static  uint8           bluetooth_ch04_buffer[BLUETOOTH_CH04_BUFFER_SIZE];      // 数据存放数组
 static  uint8           bluetooth_ch04_data = 0;                                // 临时数据变量
 
+// ========== 发送FIFO（非阻塞发送）==========
+static  fifo_struct     bluetooth_ch04_tx_fifo;
+static  uint8           bluetooth_ch04_tx_buffer[BLUETOOTH_CH04_TX_BUFFER_SIZE]; // 发送FIFO缓冲区
+
 // ========== 接收相关静态变量 ==========
 static  uint8           bluetooth_ch04_rx_packet[BLUETOOTH_CH04_BUFFER_SIZE];   // 接收缓冲数组
 static  uint8           bluetooth_ch04_rx_flag = 0;                             // 接收标志位
@@ -62,58 +66,62 @@ static  uint8           bluetooth_ch04_rx_state = 0;                            
 static  uint8           bluetooth_ch04_rx_index = 0;                            // 接收数据索引
 
 //-------------------------------------------------------------------------------------------------------------------
-// 函数简介     蓝牙转串口模块 发送单个字节
+// 函数简介     蓝牙转串口模块 发送单个字节（非阻塞）
 // 参数说明     data            8bit 数据
-// 返回参数     uint32          1-成功 0-失败
+// 返回参数     uint32          1-成功入队 0-发送FIFO已满
 // 使用示例     bluetooth_ch04_send_byte(0x5A);
-// 备注信息     
+// 备注信息     非阻塞：数据写入发送FIFO后立即返回，由TX中断完成实际发送
 //-------------------------------------------------------------------------------------------------------------------
 uint32 bluetooth_ch04_send_byte (const uint8 data)
 {
-    uart_write_byte(BLUETOOTH_CH04_INDEX, data);
-    return 1;
+    fifo_state_enum result = fifo_write_element(&bluetooth_ch04_tx_fifo, data);
+    if(result == FIFO_SUCCESS)
+        uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 1);                             // 使能TX中断触发发送
+    return (result == FIFO_SUCCESS) ? 1 : 0;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// 函数简介     蓝牙转串口模块 发送数组
+// 函数简介     蓝牙转串口模块 发送数组（非阻塞）
 // 参数说明     buff            需要发送的数据地址
 // 参数说明     len             发送长度
-// 返回参数     uint32          返回剩余未发送的字节数
+// 返回参数     uint32          返回未能入队的字节数（0表示全部入队成功）
 // 使用示例     bluetooth_ch04_send_buffer(buff, 16);
-// 备注信息     
+// 备注信息     非阻塞：数据写入发送FIFO后立即返回，由TX中断完成实际发送
 //-------------------------------------------------------------------------------------------------------------------
 uint32 bluetooth_ch04_send_buffer (const uint8 *buff, uint32 len)
 {
     zf_assert(NULL != buff);
     uint32 i;
-    
     for(i = 0; i < len; i++)
     {
-        uart_write_byte(BLUETOOTH_CH04_INDEX, buff[i]);
+        if(fifo_write_element(&bluetooth_ch04_tx_fifo, buff[i]) != FIFO_SUCCESS)
+            break;                                                              // FIFO已满，停止入队
     }
-    
-    return 0;  // 返回0表示全部发送成功
+    if(i > 0)
+        uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 1);                             // 使能TX中断触发发送
+    return len - i;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
-// 函数简介     蓝牙转串口模块 发送字符串
+// 函数简介     蓝牙转串口模块 发送字符串（非阻塞）
 // 参数说明     *str            要发送的字符串地址
-// 返回参数     uint32          返回剩余未发送的字节数
+// 返回参数     uint32          返回未能入队的字节数（0表示全部入队成功）
 // 使用示例     bluetooth_ch04_send_string("Hello Bluetooth!");
-// 备注信息     
+// 备注信息     非阻塞：数据写入发送FIFO后立即返回，由TX中断完成实际发送
 //-------------------------------------------------------------------------------------------------------------------
 uint32 bluetooth_ch04_send_string (const char *str)
 {
     zf_assert(NULL != str);
     uint32 i = 0;
-    
     while(str[i] != '\0')
     {
-        uart_write_byte(BLUETOOTH_CH04_INDEX, (uint8)str[i]);
+        if(fifo_write_element(&bluetooth_ch04_tx_fifo, (uint8)str[i]) != FIFO_SUCCESS)
+            break;                                                              // FIFO已满，停止入队
         i++;
     }
-    
-    return 0;  // 返回0表示全部发送成功
+    if(i > 0)
+        uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 1);                             // 使能TX中断触发发送
+    return (str[i] != '\0') ? 1 : 0;                                           // 返回0表示全部入队，1表示FIFO溢出
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -172,6 +180,18 @@ uint8 bluetooth_ch04_get_rx_flag (void)
 void bluetooth_ch04_clear_rx_flag (void)
 {
     bluetooth_ch04_rx_flag = 0;
+}
+
+//-------------------------------------------------------------------------------------------------------------------
+// 函数简介     蓝牙转串口模块 从发送FIFO取出一个字节（供TX中断使用）
+// 参数说明     data            取出字节的存储地址
+// 返回参数     uint8           1-取出成功 0-FIFO为空
+// 使用示例     在 UART6_IRQHandler 的TX中断中调用
+// 备注信息     该函数仅应在TX中断服务函数中调用，实现非阻塞发送
+//-------------------------------------------------------------------------------------------------------------------
+uint8 bluetooth_ch04_tx_dequeue (uint8 *data)
+{
+    return (fifo_read_element(&bluetooth_ch04_tx_fifo, data, FIFO_READ_AND_CLEAN) == FIFO_SUCCESS) ? 1 : 0;
 }
 
 //-------------------------------------------------------------------------------------------------------------------
@@ -250,8 +270,11 @@ uint8 bluetooth_ch04_init (void)
     // 注册串口中断回调函数
     set_wireless_type(BLUETOOTH_CH04, bluetooth_ch04_uart_callback);
     
-    // 初始化 FIFO（虽然在这个版本中没有使用，但为了兼容性保留）
+    // 初始化接收 FIFO（兼容性保留）
     fifo_init(&bluetooth_ch04_fifo, FIFO_DATA_8BIT, bluetooth_ch04_buffer, BLUETOOTH_CH04_BUFFER_SIZE);
+    
+    // 初始化发送 FIFO（非阻塞发送使用）
+    fifo_init(&bluetooth_ch04_tx_fifo, FIFO_DATA_8BIT, bluetooth_ch04_tx_buffer, BLUETOOTH_CH04_TX_BUFFER_SIZE);
     
     // 初始化 UART
     // 注意：CH-04模块默认波特率为9600，与CH9141的115200不同
@@ -294,13 +317,16 @@ uint32 bluetooth_ch04_printf(const char *format, ...)
         return 0;
     }
     
-    // 5. 通过蓝牙发送格式化后的字符串
+    // 5. 通过蓝牙发送格式化后的字符串（非阻塞，写入发送FIFO）
     uint32 i = 0;
     while(temp_buf[i] != '\0')
     {
-        uart_write_byte(BLUETOOTH_CH04_INDEX, (uint8)temp_buf[i]);
+        if(fifo_write_element(&bluetooth_ch04_tx_fifo, (uint8)temp_buf[i]) != FIFO_SUCCESS)
+            break;                                                              // FIFO已满，停止入队
         i++;
     }
+    if(i > 0)
+        uart_tx_interrupt(BLUETOOTH_CH04_INDEX, 1);                             // 使能TX中断触发发送
     
     return (uint32)len;
 }
