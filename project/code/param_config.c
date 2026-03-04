@@ -79,11 +79,11 @@ PID_t Rate__PID = {
 };
 // 角度环PID参数
 PID_t Angle_PID = {
-	.OutMax = 100,					// 输出限幅（上限）
-	.OutMin = -100,					// 输出限幅（下限）
-	.IntSepThresh = 6,				// 积分分离阈值（误差大于阈值 积分清零）
-	.ErrorIntMax = 60,				// 积分限幅（上限）
-	.ErrorIntMin = -60,				// 积分限幅（下限）
+	.OutMax = 200,					// 输出限幅（上限）
+	.OutMin = -200,					// 输出限幅（下限）
+	.IntSepThresh = 30,				// 积分分离阈值（误差大于阈值 积分清零）
+	.ErrorIntMax = 100,				// 积分限幅（上限）
+	.ErrorIntMin = -100,				// 积分限幅（下限）
 	.OutOffset = 0,					// 输出偏移
 };
 // 速度环PID参数

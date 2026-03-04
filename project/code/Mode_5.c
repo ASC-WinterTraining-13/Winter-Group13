@@ -203,7 +203,7 @@ int Mode_5_Menu(void)
 /*[S] 小车运行 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
-#define AI_TURNING		0
+#define AI_TURNING	1
 
 // [三级界面]模式小车运作界面
 
@@ -434,8 +434,8 @@ int Mode_5_Running(void)
 			DifPWM  = 0;
 		}
 		OLED_Printf(48, 8 , OLED_6X8, "%3.2f", Yaw_Result);
-		OLED_Printf(48, 24 , OLED_6X8, "%d", LeftPWM);
-		OLED_Printf(48, 32 , OLED_6X8, "%d", RightPWM);
+		OLED_Printf(48, 24 , OLED_6X8, "%d ", LeftPWM);
+		OLED_Printf(48, 32 , OLED_6X8, "%d ", RightPWM);
 //		OLED_Printf(48, 40 , OLED_6X8, "%3.2f", Speed_PID.Out);
 		if (Head_PID_control_enable)
 		{

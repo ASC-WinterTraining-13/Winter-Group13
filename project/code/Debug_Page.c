@@ -111,8 +111,8 @@ void Debug_PWM_UI(void)
 {
 	OLED_ShowString(8 , 0 , "PWM", OLED_6X8);
 	OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
-	OLED_ShowString(10, 16, "PWM_L:", OLED_8X16);
-	OLED_ShowString(10, 32, "PWM_R:", OLED_8X16);
+	OLED_ShowString(10, 16, "PWM_L:", OLED_6X8);
+	OLED_ShowString(10, 24, "PWM_R:", OLED_6X8);
 }
 /*******************************************************************************************************************/
 /*[E] 界面样式 [E]-------------------------------------------------------------------------------------------------*/
@@ -668,9 +668,9 @@ int Debug_BUZandLED(void)
 int Debug_PWM(void)
 {
 	Debug_PWM_UI();
-	OLED_ShowString(0, 16, ">", OLED_8X16);
-	OLED_Printf(58, 16, OLED_8X16, "%d    ", LeftPWM);
-	OLED_Printf(58, 32, OLED_8X16, "%d    ", RightPWM);
+	OLED_ShowString(0, 16, ">", OLED_6X8);
+	OLED_Printf(58, 16, OLED_6X8, "%d    ", LeftPWM);
+	OLED_Printf(58, 24, OLED_6X8, "%d    ", RightPWM);
 	OLED_Update();
 	
 	// 电机驱动调试界面光标 标志位
@@ -719,7 +719,7 @@ int Debug_PWM(void)
 		/* 功能跳转*/
 		if (Debug_PWM_flag_temp == 1)
 		{
-			OLED_ShowString(0, 16, "=", OLED_8X16);
+			OLED_ShowString(0, 16, "=", OLED_6X8);
 			OLED_Update();
 			
 			// 左电机PWM值手动调节逻辑
@@ -732,7 +732,7 @@ int Debug_PWM(void)
 					LeftPWM += 100;
 					if (LeftPWM > 10000)LeftPWM = 10000;
 					motor_SetPWM(1, LeftPWM);
-					OLED_Printf(58, 16, OLED_8X16, "%d    ", LeftPWM);
+					OLED_Printf(58, 16, OLED_6X8, "%d    ", LeftPWM);
 					OLED_Update();
 				}
 				else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
@@ -741,7 +741,7 @@ int Debug_PWM(void)
 					LeftPWM -= 100;
 					if (LeftPWM < -10000)LeftPWM = -10000;
 					motor_SetPWM(1, LeftPWM);
-					OLED_Printf(58, 16, OLED_8X16, "%d    ", LeftPWM);
+					OLED_Printf(58, 16, OLED_6X8, "%d    ", LeftPWM);
 					OLED_Update();
 
 				}
@@ -753,11 +753,25 @@ int Debug_PWM(void)
 					
 					break;  // 退出修改模式
 				}
+				
+				// 电机编码器读取
+				if (Time_Count2 > 20)// 20 * 5 ms调控周期
+				{
+					Time_Count2 = 0;
+					
+					Encoder_Left  = Get_Encoder1();
+					Encoder_Right = Get_Encoder2();
+
+					OLED_Printf(30, 32, OLED_6X8, "%d  ", Encoder_Left);
+					OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Right);
+
+					OLED_Update();
+				}
 			}
 		}
 		else if (Debug_PWM_flag_temp == 2)
 		{
-			OLED_ShowString(0, 32, "=", OLED_8X16);
+			OLED_ShowString(0, 24, "=", OLED_6X8);
 			OLED_Update();
 			
 			// 右电机PWM值手动调节逻辑
@@ -770,7 +784,7 @@ int Debug_PWM(void)
 					RightPWM += 100;
 					if (RightPWM > 10000)RightPWM = 10000;
 					motor_SetPWM(2, RightPWM);
-					OLED_Printf(58, 32, OLED_8X16, "%d    ", RightPWM);
+					OLED_Printf(58, 24, OLED_6X8, "%d    ", RightPWM);
 					OLED_Update();
 				}
 				else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
@@ -779,7 +793,7 @@ int Debug_PWM(void)
 					RightPWM -= 100;
 					if (RightPWM < -10000)RightPWM = -10000;
 					motor_SetPWM(2, RightPWM);
-					OLED_Printf(58, 32, OLED_8X16, "%d    ", RightPWM);
+					OLED_Printf(58, 24, OLED_6X8, "%d    ", RightPWM);
 					OLED_Update();
 
 				}
@@ -791,7 +805,36 @@ int Debug_PWM(void)
 					
 					break;  // 退出修改模式
 				}
+				
+				// 电机编码器读取
+				if (Time_Count2 > 20)// 20 * 5 ms调控周期
+				{
+					Time_Count2 = 0;
+					
+					Encoder_Left  = Get_Encoder1();
+					Encoder_Right = Get_Encoder2();
+
+					OLED_Printf(30, 32, OLED_6X8, "%d  ", Encoder_Left);
+					OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Right);
+
+					OLED_Update();
+				}
 			}
+		}
+		
+		
+		// 电机编码器读取
+		if (Time_Count2 > 20)// 20 * 5 ms调控周期
+		{
+			Time_Count2 = 0;
+			
+			Encoder_Left  = Get_Encoder1();
+			Encoder_Right = Get_Encoder2();
+
+			OLED_Printf(30, 32, OLED_6X8, "%d  ", Encoder_Left);
+			OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Right);
+
+			OLED_Update();
 		}
 		
 		
@@ -799,15 +842,15 @@ int Debug_PWM(void)
 		switch(Debug_PWM_flag)
 		{
 			case 1:
-				OLED_ShowString(0, 16, ">", OLED_8X16);
-				OLED_ShowString(0, 32, " ", OLED_8X16);
+				OLED_ShowString(0, 16, ">", OLED_6X8);
+				OLED_ShowString(0, 24, " ", OLED_6X8);
 				OLED_Update();
 				
 				break;
 			
 			case 2:
-				OLED_ShowString(0, 16, " ", OLED_8X16);
-				OLED_ShowString(0, 32, ">", OLED_8X16);
+				OLED_ShowString(0, 16, " ", OLED_6X8);
+				OLED_ShowString(0, 24, ">", OLED_6X8);
 				OLED_Update();
 				
 				break;
