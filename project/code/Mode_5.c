@@ -203,7 +203,7 @@ int Mode_5_Menu(void)
 /*[S] 小车运行 [S]-------------------------------------------------------------------------------------------------*/
 /*******************************************************************************************************************/
 
-#define AI_TURNING		1
+#define AI_TURNING		0
 
 // [三级界面]模式小车运作界面
 
@@ -246,11 +246,7 @@ int Mode_5_Running(void)
 	
 	// 变量相关的重置部分整合
 	BIG_Init();
-	
-	// 防止周期计时乱飞
-	Time_Count1 = 0;
-	Time_Count2 = 0;
-	
+
 	// 清零编码器数值
 	Get_Encoder1();
 	Get_Encoder2();
@@ -259,10 +255,13 @@ int Mode_5_Running(void)
 	
 	// 航向角PID相关
 	Head_PID_control_enable = 0;
-	Yaw_Target = Yaw_Result;
+	Yaw_Target = Yaw_Result;// 暂存当前角度，但是并不会直接起作用
+	
 	
     while(1)
     {  
+		
+		
 		/* 按键处理*/
 //        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))// 上键
 //        {
@@ -340,7 +339,7 @@ int Mode_5_Running(void)
 		}		
 		
 		
-		/* 速度计算*/
+		/* 外圈调控周期*/
 		if (Time_Count2 >= 10)// 10 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
@@ -375,6 +374,7 @@ int Mode_5_Running(void)
 		}
 
 		
+		/* 内圈调控周期*/
         if (Run_Flag)
 		{			
 			if (Time_Count1 >= 2)// 2 * 5 ms调控周期
@@ -385,44 +385,45 @@ int Mode_5_Running(void)
 				PID_Calc_Angle_And_Rate();
 
 
-# if AI_TURNING == 1				
-				/* 输出数据用于AI调参 (timestamp, setpoint, input, pwm, error, angle, rate, speed, Kp, Ki, Kd) */
-				static uint32_t timestamp = 0;
-				timestamp += 10; /* 每次调用增加10ms (约100Hz) */
-				
-/* 精简数据格式: timestamp, setpoint, input, pwm, error, angle, rate */
-#if AI_TUNING_TARGET_PID_LOOP == 1
-				/* 角速度环 (Rate PID): input=GyroRate */
-				ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
-				       timestamp, 
-				       Rate__PID.Target, GyroRate_Result, AvePWM, Rate__PID.Target - GyroRate_Result,
-				       Angle_Result, GyroRate_Result);
-#elif AI_TUNING_TARGET_PID_LOOP == 2
-				/* 角度环 (Angle PID): input=Angle */
-				ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
-				       timestamp, 
-				       Angle_PID.Target, Angle_Result, AvePWM, Angle_PID.Target - Angle_Result,
-				       Angle_Result, GyroRate_Result);
-#elif AI_TUNING_TARGET_PID_LOOP == 3
-				/* 速度环 (Speed PID): input=AveSpeed */
-				ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
-				       timestamp, 
-				       Speed_PID.Target, AveSpeed, AvePWM, Speed_PID.Target - AveSpeed,
-				       Angle_Result, GyroRate_Result);
-#elif AI_TUNING_TARGET_PID_LOOP == 4
-				/* 转向环 (Turn PID): input=DifSpeed */
-				ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
-				       timestamp, 
-				       Turn__PID.Target, DifSpeed, DifPWM, Turn__PID.Target - DifSpeed,
-				       Angle_Result, GyroRate_Result);
-#else
-				/* 默认输出角度环数据 */
-				ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
-				       timestamp, 
-				       Angle_PID.Target, Angle_Result, AvePWM, Angle_PID.Target - Angle_Result,
-				       Angle_Result, GyroRate_Result);
-#endif			
-
+# if AI_TURNING == 1		
+{				
+					/* 输出数据用于AI调参 (timestamp, setpoint, input, pwm, error, angle, rate, speed, Kp, Ki, Kd) */
+					static uint32_t timestamp = 0;
+					timestamp += 10; /* 每次调用增加10ms (约100Hz) */
+					
+	/* 精简数据格式: timestamp, setpoint, input, pwm, error, angle, rate */
+	#if AI_TUNING_TARGET_PID_LOOP == 1
+					/* 角速度环 (Rate PID): input=GyroRate */
+					ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
+						   timestamp, 
+						   Rate__PID.Target, GyroRate_Result, AvePWM, Rate__PID.Target - GyroRate_Result,
+						   Angle_Result, GyroRate_Result);
+	#elif AI_TUNING_TARGET_PID_LOOP == 2
+					/* 角度环 (Angle PID): input=Angle */
+					ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
+						   timestamp, 
+						   Angle_PID.Target, Angle_Result, AvePWM, Angle_PID.Target - Angle_Result,
+						   Angle_Result, GyroRate_Result);
+	#elif AI_TUNING_TARGET_PID_LOOP == 3
+					/* 速度环 (Speed PID): input=AveSpeed */
+					ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
+						   timestamp, 
+						   Speed_PID.Target, AveSpeed, AvePWM, Speed_PID.Target - AveSpeed,
+						   Angle_Result, GyroRate_Result);
+	#elif AI_TUNING_TARGET_PID_LOOP == 4
+					/* 转向环 (Turn PID): input=DifSpeed */
+					ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
+						   timestamp, 
+						   Turn__PID.Target, DifSpeed, DifPWM, Turn__PID.Target - DifSpeed,
+						   Angle_Result, GyroRate_Result);
+	#else
+					/* 默认输出角度环数据 */
+					ai_tuning_printf("%lu,%3.2f,%3.2f,%d,%3.2f,%3.2f,%3.2f\r\n", 
+						   timestamp, 
+						   Angle_PID.Target, Angle_Result, AvePWM, Angle_PID.Target - Angle_Result,
+						   Angle_Result, GyroRate_Result);
+	#endif			
+}
 #endif
 			}		
 		}

@@ -274,12 +274,8 @@ int Mode_4_Running(uint8 navi_mode)
 	OLED_ShowString(0, 32, "Idx:", OLED_6X8);
 	OLED_Update();
 	
-	// 清零pid积分等参数
-	All_PID_Init();
-	
-	// 防止周期计时乱飞
-	Time_Count1 = 0;
-	Time_Count2 = 0;
+	// 变量相关的重置部分整合
+	BIG_Init();
 	
 	// 清零编码器数值
 	Get_Encoder1();
@@ -291,8 +287,11 @@ int Mode_4_Running(uint8 navi_mode)
 	Head_PID_control_enable = 0;
 	Yaw_Target = Yaw_Result;
 	
+	
     while(1)
     {  
+		
+		
 		/* 按键处理*/
 //        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))// 上键
 //        {
@@ -421,6 +420,7 @@ int Mode_4_Running(uint8 navi_mode)
 			OLED_Update();
 		}
 		
+		
 		/* 回放自动停止检测*/
 		if (navi_mode == 3 && navi_enable && N.Nag_Stop_f)
 		{
@@ -435,7 +435,7 @@ int Mode_4_Running(uint8 navi_mode)
 		}		
 		
 		
-		/* 速度计算*/
+		/* 外圈调控周期*/
 		if (Time_Count2 >= 10)// 10 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
@@ -562,6 +562,7 @@ int Mode_4_Running(uint8 navi_mode)
 		}
 
 		
+		/* 内圈调控周期*/
         if (balance_enable)
 		{			
 			if (Time_Count1 >= 2)// 2 * 5 ms调控周期

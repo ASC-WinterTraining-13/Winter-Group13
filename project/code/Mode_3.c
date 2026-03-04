@@ -249,7 +249,7 @@ int Mode_3_Running(void)
 	typedef enum {
 		STATE_IDLE   		= 0,          	// 空闲（未启动）
 		STATE_BALANCE_ON 	= 1,			// 启用平衡控制
-		STATE_PREP			= 2,
+		STATE_PREP			= 2,			// A：起点准备（考虑从A点后的引导线上发车）
 		STATE_A_TO_C 		= 3,        	// A→C："对角"直线
 		STATE_C_TO_B 		= 4,        	// C→B：右半圆弧（半径40cm，180°）
 		STATE_B_TO_D 		= 5,        	// B→D："对角"直线
@@ -280,12 +280,19 @@ int Mode_3_Running(void)
 
 	// 记录弯道行驶距离（左右编码器原始值直接累加）
 	uint16_t Turn_Encoder_Accum = 0;
-	// 标志位，标记当前是否为转弯状态
+	// 标志位，标记当前是否为转弯状态 0/1
 	uint8_t Turn_State_flag = 0;
+	// 记录直线行驶距离（左右编码器原始值直接累加）（当然指的不是所有的直线，这里是指从A→C，B→D中考虑的一段路径）
+	uint16_t Straight_Encoder_Accum = 0;
+	// 标志位，标记当前是否为直线状态（当然指的不是所有的直线，这里是指从A→C，B→D中考虑的一段路径） 0/1
+	uint8_t Straight_State_flag = 0;
+	
 	
 	// 正式开始运行模式代码
     while(1)
     {  
+		
+		
 		/* 按键处理*/
 //        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))// 上键
 //        {
@@ -305,6 +312,8 @@ int Mode_3_Running(void)
 			{
 				Mode_3_Cur_State = STATE_A_TO_C;
 				Mode_3_Turns_Count = 0;
+				Turn_State_flag = 0;
+				Straight_State_flag = 0;
 				Run_Flag = 1;			
 				Yaw_Target = Yaw_Result;// 标定发车Yaw角
 			}
@@ -312,6 +321,9 @@ int Mode_3_Running(void)
 			{
 				Mode_3_Cur_State = STATE_IDLE;
 				Run_Flag = 0;
+				Head_PID_control_enable = 0;
+				Turn_State_flag = 0;
+				Straight_State_flag = 0;
 			}
 						
 			// PID参数存储
@@ -332,6 +344,7 @@ int Mode_3_Running(void)
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
+			Head_PID_control_enable = 0;
 			
 			// 关闭声光
 			BUZ_SET(0);
@@ -478,8 +491,6 @@ int Mode_3_Running(void)
 				
 				break;
 			}
-
-
 		}			
 		if (Mode_3_Turns_Count >= 4)
 		{
@@ -496,6 +507,7 @@ int Mode_3_Running(void)
 		}
 		OLED_Update();
 			
+		
 		/* 声光模块*/
         if (Delay_Timer_1)// 基于5ms定时器的分频计数器
         {
@@ -524,6 +536,8 @@ int Mode_3_Running(void)
 			
 			// 弯道行驶距离累积
 			if (Turn_State_flag){Turn_Encoder_Accum += Encoder_Left + Encoder_Right;}
+			// 直线行驶距离累积
+			if (Straight_State_flag){Straight_Encoder_Accum += Encoder_Left + Encoder_Right;}
 			
 			// 实际速度换算
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度

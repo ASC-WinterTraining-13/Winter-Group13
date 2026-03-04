@@ -62,7 +62,9 @@ void BIG_Init(void)
 	Time_Count2 = 0;
 	
 	// 清零转向相关变量
+	AvePWM = 0;
     DifPWM = 0;
+	AveSpeed = 0;
     DifSpeed = 0;	
 }
 

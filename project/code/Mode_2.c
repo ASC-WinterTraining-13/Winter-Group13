@@ -289,9 +289,17 @@ int Mode_2_Running(void)
 	// 标志位，标记当前是否为转弯状态
 	uint8_t Turn_State_flag = 0;
 	
+	// 重置循迹传感器状态记录（仅在调试模式）
+	#if MODE_2_SET == 0
+		pre_Track_Sensor_State = TRACK_STATE_OFF_LINE; // 初始化为掉线状态
+	#endif
+	
+	
 	// 正式开始运行模式代码
     while(1)
     {  
+		
+		
 		/* 按键处理*/
 //        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))// 上键
 //        {
@@ -305,12 +313,14 @@ int Mode_2_Running(void)
 		if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM))// 确认键
         {
             key_clear_state(KEY_CONFIRM);
-#if MODE_2_SET	== 1	
+			
+#if MODE_2_SET	== 1	// 完整逻辑
 			/* 运行状态切换逻辑*/
 			if (Mode_2_Cur_State == STATE_IDLE)// 开启平衡控制
 			{
 				Mode_2_Cur_State = STATE_BALANCE_ON;
 				Head_PID_control_enable = 0;
+				Turn_State_flag = 0;
 				Run_Flag = 1;
 				OLED_ShowString(36, 16, "BAL ", OLED_6X8);
 				OLED_Update();
@@ -332,6 +342,7 @@ int Mode_2_Running(void)
 			{
 				Mode_2_Cur_State = STATE_IDLE;
 				Head_PID_control_enable = 0;
+				Turn_State_flag = 0;
 				motor_SetPWM(1, 0);
 				motor_SetPWM(2, 0);
 				DifPWM  = 0;
@@ -339,7 +350,7 @@ int Mode_2_Running(void)
 				OLED_ShowString(36, 16, "IDLE", OLED_6X8);
 				OLED_Update();
 			}
-#else
+#else					// 仅巡线逻辑
 			Run_Flag = 1 - Run_Flag;
 #endif
 			
@@ -362,6 +373,7 @@ int Mode_2_Running(void)
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
+			Head_PID_control_enable = 0;
 			
 			// 关闭声光
 			BUZ_SET(0);
