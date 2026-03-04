@@ -57,6 +57,7 @@
 // ========== 缓冲区配置 ==========
 #define BLUETOOTH_CH04_BUFFER_SIZE             ( 100 )                         // 接收缓冲区大小
 #define BLUETOOTH_CH04_TIMEOUT_COUNT           ( 500 )                         // 发送超时计数
+#define BLUETOOTH_CH04_TX_BUFFER_SIZE          ( 256 )                         // 发送FIFO缓冲区大小（非阻塞发送）
 
 // ========== 协议格式定义 ==========
 #define BLUETOOTH_CH04_PACKET_HEADER           ( '[' )                         // 数据包头
@@ -73,6 +74,7 @@ void        bluetooth_ch04_clear_rx_flag       (void);
 void        bluetooth_ch04_uart_callback       (void);
 void        bluetooth_ch04_dma_rx_handler      (void);
 uint8       bluetooth_ch04_init                (void);
-uint32 bluetooth_ch04_printf(const char *format, ...);
+uint32      bluetooth_ch04_printf              (const char *format, ...);
+uint8       bluetooth_ch04_tx_dequeue          (uint8 *data);                  // 从TX FIFO取出一字节（供TX中断使用）
 
 #endif
