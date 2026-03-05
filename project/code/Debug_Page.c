@@ -64,6 +64,7 @@ void Debug_Encoder_UI(void)
 	OLED_ShowString(0 , 24, "Sp_R:", OLED_6X8);
 	OLED_ShowString(0 , 32, "Sum_L:", OLED_6X8);
 	OLED_ShowString(0 , 40, "Sum_R:", OLED_6X8);
+	OLED_ShowString(0 , 48, "Yaw_Act:", OLED_6X8);
 }
 
 // [三级界面]MPU6050校准按钮
@@ -86,6 +87,8 @@ void Calib_Button_UI(uint8_t calib_state)
 			OLED_ShowString(0, 16, "已校准", OLED_8X16);
 			break;	
 	}
+	
+	OLED_ShowString(0 , 56, "Yaw_Act:", OLED_6X8);
 }
 
 // [三级界面]蓝牙模块调试
@@ -397,7 +400,16 @@ int Debug_Encoder(void)
 			return 0;
 		}
 		
-				/* 速度计算*/
+		/* mpu6050数据接收与解析*/
+		// 懒得在这里插校准了，使用的时候自己点点调试选项下面的那一位
+		if (mpu6050_analysis_enable && MPU6050_Calibration_Check() == 2)
+		{
+			mpu6050_get_data();
+			mpu6050_analysis_enable = 0;
+			MPU6050_Analysis();
+		}
+		
+		/* 速度计算*/
 		if (Time_Count2 > 20)// 20 * 5 ms调控周期
 		{
 			Time_Count2 = 0;
@@ -412,6 +424,8 @@ int Debug_Encoder(void)
 			OLED_Printf(30, 24, OLED_6X8, "%d  ", Encoder_Right);
 			OLED_Printf(36, 32, OLED_6X8, "%d  ", Sum_LeftSpeed);
 			OLED_Printf(36, 40, OLED_6X8, "%d  ", Sum_RightSpeed);
+			// 懒得在这里插校准了，使用的时候自己点点下面的那一位
+			OLED_Printf(48, 48 , OLED_6X8, "%3.2f  ", Yaw_Result);
 			
 			OLED_Update();
 		}
@@ -467,6 +481,7 @@ int Calib_Button_Page(void)
 			{
 				if (MPU6050_Calibration_Check() == 2)  // 零飘校准完成
 				{
+					MPU6050_Reset_Yaw();
 					OLED_ShowString(0, 16, "已校准", OLED_8X16);
 					OLED_Update();
 					break;  // 跳出零飘校准循环，往下执行
@@ -481,7 +496,7 @@ int Calib_Button_Page(void)
 					OLED_ShowString(0, 16, "已取消", OLED_8X16);
 					OLED_Update();
 					break;  // 退出零飘校准模式
-				}       
+				}
 			}
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))// 返回键
@@ -491,6 +506,22 @@ int Calib_Button_Page(void)
 			// 返回上一级菜单
             return 0;
         }
+		
+		/* mpu6050数据接收与解析*/
+		if (mpu6050_analysis_enable && MPU6050_Calibration_Check() == 2)
+		{
+			mpu6050_get_data();
+			mpu6050_analysis_enable = 0;
+			MPU6050_Analysis();
+		}
+		
+		/* 显示更新*/
+		if (Time_Count1 >= 2)// 2 * 5 ms调控周期
+		{
+			Time_Count1 = 0;
+			OLED_Printf(48, 56 , OLED_6X8, "%3.2f  ", Yaw_Result);
+			OLED_Update();
+		}
 	}
 }
 
