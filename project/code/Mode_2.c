@@ -209,7 +209,7 @@ int Mode_2_Menu(void)
 #define TRACK_SWITCH_COOLDOWN 600
 
 // 模式二启用状态：1完整;0仅巡线
-#define MODE_2_SET	0
+#define MODE_2_SET	1
 
 # if MODE_2_SET == 0
 	// 参与在线/掉线状态的发送（防止高频发送阻塞程序）
@@ -291,16 +291,18 @@ int Mode_2_Running(void)
 	
 	// 重置循迹传感器状态记录（仅在调试模式）
 	#if MODE_2_SET == 0
-		pre_Track_Sensor_State = TRACK_STATE_OFF_LINE; // 初始化为掉线状态
+		pre_Track_Sensor_State = TRACK_STATE_OFF_LINE; // 初始化为掉线状态g
 	#endif
 	
+	// 循迹周期处理相关
+	uint8_t Track_Scan_flag = 0;
 	
 	// 正式开始运行模式代码
     while(1)
     {  
-		
-		
-		/* 按键处理*/
+		/*======================================================*/
+		/*[按键处理]*********************************************/
+		/*======================================================*/
 //        if (KEY_SHORT_PRESS == key_get_state(KEY_UP))// 上键
 //        {
 //            key_clear_state(KEY_UP);
@@ -385,6 +387,9 @@ int Mode_2_Running(void)
 			// 返回上一级菜单
             return 0;
         }
+		/*======================================================*/
+		/*********************************************[按键处理]*/
+		/*======================================================*/
 		
 		
 		/* mpu6050数据接收与解析*/
@@ -419,182 +424,206 @@ int Mode_2_Running(void)
 		
 		
 				
-		/* 路径处理*/
-        float Error = Track_Sensor_Get_Error();
-		Error_filtered = 0.6 * Error + 0.4 * Error_filtered;
-		
-#if MODE_2_SET == 0
-		
-		// 非任务模式：单巡线调试模式
-		Speed_PID.Target = 40;
-		switch(Track_Sensor_State)//是否在线
+		/*======================================================*/
+		/*[路径处理]*********************************************/
+		/*======================================================*/
+		if ((Time_Count2 >= 3 && Track_Scan_flag == 0)||
+			Time_Count2 >= 8 && Track_Scan_flag == 1)
 		{
-			//  在线
-			case TRACK_STATE_ON_LINE:
-			{
-//				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
-				
-				Track_PID.Actual = Error_filtered;
-				PID_Update(&Track_PID);
-				Track_Out_filtered = 0.6 * Track_PID.Out + 0.4 * Track_Out_filtered;
-				Turn__PID.Target = Track_Out_filtered;
-				
-//				if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("N\r\n");}
-//				pre_Track_Sensor_State = Track_Sensor_State;
-				
-				break;
-			}
-			//  掉线
-			case TRACK_STATE_OFF_LINE:
-			{
-//				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
-				
-				Track_Out_filtered = 0.6 * Track_Out_filtered + 0.4 * 0;
-				Turn__PID.Target = Track_Out_filtered;
-				
-//				if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("F\r\n");}
-//				pre_Track_Sensor_State = Track_Sensor_State;
-				
-				break;
-			}
+			Track_Scan_flag += 1;// 重置逻辑在后面的代中
+			
+			float Error = Track_Sensor_Get_Error();
+			Error_filtered = 0.8 * Error + 0.2 * Error_filtered;
 		}
-//		OLED_Update();
-//		bluetooth_ch04_printf("[plot,%2.1f]\r\n", Turn__PID.Out);
+		if (Track_Scan_flag == 2)
+		{
+			Track_Scan_flag = 0;// 循迹周期相关的变量重置
+#if MODE_2_SET == 0 // 调试性质的单巡线模式
 		
-#else
-		
-		// 任务模式	
-//		OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);
-		OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
-        switch(Track_Sensor_State)//是否在线
-        {
-			// 在线
-			case TRACK_STATE_ON_LINE:
+			// 非任务模式：单巡线调试模式
+			Speed_PID.Target = 40;
+			switch(Track_Sensor_State)//是否在线
 			{
-//				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
-				
-				// ========== 状态切换判定（受冷却影响）==========
-				if (Delay_Timer_2 == 0) 
+				//  在线
+				case TRACK_STATE_ON_LINE:
 				{
+//					OLED_ShowString(36, 8 , "ON ", OLED_6X8);
+				
+					Track_PID.Actual = Error_filtered;
+					PID_Update(&Track_PID);
+					
+					// 根据误差大小调整滤波系数
+					if (fabs(Error_filtered) > 5.0f) {
+						// 误差较大时，减小滤波比例，提高响应速度
+						Track_Out_filtered = 0.9 * Track_PID.Out + 0.1 * Track_Out_filtered;
+					} else {
+						// 误差较小时，增大滤波比例，提高稳定性
+						Track_Out_filtered = 0.5 * Track_PID.Out + 0.5 * Track_Out_filtered;
+					}
+					
+					Turn__PID.Target = Track_Out_filtered;
+					
+//					if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("N\r\n");}
+//					pre_Track_Sensor_State = Track_Sensor_State;
+				
+					break;
+				}
+				//  掉线
+				case TRACK_STATE_OFF_LINE:
+				{
+//					OLED_ShowString(36, 8 , "OFF", OLED_6X8);
+				
+					Track_Out_filtered = 0.7 * Track_Out_filtered + 0.3 * 0;
+					Turn__PID.Target = Track_Out_filtered;
+				
+//					if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("F\r\n");}
+//					pre_Track_Sensor_State = Track_Sensor_State;
+				
+					break;
+				}
+			}
+//			OLED_Update();
+//			bluetooth_ch04_printf("[plot,%2.1f]\r\n", Turn__PID.Out);
+		
+#else			// 完整的任务模式
+		
+			// 任务模式	
+//			OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);
+			OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
+			switch(Track_Sensor_State)//是否在线
+			{
+				// 在线
+				case TRACK_STATE_ON_LINE:
+				{
+//					OLED_ShowString(36, 8 , "ON ", OLED_6X8);
+				
+					// ========== 状态切换判定（受冷却影响）==========
+					if (Delay_Timer_2 == 0) 
+					{
+						if (Mode_2_Cur_State == STATE_A_TO_B)
+						{
+							// 到达B
+							Mode_2_Cur_State = STATE_B_TO_C;
+							Head_PID_control_enable = 0;				
+							Delay_Timer_1 = 50;// 声光触发
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							Turn_Encoder_Accum = 0;
+							Turn_State_flag = 1;// 弯道行驶距离累积开启
+						
+							OLED_ShowString(36, 16, "B->C", OLED_6X8);
+//							bluetooth_ch04_printf("B\r\n");
+						}
+						else if (Mode_2_Cur_State == STATE_C_TO_D)
+						{
+							// 到达D
+							Mode_2_Cur_State = STATE_D_TO_A;
+							Head_PID_control_enable = 0;								
+							Delay_Timer_1 = 50;// 声光触发
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							Turn_Encoder_Accum = 0;
+							Turn_State_flag = 1;// 弯道行驶距离累积开启
+							
+							OLED_ShowString(36, 16, "D->A", OLED_6X8);
+//							bluetooth_ch04_printf("D\r\n");
+						}
+					}
+				
+					// ========== 巡线执行（不受冷却影响）==========
+					if (Mode_2_Cur_State == STATE_SEEK_A || 
+						Mode_2_Cur_State == STATE_B_TO_C || 
+						Mode_2_Cur_State == STATE_D_TO_A)
+					{
+						Speed_PID.Target = 40;
+						Track_PID.Actual = Error_filtered;
+						PID_Update(&Track_PID);
+						Track_Out_filtered = 0.7 * Track_PID.Out + 0.3 * Track_Out_filtered;
+						Turn__PID.Target = Track_Out_filtered;
+					}
+					
+					break;
+				}
+				// 掉线
+				case TRACK_STATE_OFF_LINE:
+				{
+//					OLED_ShowString(36, 8 , "OFF", OLED_6X8);
+				
+					// ========== 状态切换判定（受冷却影响）==========
+					if (Delay_Timer_2 == 0) 
+					{
+						if (Mode_2_Cur_State == STATE_SEEK_A)
+						{
+							// 到达A
+							Mode_2_Cur_State = STATE_A_TO_B;
+							Yaw_Target = Yaw_Result;// 标定发车Yaw角
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							
+							OLED_ShowString(36, 16, "A->B", OLED_6X8);
+//							bluetooth_ch04_printf("A\r\n");
+						}
+						else if (Mode_2_Cur_State == STATE_B_TO_C && 
+								 (Yaw_Target - 185 <= Yaw_Result && Yaw_Result <= -175) &&
+								Turn_Encoder_Accum >= 5400)
+						{
+							// 到达C
+							Mode_2_Cur_State = STATE_C_TO_D;
+							Turn_State_flag = 0;											
+							Delay_Timer_1 = 50;// 声光触发
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							
+							OLED_ShowString(36, 16, "C->D", OLED_6X8);
+//							bluetooth_ch04_printf("C\r\n");
+						}
+						else if (Mode_2_Cur_State == STATE_D_TO_A && 
+								 (Yaw_Target - 365 <= Yaw_Result && Yaw_Result <= -355) &&
+								Turn_Encoder_Accum >= 5400)
+						{
+							// 到达A
+							Mode_2_Cur_State = STATE_STOP;
+							Turn_State_flag = 0;						
+							Speed_PID.Target = 0;
+							Turn__PID.Target = 0;						
+							Delay_Timer_1 = 50;// 声光触发
+							
+							OLED_ShowString(36, 16, "STOP", OLED_6X8);
+//							bluetooth_ch04_printf("P\r\n");
+						}
+					}
+				
+					// ========== 平滑处理（不受冷却影响）==========
+					// 到点的判定在前面执行，理论上这里不会影响到点判定
+					// 在转弯状态掉线时，保持循迹环输出的平滑衰减
+					if (Mode_2_Cur_State == STATE_B_TO_C || 
+						Mode_2_Cur_State == STATE_D_TO_A)
+					{
+						Track_Out_filtered = 0.7 * Track_Out_filtered + 0.3 * 0;
+						Turn__PID.Target = Track_Out_filtered;
+					}
+					
+					// ========== 航向角控制（不受冷却影响）==========
 					if (Mode_2_Cur_State == STATE_A_TO_B)
 					{
-						// 到达B
-						Mode_2_Cur_State = STATE_B_TO_C;
-						Head_PID_control_enable = 0;				
-						Delay_Timer_1 = 50;// 声光触发
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
-						Turn_Encoder_Accum = 0;
-						Turn_State_flag = 1;// 弯道行驶距离累积开启
-						
-						OLED_ShowString(36, 16, "B->C", OLED_6X8);
-//						bluetooth_ch04_printf("B\r\n");
+						Speed_PID.Target = 40;
+						Head__PID.Target = Yaw_Target;
+						Head_PID_control_enable = 1;
 					}
 					else if (Mode_2_Cur_State == STATE_C_TO_D)
 					{
-						// 到达D
-						Mode_2_Cur_State = STATE_D_TO_A;
-						Head_PID_control_enable = 0;								
-						Delay_Timer_1 = 50;// 声光触发
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
-						Turn_Encoder_Accum = 0;
-						Turn_State_flag = 1;// 弯道行驶距离累积开启
-						
-						OLED_ShowString(36, 16, "D->A", OLED_6X8);
-//						bluetooth_ch04_printf("D\r\n");
+						Speed_PID.Target = 40;
+						Head__PID.Target = Yaw_Target - 180;
+						Head_PID_control_enable = 1;
 					}
+					
+					break;
 				}
-				
-				// ========== 巡线执行（不受冷却影响）==========
-				if (Mode_2_Cur_State == STATE_SEEK_A || 
-					Mode_2_Cur_State == STATE_B_TO_C || 
-					Mode_2_Cur_State == STATE_D_TO_A)
-				{
-					Speed_PID.Target = 40;
-					Track_PID.Actual = Error_filtered;
-					PID_Update(&Track_PID);
-					Track_Out_filtered = 0.6 * Track_PID.Out + 0.4 * Track_Out_filtered;
-					Turn__PID.Target = Track_Out_filtered;
-				}
-				
-				break;
-			}
-			// 掉线
-			case TRACK_STATE_OFF_LINE:
-			{
-//				OLED_ShowString(36, 8 , "OFF", OLED_6X8);
-				
-				// ========== 状态切换判定（受冷却影响）==========
-				if (Delay_Timer_2 == 0) 
-				{
-					if (Mode_2_Cur_State == STATE_SEEK_A)
-					{
-						// 到达A
-						Mode_2_Cur_State = STATE_A_TO_B;
-						Yaw_Target = Yaw_Result;// 标定发车Yaw角
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
-						
-						OLED_ShowString(36, 16, "A->B", OLED_6X8);
-//						bluetooth_ch04_printf("A\r\n");
-					}
-					else if (Mode_2_Cur_State == STATE_B_TO_C && 
-							 (Yaw_Target - 185 <= Yaw_Result && Yaw_Result <= -175) &&
-							Turn_Encoder_Accum >= 5400)
-					{
-						// 到达C
-						Mode_2_Cur_State = STATE_C_TO_D;
-						Turn_State_flag = 0;											
-						Delay_Timer_1 = 50;// 声光触发
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
-						
-						OLED_ShowString(36, 16, "C->D", OLED_6X8);
-//						bluetooth_ch04_printf("C\r\n");
-					}
-					else if (Mode_2_Cur_State == STATE_D_TO_A && 
-							 (Yaw_Target - 365 <= Yaw_Result && Yaw_Result <= -355) &&
-							Turn_Encoder_Accum >= 5400)
-					{
-						// 到达A
-						Mode_2_Cur_State = STATE_STOP;
-						Turn_State_flag = 0;						
-						Speed_PID.Target = 0;
-						Turn__PID.Target = 0;						
-						Delay_Timer_1 = 50;// 声光触发
-						
-						OLED_ShowString(36, 16, "STOP", OLED_6X8);
-//						bluetooth_ch04_printf("P\r\n");
-					}
-				}
-				
-				// ========== 平滑处理（不受冷却影响）==========
-				// 在转弯状态掉线时，保持循迹环输出的平滑衰减
-				if (Mode_2_Cur_State == STATE_B_TO_C || 
-					Mode_2_Cur_State == STATE_D_TO_A)
-				{
-					Track_Out_filtered = 0.6 * Track_Out_filtered + 0.4 * 0;
-					Turn__PID.Target = Track_Out_filtered;
-				}
-				
-				// ========== 航向角控制（不受冷却影响）==========
-				if (Mode_2_Cur_State == STATE_A_TO_B)
-				{
-					Speed_PID.Target = 40;
-					Head__PID.Target = Yaw_Target;
-					Head_PID_control_enable = 1;
-				}
-				else if (Mode_2_Cur_State == STATE_C_TO_D)
-				{
-					Speed_PID.Target = 40;
-					Head__PID.Target = Yaw_Target - 180;
-					Head_PID_control_enable = 1;
-				}
-				
-				break;
-			}
-        }	
-		OLED_Update();
-		
+			}	
+			OLED_Update();
+			
 #endif
-		
+			
+		}
+		/*======================================================*/
+		/*********************************************[路径处理]*/
+		/*======================================================*/
         
         /* 声光模块*/
         if (Delay_Timer_1)// 基于5ms定时器的分频计数器
@@ -612,7 +641,7 @@ int Mode_2_Running(void)
 		/* 外圈调控周期*/
 		if (Time_Count2 >= 10)// 10 * 5 ms调控周期
 		{
-			Time_Count2 = 0;
+			Time_Count2 = 0;		
 			
 			// 编码器数据接收与处理
 			Encoder_Left  = Get_Encoder1();

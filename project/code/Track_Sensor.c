@@ -98,18 +98,18 @@ float Track_Sensor_Get_Error(void)
 	// 平滑相关变量
     static float sensor_avg_filtered[4] = {0};
 	
-	// 应用平滑
+	// 应用平滑 - 调整滤波系数提升响应速度
     for (int i = 0; i < 4; i++) {
-        sensor_avg_filtered[i] = 0.4f * sensor_avg_filtered[i] 
-		+ 0.6f * sensor_avg[i];
+        sensor_avg_filtered[i] = 0.2f * sensor_avg_filtered[i] 
+		+ 0.8f * sensor_avg[i];
     }
 	
 	// 计算变化率
 	float Error = 
-		+ OUTER_WEIGHT * sensor_avg[0]	//左2
-		+ INNER_WEIGHT * sensor_avg[1]	//左1
-		- INNER_WEIGHT * sensor_avg[2]	//右1
-		- OUTER_WEIGHT * sensor_avg[3];	//右2
+		+ OUTER_WEIGHT * sensor_avg_filtered[0]	//左2
+		+ INNER_WEIGHT * sensor_avg_filtered[1]	//左1
+		- INNER_WEIGHT * sensor_avg_filtered[2]	//右1
+		- OUTER_WEIGHT * sensor_avg_filtered[3];//右2
 	
 	// 计算传感器信号强度
     float inner_signal = sensor_avg_filtered[1] + sensor_avg_filtered[2];
@@ -120,7 +120,7 @@ float Track_Sensor_Get_Error(void)
 	{
 		Track_off_line_cnt ++;
 		Track_on_line_cnt = 0;
-		if (Track_off_line_cnt > 4)
+		if (Track_off_line_cnt > 2) 
 		{
 			Track_Sensor_State = TRACK_STATE_OFF_LINE;
 			Track_off_line_cnt = 0;
@@ -131,7 +131,7 @@ float Track_Sensor_Get_Error(void)
 	{
 		Track_on_line_cnt ++;
 		Track_off_line_cnt = 0;
-		if (Track_on_line_cnt > 3)
+		if (Track_on_line_cnt > 1)
 		{
 			Track_Sensor_State = TRACK_STATE_ON_LINE;
 			Track_on_line_cnt = 0;	
