@@ -47,9 +47,9 @@ void Core_Param_Set_PID_UI(uint8_t Page, PID_t *p)
         case 1:
         {
 			OLED_ShowString(0  , 8  , "=====================", OLED_6X8);
-			OLED_Printf(10, 16, OLED_6X8, "Kp:%4.2f    ", p->Kp);
-			OLED_Printf(10, 24, OLED_6X8, "Ki:%4.2f    ", p->Ki);
-			OLED_Printf(10, 32, OLED_6X8, "Kd:%4.2f    ", p->Kd);
+			OLED_Printf(10, 16, OLED_6X8, "Kp:%4.3f    ", p->Kp);
+			OLED_Printf(10, 24, OLED_6X8, "Ki:%4.3f    ", p->Ki);
+			OLED_Printf(10, 32, OLED_6X8, "Kd:%4.3f    ", p->Kd);
 
             break;
         }
@@ -122,14 +122,14 @@ void Set_Core_Param_PID(uint8_t K_Num, PID_t *p, uint8_t PID_Num)
         {
             key_clear_state(KEY_UP);
             *current_param += step_value;  // 增加参数
-			OLED_Printf(28, row, OLED_6X8, "%4.2f   ", *current_param);
+			OLED_Printf(28, row, OLED_6X8, "%4.3f   ", *current_param);
 			OLED_Update();
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_DOWN))
         {
             key_clear_state(KEY_DOWN);
             *current_param -= step_value;  // 减少参数
-            OLED_Printf(28, row, OLED_6X8, "%4.2f   ", *current_param);
+            OLED_Printf(28, row, OLED_6X8, "%4.3f   ", *current_param);
 			OLED_Update();
         }
         else if (KEY_SHORT_PRESS == key_get_state(KEY_CONFIRM) || 
