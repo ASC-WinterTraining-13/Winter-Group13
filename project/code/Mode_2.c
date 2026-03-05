@@ -433,7 +433,7 @@ int Mode_2_Running(void)
 			Track_Scan_flag += 1;// 重置逻辑在后面的代中
 			
 			float Error = Track_Sensor_Get_Error();
-			Error_filtered = 0.8 * Error + 0.2 * Error_filtered;
+			Error_filtered = 0.9 * Error + 0.1 * Error_filtered;
 		}
 		if (Track_Scan_flag == 2)
 		{
@@ -441,7 +441,7 @@ int Mode_2_Running(void)
 #if MODE_2_SET == 0 // 调试性质的单巡线模式
 		
 			// 非任务模式：单巡线调试模式
-			Speed_PID.Target = 40;
+			Speed_PID.Target = 35;
 			switch(Track_Sensor_State)//是否在线
 			{
 				//  在线
@@ -473,7 +473,7 @@ int Mode_2_Running(void)
 				{
 //					OLED_ShowString(36, 8 , "OFF", OLED_6X8);
 				
-					Track_Out_filtered = 0.7 * Track_Out_filtered + 0.3 * 0;
+					Track_Out_filtered = 0.8 * Track_Out_filtered + 0.2 * 0;
 					Turn__PID.Target = Track_Out_filtered;
 				
 //					if (pre_Track_Sensor_State != Track_Sensor_State){bluetooth_ch04_printf("F\r\n");}
@@ -533,7 +533,7 @@ int Mode_2_Running(void)
 						Mode_2_Cur_State == STATE_B_TO_C || 
 						Mode_2_Cur_State == STATE_D_TO_A)
 					{
-						Speed_PID.Target = 40;
+						Speed_PID.Target = 35;
 						Track_PID.Actual = Error_filtered;
 						PID_Update(&Track_PID);
 						Track_Out_filtered = 0.7 * Track_PID.Out + 0.3 * Track_Out_filtered;
@@ -595,20 +595,20 @@ int Mode_2_Running(void)
 					if (Mode_2_Cur_State == STATE_B_TO_C || 
 						Mode_2_Cur_State == STATE_D_TO_A)
 					{
-						Track_Out_filtered = 0.7 * Track_Out_filtered + 0.3 * 0;
+						Track_Out_filtered = 0.8 * Track_Out_filtered + 0.2 * 0;
 						Turn__PID.Target = Track_Out_filtered;
 					}
 					
 					// ========== 航向角控制（不受冷却影响）==========
 					if (Mode_2_Cur_State == STATE_A_TO_B)
 					{
-						Speed_PID.Target = 40;
+						Speed_PID.Target = 35;
 						Head__PID.Target = Yaw_Target;
 						Head_PID_control_enable = 1;
 					}
 					else if (Mode_2_Cur_State == STATE_C_TO_D)
 					{
-						Speed_PID.Target = 40;
+						Speed_PID.Target = 35;
 						Head__PID.Target = Yaw_Target - 180;
 						Head_PID_control_enable = 1;
 					}

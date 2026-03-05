@@ -106,11 +106,11 @@ PID_t Turn__PID = {
 };
 // 循迹环PID参数
 PID_t Track_PID = {	
-	.OutMax = 35,					// 输出限幅（上限）
-	.OutMin = -35,					// 输出限幅（下限）
+	.OutMax = 45,					// 输出限幅（上限）
+	.OutMin = -45,					// 输出限幅（下限）
 	.IntSepThresh = 5,				// 积分分离阈值（误差大于阈值 积分清零）
-	.ErrorIntMax = 10,				// 积分限幅（上限）
-	.ErrorIntMin = -10,				// 积分限幅（下限）
+	.ErrorIntMax = 15,				// 积分限幅（上限）
+	.ErrorIntMin = -15,				// 积分限幅（下限）
 	.OutOffset = 0,					// 输出偏移
 };
 // 航向角环PID参数

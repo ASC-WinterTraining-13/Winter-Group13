@@ -112,11 +112,15 @@ float Track_Sensor_Get_Error(void)
 		- OUTER_WEIGHT * sensor_avg_filtered[3];//右2
 	
 	// 计算传感器信号强度
-    float inner_signal = sensor_avg_filtered[1] + sensor_avg_filtered[2];
-    float outer_signal = sensor_avg_filtered[0] + sensor_avg_filtered[3];
-	
+	float inner_signal = sensor_avg_filtered[1] + sensor_avg_filtered[2];
+	float outer_signal = sensor_avg_filtered[0] + sensor_avg_filtered[3];
+
+	// 新增：边缘灵敏判线
+	int edge_left = (sensor_avg_filtered[0] > 0.5f) && (sensor_avg_filtered[1] < 0.2f) && (sensor_avg_filtered[2] < 0.2f) && (sensor_avg_filtered[3] < 0.2f);
+	int edge_right = (sensor_avg_filtered[3] > 0.5f) && (sensor_avg_filtered[0] < 0.2f) && (sensor_avg_filtered[1] < 0.2f) && (sensor_avg_filtered[2] < 0.2f);
+
 	// 疑似掉线
-	if (inner_signal < 0.2f && outer_signal < 0.1f)
+	if (inner_signal < 0.2f && outer_signal < 0.1f && !edge_left && !edge_right)
 	{
 		Track_off_line_cnt ++;
 		Track_on_line_cnt = 0;
@@ -126,7 +130,7 @@ float Track_Sensor_Get_Error(void)
 			Track_off_line_cnt = 0;
 		}
 	}
-	// 疑似在线
+	// 疑似在线（包括边缘灵敏判线）
 	else
 	{
 		Track_on_line_cnt ++;
@@ -134,7 +138,7 @@ float Track_Sensor_Get_Error(void)
 		if (Track_on_line_cnt > 1)
 		{
 			Track_Sensor_State = TRACK_STATE_ON_LINE;
-			Track_on_line_cnt = 0;	
+			Track_on_line_cnt = 0;  
 		}
 	}
 	
