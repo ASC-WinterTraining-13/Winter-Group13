@@ -341,6 +341,7 @@ int Mode_3_Running(void)
 			else if (Mode_3_Cur_State == STATE_PREP)// 直接发车
 			{
 				Mode_3_Cur_State = STATE_A_TO_C;
+				Cur_Inner_State = INNER_STATE_TURN_RIGHT;
 				Mode_3_Turns_Count = 0;// 重置圈数
 				Turn_State_flag     = 0;// 弯道行驶标志位 置0
 				Straight_State_flag = 0;// 直线行驶标志位 置0
@@ -437,7 +438,7 @@ int Mode_3_Running(void)
 			float Error = Track_Sensor_Get_Error();
 			Error_filtered = 0.9 * Error + 0.1 * Error_filtered;
 		}
-		if (Track_Scan_flag == 2)
+		if (Track_Scan_flag == 2 && Mode_3_Turns_Count < 4)
 		{
 			Track_Scan_flag = 0;// 循迹周期相关的变量重置
 			
@@ -521,7 +522,7 @@ int Mode_3_Running(void)
 //							bluetooth_ch04_printf("A\r\n");
 						}						
 						else if (Mode_3_Cur_State == STATE_C_TO_B && 
-									(Yaw_Target + 175 <= Yaw_Result && Yaw_Result <= Yaw_Target + 185) &&
+									(Yaw_Target + 177 <= Yaw_Result && Yaw_Result <= Yaw_Target + 183) &&
 									Turn_Encoder_Accum >= 5400)
 						{
 							// 到达B
@@ -537,7 +538,7 @@ int Mode_3_Running(void)
 //							bluetooth_ch04_printf("B\r\n");	
 						}
 						else if (Mode_3_Cur_State == STATE_D_TO_A &&
-									(Yaw_Target - 5 <= Yaw_Result && Yaw_Result <= Yaw_Target + 5) &&
+									(Yaw_Target - 3 <= Yaw_Result && Yaw_Result <= Yaw_Target + 3) &&
 									Turn_Encoder_Accum >= 5400)
 						{
 							// 到达A
@@ -566,7 +567,7 @@ int Mode_3_Running(void)
 					}
 					
 					// ========== 航向角控制（不受冷却影响）==========
-					if (Mode_3_Cur_State == STATE_A_TO_C)
+					if (Mode_3_Cur_State == STATE_A_TO_C && Mode_3_Turns_Count < 4)
 					{
 						switch(Cur_Inner_State)
 						{
@@ -578,7 +579,7 @@ int Mode_3_Running(void)
 								Head__PID.Target = Yaw_Target - 50;								
 								
 								// 检查是否完成转向
-								if (fabs((Yaw_Target - 50) - Head__PID.Target) < 2.0f)
+								if (fabs(Yaw_Result - Head__PID.Target) < 2.0f)
 								{
 									Cur_Inner_State = INNER_STATE_GO_STRAIGHT_1;
 									Straight_Encoder_Accum = 0;// 直~ 重置
@@ -629,7 +630,7 @@ int Mode_3_Running(void)
 							}
 						}
 					}
-					else if (Mode_3_Cur_State == STATE_B_TO_D)
+					else if (Mode_3_Cur_State == STATE_B_TO_D && Mode_3_Turns_Count < 4)
 					{
 						switch(Cur_Inner_State)
 						{
