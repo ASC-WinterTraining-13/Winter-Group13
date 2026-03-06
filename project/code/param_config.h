@@ -31,6 +31,9 @@ extern uint16_t Delay_Timer_1;
 extern uint16_t Delay_Timer_2;
 extern uint16_t Delay_Timer_3;
 
+// 调试性质的专门的1ms的Count
+//extern volatile uint32_t Debug_Count_1_ms;
+
 // 目标YAW角（我考虑在蓝牙模块预留控制接口，所以在这里定义）
 extern float Yaw_Target;
 

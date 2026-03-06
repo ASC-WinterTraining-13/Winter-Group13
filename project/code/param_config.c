@@ -30,6 +30,9 @@ uint16_t Delay_Timer_1 = 0;
 uint16_t Delay_Timer_2 = 0;
 uint16_t Delay_Timer_3 = 0;
 
+// 调试性质的专门的1ms的Count
+//volatile uint32_t Debug_Count_1_ms = 0;
+
 // 目标YAW角（我考虑在蓝牙模块预留控制接口，所以在这里定义）
 float Yaw_Target = 0.0f;
 

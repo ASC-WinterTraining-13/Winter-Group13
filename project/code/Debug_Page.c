@@ -60,8 +60,8 @@ void Debug_Encoder_UI(void)
 {
 	OLED_ShowString(8 , 0 , "Encoder", OLED_6X8);
 	OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
-	OLED_ShowString(0 , 16, "Sp_L:", OLED_6X8);
-	OLED_ShowString(0 , 24, "Sp_R:", OLED_6X8);
+	OLED_ShowString(0 , 16, "En_L:", OLED_6X8);
+	OLED_ShowString(0 , 24, "En_R:", OLED_6X8);
 	OLED_ShowString(0 , 32, "Sum_L:", OLED_6X8);
 	OLED_ShowString(0 , 40, "Sum_R:", OLED_6X8);
 	OLED_ShowString(0 , 48, "Yaw_Act:", OLED_6X8);
@@ -116,6 +116,8 @@ void Debug_PWM_UI(void)
 	OLED_ShowString(0 , 8 , "=====================", OLED_6X8);
 	OLED_ShowString(10, 16, "PWM_L:", OLED_6X8);
 	OLED_ShowString(10, 24, "PWM_R:", OLED_6X8);
+	OLED_ShowString(0 , 40, "En_L:", OLED_6X8);
+	OLED_ShowString(0 , 48, "En_R:", OLED_6X8);
 }
 /*******************************************************************************************************************/
 /*[E] 界面样式 [E]-------------------------------------------------------------------------------------------------*/
@@ -178,7 +180,10 @@ int Debug_Page_Menu(void)
 			return 0;
 		}
 		
-		/* 模式跳转*/
+		
+		/*======================================================*/
+		/*[模式跳转]*********************************************/
+		/*======================================================*/
 		if (Debug_Page_flag_temp == 1)
 		{
 			OLED_Clear();
@@ -245,8 +250,14 @@ int Debug_Page_Menu(void)
             OLED_ShowString(0, 32, ">", OLED_8X16);
 			OLED_Update();
 		}
+		/*======================================================*/
+		/*********************************************[模式跳转]*/
+		/*======================================================*/
 		
 		
+		/*======================================================*/
+		/*[显示更新]*********************************************/
+		/*======================================================*/
 		/* 菜单显示更新*/
 		// 判断是否需要更新
 		if (key_pressed)
@@ -302,6 +313,9 @@ int Debug_Page_Menu(void)
 					break;
 			}
 		}
+		/*======================================================*/
+		/*********************************************[显示更新]*/
+		/*======================================================*/
 	}
 }
 
@@ -323,7 +337,7 @@ int Debug_Track_Sensor(void)
 	
 	while(1)
 	{
-		/* 按键解析*/
+		/* 按键处理*/
 //		if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
 //		{
 //			key_clear_state(KEY_UP);
@@ -375,6 +389,31 @@ int Debug_Encoder(void)
 	Get_Encoder2();
 	Encoder_Left = 0;
 	Encoder_Right = 0;
+	
+	
+//	/* 半阻塞式MPU6050零飘校准逻辑(此时请保持静止)*/
+//	if (MPU6050_Calibration_Check() != 2)// 如果未校准
+//	{
+//		MPU6050_Calibration_Start();
+//		OLED_ShowString(0, 0, "CAli", OLED_6X8);
+//		OLED_Update();
+//	}
+//	// 半阻塞式零飘校准
+//	while(1)
+//    {
+//        if (MPU6050_Calibration_Check() == 2)  // 零飘校准完成
+//        {
+//            break;  // 结束零飘校准
+//        }      
+//        // 可以考虑在这里操作OLED，但请注意OLED对时间的占用
+//        
+//        // 强制零飘校准退出
+//        if(KEY_SHORT_PRESS == key_get_state(KEY_BACK)) {
+//            key_clear_state(KEY_BACK);
+//            break;  // 中止零飘校准
+//        }        
+//    }
+
 	
 	while(1)
 	{
@@ -793,8 +832,8 @@ int Debug_PWM(void)
 					Encoder_Left  = Get_Encoder1();
 					Encoder_Right = Get_Encoder2();
 
-					OLED_Printf(30, 32, OLED_6X8, "%d  ", Encoder_Left);
-					OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Right);
+					OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Left);
+					OLED_Printf(30, 48, OLED_6X8, "%d  ", Encoder_Right);
 
 					OLED_Update();
 				}
@@ -845,8 +884,8 @@ int Debug_PWM(void)
 					Encoder_Left  = Get_Encoder1();
 					Encoder_Right = Get_Encoder2();
 
-					OLED_Printf(30, 32, OLED_6X8, "%d  ", Encoder_Left);
-					OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Right);
+					OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Left);
+					OLED_Printf(30, 48, OLED_6X8, "%d  ", Encoder_Right);
 
 					OLED_Update();
 				}
@@ -862,8 +901,8 @@ int Debug_PWM(void)
 			Encoder_Left  = Get_Encoder1();
 			Encoder_Right = Get_Encoder2();
 
-			OLED_Printf(30, 32, OLED_6X8, "%d  ", Encoder_Left);
-			OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Right);
+			OLED_Printf(30, 40, OLED_6X8, "%d  ", Encoder_Left);
+			OLED_Printf(30, 48, OLED_6X8, "%d  ", Encoder_Right);
 
 			OLED_Update();
 		}

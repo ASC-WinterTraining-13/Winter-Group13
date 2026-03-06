@@ -72,7 +72,6 @@ void Menu_UI(uint8_t Page)
 		// 第二页
 		case 2:
 		{
-
 			OLED_ShowString(10, 0 , "Mode_4", OLED_8X16);
 			OLED_ShowString(10, 16, "Mode_5", OLED_8X16);
 			OLED_ShowString(10, 32, "Core_Param", OLED_8X16);
@@ -82,8 +81,7 @@ void Menu_UI(uint8_t Page)
 		}
 		// 第三页
 		case 3:
-		{
-			
+		{		
 			OLED_ShowString(10, 0 , "SandBox", OLED_8X16);
 			
 			break;
@@ -117,8 +115,9 @@ void Menu_Show(void)
 		
 		// 上/下按键是否被按下过
 		uint8_t key_pressed = 0;
-				
-		/* 按键解析*/
+			
+		
+		/* 按键处理*/
 		if (KEY_SHORT_PRESS == key_get_state(KEY_UP))
 		{
 			key_clear_state(KEY_UP);
@@ -138,13 +137,16 @@ void Menu_Show(void)
 			key_clear_state(KEY_CONFIRM);
 			menuflag_temp = menuflag;
 		}
-		else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
-		{
-			key_clear_state(KEY_BACK);
-			// 照理不应该有功能
-		}
+//		else if (KEY_SHORT_PRESS == key_get_state(KEY_BACK))
+//		{
+//			key_clear_state(KEY_BACK);
+//			// 照理不应该有功能
+//		}
 		
-		/* 模式跳转*/
+		
+		/*======================================================*/
+		/*[模式跳转]*********************************************/
+		/*======================================================*/
 		// 模式1
 		if (menuflag_temp == 1)
 		{
@@ -257,9 +259,14 @@ void Menu_Show(void)
             OLED_ShowString(0, 0 , ">", OLED_8X16);
 			OLED_Update();
 		}	
-
+		/*======================================================*/
+		/*********************************************[模式跳转]*/
+		/*======================================================*/	
 		
-		/* 菜单显示更新*/
+		
+		/*======================================================*/
+		/*[显示更新]*********************************************/
+		/*======================================================*/
 		// 判断是否需要更新
 		if (key_pressed)
 		{			
@@ -336,6 +343,9 @@ void Menu_Show(void)
 					break;
 			}
 		}
+		/*======================================================*/
+		/*********************************************[显示更新]*/
+		/*======================================================*/
 	}
 }
 

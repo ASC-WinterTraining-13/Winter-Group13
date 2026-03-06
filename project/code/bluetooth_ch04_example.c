@@ -155,67 +155,67 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
 //				SPEED_KD = float_value;
 //			}	
 //			else 
-				
-			
-			if(strcmp(name, "Kp_4") == 0)
-			{
-				float_value = (float)atof(value);
-				TURN__KP = float_value;
-			}
-			else if(strcmp(name, "Ki_4") == 0)
-			{
-				float_value = (float)atof(value);
-				TURN__KI = float_value;
-			}
-			else if(strcmp(name, "Kd_4") == 0)
-			{
-				float_value = (float)atof(value);
-				TURN__KD = float_value;
-			}
-			else 
-				
-			
-			if(strcmp(name, "Kp_5") == 0)
-			{
-				float_value = (float)atof(value);
-				TRACK_KP = float_value;
-			}
-			else if(strcmp(name, "Ki_5") == 0)
-			{
-				float_value = (float)atof(value);
-				TRACK_KI = float_value;
-			}
-			else if(strcmp(name, "Kd_5") == 0)
-			{
-				float_value = (float)atof(value);
-				TRACK_KD = float_value;
-			}
-			else 
-				
-			
-			if(strcmp(name, "Kp_6") == 0)
-			{
-				float_value = (float)atof(value);
-				HEAD__KP = float_value;
-			}
-			else if(strcmp(name, "Ki_6") == 0)
-			{
-				float_value = (float)atof(value);
-				HEAD__KI = float_value;
-			}
-			else if(strcmp(name, "Kd_6") == 0)
-			{
-				float_value = (float)atof(value);
-				HEAD__KD = float_value;
-			}
-			
-			else 
-			if(strcmp(name, "SET_Y") == 0)
-			{
-				int_value = (int)atoi(value);
-				Yaw_Target = int_value;
-				Head_PID_control_enable = 1;
-			}
+//				
+//			
+//			if(strcmp(name, "Kp_4") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TURN__KP = float_value;
+//			}
+//			else if(strcmp(name, "Ki_4") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TURN__KI = float_value;
+//			}
+//			else if(strcmp(name, "Kd_4") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TURN__KD = float_value;
+//			}
+//			else 
+//				
+//			
+//			if(strcmp(name, "Kp_5") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TRACK_KP = float_value;
+//			}
+//			else if(strcmp(name, "Ki_5") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TRACK_KI = float_value;
+//			}
+//			else if(strcmp(name, "Kd_5") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				TRACK_KD = float_value;
+//			}
+//			else 
+//				
+//			
+//			if(strcmp(name, "Kp_6") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				HEAD__KP = float_value;
+//			}
+//			else if(strcmp(name, "Ki_6") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				HEAD__KI = float_value;
+//			}
+//			else if(strcmp(name, "Kd_6") == 0)
+//			{
+//				float_value = (float)atof(value);
+//				HEAD__KD = float_value;
+//			}
+//			
+//			else 
+//			if(strcmp(name, "SET_Y") == 0)
+//			{
+//				int_value = (int)atoi(value);
+//				Yaw_Target = int_value;
+//				Head_PID_control_enable = 1;
+//			}
 		
 			Param_SyncToPID();//同步pid到计算变量
 	
@@ -225,6 +225,7 @@ void bluetooth_ch04_process_data (uint8 *data_packet, uint32 length)
     // ========== 摇杆事件处理 ==========
     else if(strcmp(tag, "joystick") == 0)
     {
+		// 摇杆输入范围（0~100）
         // 左摇杆横向值
         lh = (int8)atoi(strtok(NULL, ","));
         // 左摇杆纵向值

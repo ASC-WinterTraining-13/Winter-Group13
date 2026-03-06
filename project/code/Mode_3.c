@@ -307,6 +307,13 @@ int Mode_3_Running(void)
 	// （干脆理解为周期内读取计数也行）
 	uint8_t Track_Scan_flag = 0;
 	
+	// 编码器周期内中期读取
+	// 0 该周期完成第一次读取之前
+	// 1 该周期完成第二次读取之前
+	// 2 完成两次读取
+	// （干脆理解为周期内读取计数也行）
+	uint8_t Encoder_flag = 0;
+
 	
 	// 正式开始运行模式代码
     while(1)
@@ -330,27 +337,35 @@ int Mode_3_Running(void)
             key_clear_state(KEY_CONFIRM);
 			
 			/* 运行状态切换逻辑*/
-			if (Mode_3_Cur_State == STATE_IDLE)// 带"准备"发车
+			if (Mode_3_Cur_State == STATE_IDLE)// 开启平衡控制
 			{
-				Mode_3_Cur_State = STATE_PREP;
+				Mode_3_Cur_State = STATE_BALANCE_ON;
+				Cur_Inner_State = INNER_STATE_TURN_RIGHT;
+				Speed_PID.Target = 0;
 				Mode_3_Turns_Count = 0;// 重置圈数
 				Turn_State_flag     = 0;// 弯道行驶标志位 置0
 				Straight_State_flag = 0;// 直线行驶标志位 置0
-				Head_PID_control_enable = 0;// 关闭航向角环PID使能
-				Run_Flag = 1;			
+				Head_PID_control_enable = 0;
+				Run_Flag = 1;
+				OLED_ShowString(36, 16, "BAL ", OLED_6X8);
+				OLED_Update();
+			}
+			else if (Mode_3_Cur_State == STATE_BALANCE_ON)// 带"准备"发车
+			{
+				Mode_3_Cur_State = STATE_PREP;
+				Cur_Inner_State = INNER_STATE_TURN_RIGHT;
 				Speed_PID.Target = 35;
+				OLED_ShowString(36, 16, "PREP", OLED_6X8);
+				OLED_Update();
 			}
 			else if (Mode_3_Cur_State == STATE_PREP)// 直接发车
 			{
 				Mode_3_Cur_State = STATE_A_TO_C;
-				Cur_Inner_State = INNER_STATE_TURN_RIGHT;
-				Mode_3_Turns_Count = 0;// 重置圈数
-				Turn_State_flag     = 0;// 弯道行驶标志位 置0
-				Straight_State_flag = 0;// 直线行驶标志位 置0
-				Head_PID_control_enable = 0;// 关闭航向角环PID使能
-				Run_Flag = 1;			
-				Speed_PID.Target = 0;
+				Cur_Inner_State = INNER_STATE_TURN_RIGHT;		
+				Speed_PID.Target = 35;
 				Yaw_Target = Yaw_Result;// 标定发车Yaw角，这将作为后续行驶的基准
+				OLED_ShowString(36, 16, "A->C", OLED_6X8);
+				OLED_Update();
 			}
 			else// 停车并重置状态
 			{
@@ -361,6 +376,8 @@ int Mode_3_Running(void)
 				Head_PID_control_enable = 0;// 关闭航向角环PID使能
 				Run_Flag = 0;
 				BIG_Init();
+				OLED_ShowString(36, 16, "STOP", OLED_6X8);
+				OLED_Update();
 			}
 						
 			// PID参数存储
@@ -408,7 +425,7 @@ int Mode_3_Running(void)
 		
 		
 		/* 蓝牙模块*/
-		bluetooth_ch04_handle_receive();	
+//		bluetooth_ch04_handle_receive();	
 		
 		
 		/* 失控保护*/
@@ -472,7 +489,7 @@ int Mode_3_Running(void)
 							Mode_3_Cur_State = STATE_C_TO_B;
 							Head_PID_control_enable = 0;
 							Turn_Encoder_Accum = 0;// 弯道行驶距离 重置
-							Turn_State_flag = 1;// 弯道行驶距离累积 开启
+							Turn_State_flag = 1;   // 弯道行驶距离累积 开启
 							Straight_State_flag = 0; // 直线行驶距离累积 关闭
 							Delay_Timer_1 = 50;// 声光触发
 							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
@@ -487,7 +504,7 @@ int Mode_3_Running(void)
 							Mode_3_Cur_State = STATE_D_TO_A;
 							Head_PID_control_enable = 0;							
 							Turn_Encoder_Accum = 0;// 弯~ 重置
-							Turn_State_flag = 1;// 弯~ 开启
+							Turn_State_flag = 1;   // 弯~ 开启
 							Straight_State_flag = 0;// 直~ 关闭
 							Delay_Timer_1 = 50;// 声光触发
 							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
@@ -522,7 +539,7 @@ int Mode_3_Running(void)
 						if (Mode_3_Cur_State == STATE_PREP)
 						{
 							// 到达A（如果是放在引导线上发车）
-							Speed_PID.Target = 0;// 准备原地转向（转向逻辑交给下面的子状态）
+							Speed_PID.Target = 35;// 准备转向（转向逻辑交给下面的子状态）
 							Mode_3_Cur_State = STATE_A_TO_C;		
 							Cur_Inner_State = INNER_STATE_TURN_RIGHT;
 							Yaw_Target = Yaw_Result;// 标定发车Yaw角，这将作为后续行驶的基准
@@ -533,15 +550,15 @@ int Mode_3_Running(void)
 //							bluetooth_ch04_printf("A\r\n");
 						}						
 						else if (Mode_3_Cur_State == STATE_C_TO_B && 
-									(Yaw_Target + 175 <= Yaw_Result && Yaw_Result <= Yaw_Target + 185) &&
-									Turn_Encoder_Accum >= 5400)
+								(Yaw_Target + 175 <= Yaw_Result && Yaw_Result <= Yaw_Target + 185) &&
+								Turn_Encoder_Accum >= 5400)
 						{
 							// 到达B
 							Mode_3_Cur_State = STATE_B_TO_D;
 							Cur_Inner_State = INNER_STATE_TURN_RIGHT;
 							Head_PID_control_enable = 0;
-							Turn_Encoder_Accum = 0;// 弯~ 重置
-							Turn_State_flag = 0;// 弯~ 关闭
+							Turn_State_flag = 0;   // 弯~ 关闭
+							Turn_Encoder_Accum = 0;// 弯~ 重置						
 							Delay_Timer_1 = 50;// 声光触发
 							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 							
@@ -549,16 +566,16 @@ int Mode_3_Running(void)
 //							bluetooth_ch04_printf("B\r\n");	
 						}
 						else if (Mode_3_Cur_State == STATE_D_TO_A &&
-									(Yaw_Target - 5 <= Yaw_Result && Yaw_Result <= Yaw_Target + 5) &&
-									Turn_Encoder_Accum >= 5400)
+								(Yaw_Target - 5 <= Yaw_Result && Yaw_Result <= Yaw_Target + 5) &&
+								Turn_Encoder_Accum >= 5400)
 						{
 							// 到达A
 							Mode_3_Cur_State = STATE_A_TO_C;
 							Cur_Inner_State = INNER_STATE_TURN_RIGHT;
 							Head_PID_control_enable = 0;
 							Mode_3_Turns_Count ++;// 圈数累加
-							Turn_Encoder_Accum = 0;// 弯~ 重置
-							Turn_State_flag = 0;// 弯~ 关闭
+							Turn_State_flag = 0;   // 弯~ 关闭
+							Turn_Encoder_Accum = 0;// 弯~ 重置						
 							Delay_Timer_1 = 50;// 声光触发
 							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
 							
@@ -587,14 +604,14 @@ int Mode_3_Running(void)
 								// 右转固定角度（相对子状态开始时）
 								Speed_PID.Target = 35;
 								Head_PID_control_enable = 1;
-								Head__PID.Target = Yaw_Target - 50;								
+								Head__PID.Target = Yaw_Target - 45;								
 								
 								// 检查是否完成转向
 								if (fabs(Yaw_Result - Head__PID.Target) < 2.0f)
 								{
 									Cur_Inner_State = INNER_STATE_GO_STRAIGHT_1;
 									Straight_Encoder_Accum = 0;// 直~ 重置
-									Straight_State_flag = 1;// 直~ 开启
+									Straight_State_flag = 1;   // 直~ 开启
 								}
 								break;
 							}
@@ -603,14 +620,14 @@ int Mode_3_Running(void)
 								// 直线行驶
 								Speed_PID.Target = 35;
 								Head_PID_control_enable = 1;
-								Head__PID.Target = Yaw_Target - 50;
+								Head__PID.Target = Yaw_Target - 45;
 																
 								// 检查是否到达目标距离
-								if (Straight_Encoder_Accum > 4100)
+								if (Straight_Encoder_Accum > 4000)
 								{
 									Cur_Inner_State = INNER_STATE_TURN_LEFT;// 准备左转
-									Straight_Encoder_Accum = 0;// 直~ 重置
-									Straight_State_flag = 0;// 直~ 关闭
+									Straight_State_flag = 0;   // 直~ 关闭
+									Straight_Encoder_Accum = 0;// 直~ 重置								
 								}
 								break;
 							}
@@ -650,14 +667,14 @@ int Mode_3_Running(void)
 								// 右转固定角度（相对子状态开始时）
 								Speed_PID.Target = 35;
 								Head_PID_control_enable = 1;
-								Head__PID.Target = Yaw_Target + 230;// 180 + 50
+								Head__PID.Target = Yaw_Target + 225;// 180 + 45
 															
 								// 检查是否完成转向
 								if (fabs(Yaw_Result - Head__PID.Target) < 2.0f)
 								{
 									Cur_Inner_State = INNER_STATE_GO_STRAIGHT_1;
 									Straight_Encoder_Accum = 0;// 直~ 重置
-									Straight_State_flag = 1;// 直~ 开启
+									Straight_State_flag = 1;   // 直~ 开启
 								}
 								break;
 							}
@@ -666,14 +683,14 @@ int Mode_3_Running(void)
 								// 直线行驶
 								Speed_PID.Target = 35;
 								Head_PID_control_enable = 1;
-								Head__PID.Target = Yaw_Target + 230;// 180 + 50
+								Head__PID.Target = Yaw_Target + 225;// 180 + 45
 								
 								// 检查是否到达目标距离
-								if (Straight_Encoder_Accum > 4100)
+								if (Straight_Encoder_Accum > 4400)
 								{
 									Cur_Inner_State = INNER_STATE_TURN_LEFT;
-									Straight_Encoder_Accum = 0;// 直~ 重置
-									Straight_State_flag = 0;// 直~ 关闭
+									Straight_State_flag = 0;   // 直~ 关闭
+									Straight_Encoder_Accum = 0;// 直~ 重置							
 								}
 								break;
 							}
