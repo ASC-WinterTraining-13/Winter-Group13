@@ -240,6 +240,8 @@ int Mode_3_Running(void)
 	OLED_ShowString(0, 16, "State:", OLED_6X8);
 //	OLED_ShowString(0, 24, "Error:", OLED_6X8);
 	OLED_ShowString(0, 32, "Yaw_A:", OLED_6X8);
+	OLED_ShowString(0, 40, "Yaw_T:", OLED_6X8);
+	OLED_ShowString(0, 48, "Accum:", OLED_6X8);
 
 	OLED_Update();
 	
@@ -290,11 +292,11 @@ int Mode_3_Running(void)
 	float Track_Out_filtered = 0;
 
 	// 记录弯道行驶距离（左右编码器原始值直接累加）
-	uint16_t Turn_Encoder_Accum = 0;
+	int32_t Turn_Encoder_Accum = 0;
 	// 标志位，标记当前是否为弯道行驶状态：0/1
 	uint8_t Turn_State_flag = 0;
 	// 记录直线行驶距离（左右编码器原始值直接累加）（当然指的不是所有的直线，这里是指从A→C，B→D中考虑的一段路径）
-	uint16_t Straight_Encoder_Accum = 0;
+	int32_t Straight_Encoder_Accum = 0;
 	// 标志位，标记当前是否为直线行驶状态（当然指的不是所有的直线，这里是指从A→C，B→D中考虑的一段路径）：0/1
 	uint8_t Straight_State_flag = 0;
 	
@@ -444,6 +446,15 @@ int Mode_3_Running(void)
 			
 //			OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);			
 			OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
+			if (Head_PID_control_enable)
+			{
+				OLED_Printf(36, 40, OLED_6X8, "%3.2f  ", Head__PID.Target);
+			}
+			else
+			{
+				OLED_Printf(36, 40, OLED_6X8, "*%3.2f*", Head__PID.Target);
+			}
+			OLED_Update();
 			switch(Track_Sensor_State)//是否在线
 			{
 				// 在线
@@ -522,7 +533,7 @@ int Mode_3_Running(void)
 //							bluetooth_ch04_printf("A\r\n");
 						}						
 						else if (Mode_3_Cur_State == STATE_C_TO_B && 
-									(Yaw_Target + 177 <= Yaw_Result && Yaw_Result <= Yaw_Target + 183) &&
+									(Yaw_Target + 175 <= Yaw_Result && Yaw_Result <= Yaw_Target + 185) &&
 									Turn_Encoder_Accum >= 5400)
 						{
 							// 到达B
@@ -538,7 +549,7 @@ int Mode_3_Running(void)
 //							bluetooth_ch04_printf("B\r\n");	
 						}
 						else if (Mode_3_Cur_State == STATE_D_TO_A &&
-									(Yaw_Target - 3 <= Yaw_Result && Yaw_Result <= Yaw_Target + 3) &&
+									(Yaw_Target - 5 <= Yaw_Result && Yaw_Result <= Yaw_Target + 5) &&
 									Turn_Encoder_Accum >= 5400)
 						{
 							// 到达A
@@ -574,7 +585,7 @@ int Mode_3_Running(void)
 							case INNER_STATE_TURN_RIGHT:
 							{
 								// 右转固定角度（相对子状态开始时）
-								Speed_PID.Target = 0; // 原地转向
+								Speed_PID.Target = 35;
 								Head_PID_control_enable = 1;
 								Head__PID.Target = Yaw_Target - 50;								
 								
@@ -595,7 +606,7 @@ int Mode_3_Running(void)
 								Head__PID.Target = Yaw_Target - 50;
 																
 								// 检查是否到达目标距离
-								if (Straight_Encoder_Accum > 5000)
+								if (Straight_Encoder_Accum > 4100)
 								{
 									Cur_Inner_State = INNER_STATE_TURN_LEFT;// 准备左转
 									Straight_Encoder_Accum = 0;// 直~ 重置
@@ -606,7 +617,7 @@ int Mode_3_Running(void)
 							case INNER_STATE_TURN_LEFT:
 							{
 								// 左转固定角度
-								Speed_PID.Target = 0; // 原地转向
+								Speed_PID.Target = 35;
 								Head_PID_control_enable = 1;
 								Head__PID.Target = Yaw_Target;								
 								
@@ -637,7 +648,7 @@ int Mode_3_Running(void)
 							case INNER_STATE_TURN_RIGHT:
 							{
 								// 右转固定角度（相对子状态开始时）
-								Speed_PID.Target = 0; // 原地转向
+								Speed_PID.Target = 35;
 								Head_PID_control_enable = 1;
 								Head__PID.Target = Yaw_Target + 230;// 180 + 50
 															
@@ -658,7 +669,7 @@ int Mode_3_Running(void)
 								Head__PID.Target = Yaw_Target + 230;// 180 + 50
 								
 								// 检查是否到达目标距离
-								if (Straight_Encoder_Accum > 5000)
+								if (Straight_Encoder_Accum > 4100)
 								{
 									Cur_Inner_State = INNER_STATE_TURN_LEFT;
 									Straight_Encoder_Accum = 0;// 直~ 重置
@@ -669,7 +680,7 @@ int Mode_3_Running(void)
 							case INNER_STATE_TURN_LEFT:
 							{
 								// 左转固定角度
-								Speed_PID.Target = 0; // 原地转向
+								Speed_PID.Target = 35;
 								Head_PID_control_enable = 1;
 								Head__PID.Target = Yaw_Target + 180;								
 								
@@ -743,9 +754,19 @@ int Mode_3_Running(void)
 			Pre_RightSpeed = RightSpeed;
 			
 			// 弯道行驶距离累积
-			if (Turn_State_flag){Turn_Encoder_Accum += Encoder_Left + Encoder_Right;}
+			if (Turn_State_flag)
+			{
+				Turn_Encoder_Accum += Encoder_Left + Encoder_Right;
+				OLED_Printf(36, 48, OLED_6X8, "%d   ", Turn_Encoder_Accum);
+				OLED_Update();
+			}
 			// 直线行驶距离累积
-			if (Straight_State_flag){Straight_Encoder_Accum += Encoder_Left + Encoder_Right;}
+			if (Straight_State_flag)
+			{
+				Straight_Encoder_Accum += Encoder_Left + Encoder_Right;
+				OLED_Printf(36, 48, OLED_6X8, "%d   ", Straight_Encoder_Accum);
+				OLED_Update();
+			}
 			
 			// 实际速度换算
 			AveSpeed = (LeftSpeed + RightSpeed) / 2.0f;	// 实际平均速度
