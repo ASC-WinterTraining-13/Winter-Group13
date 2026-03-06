@@ -260,6 +260,16 @@ int Mode_3_Running(void)
 
 	Mode_3_State Mode_3_Cur_State = STATE_IDLE;
 	
+	
+	// 子状态状态机（A→C："对角"直线||B→D："对角"直线）
+	typedef enum {
+		INNER_STATE_TURN_RIGHT    = 0,	// 右转（相对子状态开始时）
+		INNER_STATE_GO_STRAIGHT_1 = 1,	// 直线行驶一
+		INNER_STATE_TURN_LEFT     = 2,	// 左转
+		INNER_STATE_GO_STRAIGHT_2 = 3	// 直线行驶二
+	} Inner_State;
+	Inner_State Cur_Inner_State = INNER_STATE_TURN_RIGHT;
+	
 	// 圈数累计
 	uint8_t Mode_3_Turns_Count = 0;
 	
@@ -277,23 +287,23 @@ int Mode_3_Running(void)
 	
 	// 平滑相关的算法
 	float Error_filtered = 0;
+	float Track_Out_filtered = 0;
 
 	// 记录弯道行驶距离（左右编码器原始值直接累加）
 	uint16_t Turn_Encoder_Accum = 0;
-	// 标志位，标记当前是否为转弯状态 0/1
+	// 标志位，标记当前是否为弯道行驶状态：0/1
 	uint8_t Turn_State_flag = 0;
 	// 记录直线行驶距离（左右编码器原始值直接累加）（当然指的不是所有的直线，这里是指从A→C，B→D中考虑的一段路径）
 	uint16_t Straight_Encoder_Accum = 0;
-	// 标志位，标记当前是否为直线状态（当然指的不是所有的直线，这里是指从A→C，B→D中考虑的一段路径） 0/1
+	// 标志位，标记当前是否为直线行驶状态（当然指的不是所有的直线，这里是指从A→C，B→D中考虑的一段路径）：0/1
 	uint8_t Straight_State_flag = 0;
 	
-	// 分步控制子状态
-	typedef enum {
-		SUBSTATE_TURN_RIGHT = 0,
-		SUBSTATE_GO_STRAIGHT = 1,
-		SUBSTATE_TURN_LEFT = 2
-	} SubState;
-	SubState Current_SubState = SUBSTATE_TURN_RIGHT;
+	// 循迹周期处理相关
+	// 0 该周期完成第一次读取之前
+	// 1 该周期完成第二次读取之前
+	// 2 完成两次读取
+	// （干脆理解为周期内读取计数也行）
+	uint8_t Track_Scan_flag = 0;
 	
 	
 	// 正式开始运行模式代码
@@ -318,22 +328,36 @@ int Mode_3_Running(void)
             key_clear_state(KEY_CONFIRM);
 			
 			/* 运行状态切换逻辑*/
-			if (Mode_3_Cur_State == STATE_IDLE)// 发车
+			if (Mode_3_Cur_State == STATE_IDLE)// 带"准备"发车
+			{
+				Mode_3_Cur_State = STATE_PREP;
+				Mode_3_Turns_Count = 0;// 重置圈数
+				Turn_State_flag     = 0;// 弯道行驶标志位 置0
+				Straight_State_flag = 0;// 直线行驶标志位 置0
+				Head_PID_control_enable = 0;// 关闭航向角环PID使能
+				Run_Flag = 1;			
+				Speed_PID.Target = 35;
+			}
+			else if (Mode_3_Cur_State == STATE_PREP)// 直接发车
 			{
 				Mode_3_Cur_State = STATE_A_TO_C;
-				Mode_3_Turns_Count = 0;
-				Turn_State_flag = 0;
-				Straight_State_flag = 0;
+				Mode_3_Turns_Count = 0;// 重置圈数
+				Turn_State_flag     = 0;// 弯道行驶标志位 置0
+				Straight_State_flag = 0;// 直线行驶标志位 置0
+				Head_PID_control_enable = 0;// 关闭航向角环PID使能
 				Run_Flag = 1;			
-				Yaw_Target = Yaw_Result;// 标定发车Yaw角
+				Speed_PID.Target = 0;
+				Yaw_Target = Yaw_Result;// 标定发车Yaw角，这将作为后续行驶的基准
 			}
 			else// 停车并重置状态
 			{
 				Mode_3_Cur_State = STATE_IDLE;
+				Mode_3_Turns_Count = 0;// 重置圈数				
+				Turn_State_flag     = 0;// 弯道行驶标志位 置0
+				Straight_State_flag = 0;// 直线行驶标志位 置0
+				Head_PID_control_enable = 0;// 关闭航向角环PID使能
 				Run_Flag = 0;
-				Head_PID_control_enable = 0;
-				Turn_State_flag = 0;
-				Straight_State_flag = 0;
+				BIG_Init();
 			}
 						
 			// PID参数存储
@@ -354,7 +378,7 @@ int Mode_3_Running(void)
 			motor_SetPWM(1, 0);
 			motor_SetPWM(2, 0);
 			DifPWM  = 0;
-			Head_PID_control_enable = 0;
+			Head_PID_control_enable = 0;// 关闭航向角环PID使能
 			
 			// 关闭声光
 			BUZ_SET(0);
@@ -381,15 +405,15 @@ int Mode_3_Running(void)
 		
 		
 		/* 蓝牙模块*/
-		bluetooth_ch04_handle_receive();			
+		bluetooth_ch04_handle_receive();	
 		
 		
 		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
-			if (Run_Flag){OLED_ShowString(36, 16, "BAOF", OLED_6X8);
-			OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
-			OLED_Update();}
+			if (Run_Flag){OLED_ShowString(36, 16, "BAOF", OLED_6X8);// BAOF:BALANCE OFF
+						  OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
+						  OLED_Update();}
 			
 			Mode_3_Cur_State = STATE_BALANCE_OFF;
 			Head_PID_control_enable = 0;
@@ -399,226 +423,293 @@ int Mode_3_Running(void)
 			DifPWM  = 0;
 			
 			Run_Flag = 0;
-		}		
+		}
 		
 		
 		/*======================================================*/
 		/*[路径处理]*********************************************/
 		/*======================================================*/
-        float Error = Track_Sensor_Get_Error();
-		Error_filtered = 0.6 * Error + 0.4 * Error_filtered;
-		
-//		OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);
-		OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
-        switch(Track_Sensor_State)//是否在线
+		if ((Time_Count2 >= 3 && Track_Scan_flag == 0)||
+			Time_Count2 >= 8 && Track_Scan_flag == 1)
 		{
-			// 在线
-			case TRACK_STATE_ON_LINE:
-			{
-//				OLED_ShowString(36, 8 , "ON ", OLED_6X8);
-				
-				// ========== 状态切换判定（受冷却影响）==========
-				if (Delay_Timer_2 == 0)
-				{
-					if (Mode_3_Cur_State == STATE_A_TO_C && Current_SubState == SUBSTATE_GO_STRAIGHT)
-					{
-						// 到达C
-						Mode_3_Cur_State = STATE_C_TO_B;
-						Head_PID_control_enable = 0;
-						Delay_Timer_1 = 50;// 声光触发
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
-						Turn_Encoder_Accum = 0;
-						Turn_State_flag = 1;// 弯道行驶距离累积开启
-						Straight_State_flag = 0;// 关闭直线行驶距离累积
-						
-						OLED_ShowString(36, 16, "C->B", OLED_6X8);
-//						bluetooth_ch04_printf("C\r\n						");						
-					}
-					else if (Mode_3_Cur_State == STATE_B_TO_D && Current_SubState == SUBSTATE_GO_STRAIGHT)
-					{
-						// 到达D
-						Mode_3_Cur_State = STATE_D_TO_A;
-						Head_PID_control_enable = 0;
-						Delay_Timer_1 = 50;// 声光触发
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
-						Turn_Encoder_Accum = 0;
-						Turn_State_flag = 1;// 弯道行驶距离累积开启
-						Straight_State_flag = 0;// 关闭直线行驶距离累积
-						
-						OLED_ShowString(36, 16, "D->A", OLED_6X8);
-//						bluetooth_ch04_printf("D\r\n						");						
-					}
-				}
-				
-				// ========== 巡线执行（不受冷却影响）==========
-				if (Mode_3_Cur_State == STATE_PREP ||
-					Mode_3_Cur_State == STATE_C_TO_B ||
-					Mode_3_Cur_State == STATE_D_TO_A)
-				{
-					Speed_PID.Target = 30;
-					Track_PID.Actual = Error_filtered;
-					PID_Update(&Track_PID);
-					Turn__PID.Target = Track_PID.Out;
-				}
-				
-				break;
-			}
-			// 掉线
-			case TRACK_STATE_OFF_LINE:
-			{
-//				OLED_ShowString(36, 8 , "OFF", OLED_6X8);				
-				
-				// ========== 状态切换判定（受冷却影响）==========
-				if (Delay_Timer_2 == 0)
-				{
-					if (Mode_3_Cur_State == STATE_C_TO_B)
-					{
-						// 到达B
-						Mode_3_Cur_State = STATE_B_TO_D;
-						Delay_Timer_1 = 50;// 声光触发
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
-						
-						OLED_ShowString(36, 16, "B->D", OLED_6X8);
-//						bluetooth_ch04_printf("B\r\n");	
-					}
-					else if (Mode_3_Cur_State == STATE_D_TO_A)
-					{
-						// 到达A
-						Mode_3_Cur_State = STATE_A_TO_C;
-						Mode_3_Turns_Count ++;
-						Delay_Timer_1 = 50;// 声光触发
-						Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
-						
-						OLED_ShowString(36, 16, "A->C", OLED_6X8);
-//						bluetooth_ch04_printf("A\r\n");
-					}
-				}
-				
-				// ========== 航向角控制（不受冷却影响）==========
-			if (Mode_3_Cur_State == STATE_A_TO_C)
-			{
-				switch(Current_SubState)
-				{
-					case SUBSTATE_TURN_RIGHT:
-					{
-						// 右转固定角度（约37度，根据地图计算）
-						Head_PID_control_enable = 1;
-						Head__PID.Target = Yaw_Target + 37;
-						Speed_PID.Target = 0; // 原地转向
-						
-						// 检查是否完成转向
-						if (fabs(Yaw_Result - Head__PID.Target) < 2)
-						{
-							Current_SubState = SUBSTATE_GO_STRAIGHT;
-							Straight_Encoder_Accum = 0;
-							Straight_State_flag = 1;
-						}
-						break;
-					}
-					case SUBSTATE_GO_STRAIGHT:
-					{
-						// 直线行驶（约160cm）
-						Head_PID_control_enable = 1;
-						Speed_PID.Target = 30;
-						
-						// 检查是否到达目标距离
-						if (Straight_Encoder_Accum > 1600) // 假设编码器单位为0.1cm
-						{
-							Current_SubState = SUBSTATE_TURN_LEFT;
-							Straight_State_flag = 0;
-						}
-						break;
-					}
-					case SUBSTATE_TURN_LEFT:
-					{
-						// 左转固定角度（约37度）
-						Head_PID_control_enable = 1;
-						Head__PID.Target = Yaw_Target;
-						Speed_PID.Target = 0; // 原地转向
-						
-						// 检查是否完成转向
-						if (fabs(Yaw_Result - Head__PID.Target) < 2)
-						{
-							// 转向完成，等待寻到线
-							Current_SubState = SUBSTATE_GO_STRAIGHT;
-							Straight_Encoder_Accum = 0;
-							Straight_State_flag = 1;
-						}
-						break;
-					}
-				}
-			}
-			else if (Mode_3_Cur_State == STATE_B_TO_D)
-			{
-				switch(Current_SubState)
-				{
-					case SUBSTATE_TURN_RIGHT:
-					{
-						// 右转固定角度（约37度）
-						Head_PID_control_enable = 1;
-						Head__PID.Target = Yaw_Target - 37;
-						Speed_PID.Target = 0; // 原地转向
-						
-						// 检查是否完成转向
-						if (fabs(Yaw_Result - Head__PID.Target) < 2)
-						{
-							Current_SubState = SUBSTATE_GO_STRAIGHT;
-							Straight_Encoder_Accum = 0;
-							Straight_State_flag = 1;
-						}
-						break;
-					}
-					case SUBSTATE_GO_STRAIGHT:
-					{
-						// 直线行驶（约160cm）
-						Head_PID_control_enable = 1;
-						Speed_PID.Target = 30;
-						
-						// 检查是否到达目标距离
-						if (Straight_Encoder_Accum > 1600) // 假设编码器单位为0.1cm
-						{
-							Current_SubState = SUBSTATE_TURN_LEFT;
-							Straight_State_flag = 0;
-						}
-						break;
-					}
-					case SUBSTATE_TURN_LEFT:
-					{
-						// 左转固定角度（约37度）
-						Head_PID_control_enable = 1;
-						Head__PID.Target = Yaw_Target;
-						Speed_PID.Target = 0; // 原地转向
-						
-						// 检查是否完成转向
-						if (fabs(Yaw_Result - Head__PID.Target) < 2)
-						{
-							// 转向完成，等待寻到线
-							Current_SubState = SUBSTATE_GO_STRAIGHT;
-							Straight_Encoder_Accum = 0;
-							Straight_State_flag = 1;
-						}
-						break;
-					}
-				}
-			}
-				
-				break;
-			}
+			Track_Scan_flag += 1;
+			
+			float Error = Track_Sensor_Get_Error();
+			Error_filtered = 0.9 * Error + 0.1 * Error_filtered;
 		}
-		if (Mode_3_Turns_Count >= 4)
+		if (Track_Scan_flag == 2)
 		{
-			// 跑完四圈
-			Mode_3_Cur_State = STATE_STOP;
-			Turn_State_flag = 0;						
-			Speed_PID.Target = 0;
-			Turn__PID.Target = 0;						
-			Delay_Timer_1 = 50;// 声光触发
+			Track_Scan_flag = 0;// 循迹周期相关的变量重置
 			
-			OLED_ShowString(36, 16, "STOP", OLED_6X8);
-//			bluetooth_ch04_printf("P\r\n");
+//			OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);			
+			OLED_Printf(36, 32, OLED_6X8, "%2.1f", Yaw_Result);
+			switch(Track_Sensor_State)//是否在线
+			{
+				// 在线
+				case TRACK_STATE_ON_LINE:
+				{
+//					OLED_ShowString(36, 8 , "ON ", OLED_6X8);
+					
+					// ========== 状态切换判定（受冷却影响）==========
+					if (Delay_Timer_2 == 0)
+					{
+						if (Mode_3_Cur_State == STATE_A_TO_C)
+						{
+							// 到达C
+							Speed_PID.Target = 35;
+							Mode_3_Cur_State = STATE_C_TO_B;
+							Head_PID_control_enable = 0;
+							Turn_Encoder_Accum = 0;// 弯道行驶距离 重置
+							Turn_State_flag = 1;// 弯道行驶距离累积 开启
+							Straight_State_flag = 0; // 直线行驶距离累积 关闭
+							Delay_Timer_1 = 50;// 声光触发
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							
+							OLED_ShowString(36, 16, "C->B", OLED_6X8);
+//							bluetooth_ch04_printf("C\r\n");
+						}
+						else if (Mode_3_Cur_State == STATE_B_TO_D)
+						{
+							// 到达D
+							Speed_PID.Target = 35;
+							Mode_3_Cur_State = STATE_D_TO_A;
+							Head_PID_control_enable = 0;							
+							Turn_Encoder_Accum = 0;// 弯~ 重置
+							Turn_State_flag = 1;// 弯~ 开启
+							Straight_State_flag = 0;// 直~ 关闭
+							Delay_Timer_1 = 50;// 声光触发
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							
+							OLED_ShowString(36, 16, "D->A", OLED_6X8);
+//							bluetooth_ch04_printf("D\r\n");
+						}
+					}
+					
+					// ========== 巡线执行（不受冷却影响）==========
+					if (Mode_3_Cur_State == STATE_PREP ||
+						Mode_3_Cur_State == STATE_C_TO_B ||
+						Mode_3_Cur_State == STATE_D_TO_A)
+					{
+						Speed_PID.Target = 35;
+						Track_PID.Actual = Error_filtered;
+						PID_Update(&Track_PID);
+						Track_Out_filtered = 0.7 * Track_PID.Out + 0.3 * Track_Out_filtered;
+						Turn__PID.Target = Track_Out_filtered;
+					}
+					
+					break;
+				}
+				// 掉线
+				case TRACK_STATE_OFF_LINE:
+				{
+//					OLED_ShowString(36, 8 , "OFF", OLED_6X8);				
+				
+					// ========== 状态切换判定（受冷却影响）==========
+					if (Delay_Timer_2 == 0)
+					{
+						if (Mode_3_Cur_State == STATE_PREP)
+						{
+							// 到达A（如果是放在引导线上发车）
+							Speed_PID.Target = 0;// 准备原地转向（转向逻辑交给下面的子状态）
+							Mode_3_Cur_State = STATE_A_TO_C;		
+							Cur_Inner_State = INNER_STATE_TURN_RIGHT;
+							Yaw_Target = Yaw_Result;// 标定发车Yaw角，这将作为后续行驶的基准
+							Delay_Timer_1 = 50;// 声光触发
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							
+							OLED_ShowString(36, 16, "A->C", OLED_6X8);
+//							bluetooth_ch04_printf("A\r\n");
+						}						
+						else if (Mode_3_Cur_State == STATE_C_TO_B && 
+									(Yaw_Target + 175 <= Yaw_Result && Yaw_Result <= Yaw_Target + 185) &&
+									Turn_Encoder_Accum >= 5400)
+						{
+							// 到达B
+							Mode_3_Cur_State = STATE_B_TO_D;
+							Cur_Inner_State = INNER_STATE_TURN_RIGHT;
+							Head_PID_control_enable = 0;
+							Turn_Encoder_Accum = 0;// 弯~ 重置
+							Turn_State_flag = 0;// 弯~ 关闭
+							Delay_Timer_1 = 50;// 声光触发
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							
+							OLED_ShowString(36, 16, "B->D", OLED_6X8);
+//							bluetooth_ch04_printf("B\r\n");	
+						}
+						else if (Mode_3_Cur_State == STATE_D_TO_A &&
+									(Yaw_Target - 5 <= Yaw_Result && Yaw_Result <= Yaw_Target + 5) &&
+									Turn_Encoder_Accum >= 5400)
+						{
+							// 到达A
+							Mode_3_Cur_State = STATE_A_TO_C;
+							Cur_Inner_State = INNER_STATE_TURN_RIGHT;
+							Head_PID_control_enable = 0;
+							Mode_3_Turns_Count ++;// 圈数累加
+							Turn_Encoder_Accum = 0;// 弯~ 重置
+							Turn_State_flag = 0;// 弯~ 关闭
+							Delay_Timer_1 = 50;// 声光触发
+							Delay_Timer_2 = TRACK_SWITCH_COOLDOWN;// 点位切换冷却
+							
+							OLED_ShowString(36, 16, "A->C", OLED_6X8);
+//							bluetooth_ch04_printf("A\r\n");
+						}
+					}
+					
+					// ========== 平滑处理（不受冷却影响）==========
+					// 到点的判定在前面执行，理论上这里不会影响到点判定
+					// 在转弯状态掉线时，保持循迹环输出的平滑衰减
+					if (Mode_3_Cur_State == STATE_C_TO_B || 
+						Mode_3_Cur_State == STATE_D_TO_A)
+					{
+						Track_Out_filtered = 0.8 * Track_Out_filtered + 0.2 * 0;
+						Turn__PID.Target = Track_Out_filtered;
+					}
+					
+					// ========== 航向角控制（不受冷却影响）==========
+					if (Mode_3_Cur_State == STATE_A_TO_C)
+					{
+						switch(Cur_Inner_State)
+						{
+							case INNER_STATE_TURN_RIGHT:
+							{
+								// 右转固定角度（相对子状态开始时）
+								Speed_PID.Target = 0; // 原地转向
+								Head_PID_control_enable = 1;
+								Head__PID.Target = Yaw_Target - 50;								
+								
+								// 检查是否完成转向
+								if (fabs((Yaw_Target - 50) - Head__PID.Target) < 2.0f)
+								{
+									Cur_Inner_State = INNER_STATE_GO_STRAIGHT_1;
+									Straight_Encoder_Accum = 0;// 直~ 重置
+									Straight_State_flag = 1;// 直~ 开启
+								}
+								break;
+							}
+							case INNER_STATE_GO_STRAIGHT_1:
+							{
+								// 直线行驶
+								Speed_PID.Target = 35;
+								Head_PID_control_enable = 1;
+								Head__PID.Target = Yaw_Target - 50;
+																
+								// 检查是否到达目标距离
+								if (Straight_Encoder_Accum > 5000)
+								{
+									Cur_Inner_State = INNER_STATE_TURN_LEFT;// 准备左转
+									Straight_Encoder_Accum = 0;// 直~ 重置
+									Straight_State_flag = 0;// 直~ 关闭
+								}
+								break;
+							}
+							case INNER_STATE_TURN_LEFT:
+							{
+								// 左转固定角度
+								Speed_PID.Target = 0; // 原地转向
+								Head_PID_control_enable = 1;
+								Head__PID.Target = Yaw_Target;								
+								
+								// 检查是否完成转向
+								if (fabs(Yaw_Result - Head__PID.Target) < 2.0f)
+								{
+									// 转向完成，等待寻到线
+									Cur_Inner_State = INNER_STATE_GO_STRAIGHT_2;
+									
+								}
+								break;
+							}
+							case INNER_STATE_GO_STRAIGHT_2:
+							{	
+								// 直线行驶直到到达C
+								Speed_PID.Target = 35;
+								Head_PID_control_enable = 1;
+								Head__PID.Target = Yaw_Target;
+								
+								break;
+							}
+						}
+					}
+					else if (Mode_3_Cur_State == STATE_B_TO_D)
+					{
+						switch(Cur_Inner_State)
+						{
+							case INNER_STATE_TURN_RIGHT:
+							{
+								// 右转固定角度（相对子状态开始时）
+								Speed_PID.Target = 0; // 原地转向
+								Head_PID_control_enable = 1;
+								Head__PID.Target = Yaw_Target + 230;// 180 + 50
+															
+								// 检查是否完成转向
+								if (fabs(Yaw_Result - Head__PID.Target) < 2.0f)
+								{
+									Cur_Inner_State = INNER_STATE_GO_STRAIGHT_1;
+									Straight_Encoder_Accum = 0;// 直~ 重置
+									Straight_State_flag = 1;// 直~ 开启
+								}
+								break;
+							}
+							case INNER_STATE_GO_STRAIGHT_1:
+							{
+								// 直线行驶
+								Speed_PID.Target = 35;
+								Head_PID_control_enable = 1;
+								Head__PID.Target = Yaw_Target + 230;// 180 + 50
+								
+								// 检查是否到达目标距离
+								if (Straight_Encoder_Accum > 5000)
+								{
+									Cur_Inner_State = INNER_STATE_TURN_LEFT;
+									Straight_Encoder_Accum = 0;// 直~ 重置
+									Straight_State_flag = 0;// 直~ 关闭
+								}
+								break;
+							}
+							case INNER_STATE_TURN_LEFT:
+							{
+								// 左转固定角度
+								Speed_PID.Target = 0; // 原地转向
+								Head_PID_control_enable = 1;
+								Head__PID.Target = Yaw_Target + 180;								
+								
+								// 检查是否完成转向
+								if (fabs(Yaw_Result - Head__PID.Target) < 2.0f)
+								{
+									// 转向完成，等待寻到线
+									Cur_Inner_State = INNER_STATE_GO_STRAIGHT_2;								
+								}
+								break;
+							}
+							case INNER_STATE_GO_STRAIGHT_2:
+							{	
+								// 直线行驶直到到达C
+								Speed_PID.Target = 35;
+								Head_PID_control_enable = 1;
+								Head__PID.Target = Yaw_Target + 180;
+
+								break;
+							}
+						}
+					}				
+					break;
+				}
+			}
+			if (Mode_3_Turns_Count >= 4)
+			{
+				// 跑完四圈
+				Speed_PID.Target = 0;
+				Mode_3_Cur_State = STATE_STOP;
+				Turn_State_flag = 0;										
+				Turn__PID.Target = 0;
+				Head_PID_control_enable = 0;
+				Delay_Timer_1 = 50;// 声光触发
+				
+				OLED_ShowString(36, 16, "STOP", OLED_6X8);
+//				bluetooth_ch04_printf("P\r\n");
 			
+			}
+			OLED_Update();
 		}
-		OLED_Update();
 		/*======================================================*/
 		/*********************************************[路径处理]*/
 		/*======================================================*/

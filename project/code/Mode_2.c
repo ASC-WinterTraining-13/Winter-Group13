@@ -286,7 +286,7 @@ int Mode_2_Running(void)
 
 	// 记录弯道行驶距离（左右编码器原始值直接累加）
 	uint16_t Turn_Encoder_Accum = 0;
-	// 标志位，标记当前是否为转弯状态
+	// 标志位，标记当前是否为弯道行驶状态：0/1
 	uint8_t Turn_State_flag = 0;
 	
 	// 重置循迹传感器状态记录（仅在调试模式）
@@ -295,7 +295,12 @@ int Mode_2_Running(void)
 	#endif
 	
 	// 循迹周期处理相关
+	// 0 该周期完成第一次读取之前
+	// 1 该周期完成第二次读取之前
+	// 2 完成两次读取
+	// （干脆理解为周期内读取计数也行）
 	uint8_t Track_Scan_flag = 0;
+	
 	
 	// 正式开始运行模式代码
     while(1)
@@ -408,9 +413,9 @@ int Mode_2_Running(void)
 		/* 失控保护*/
 		if (Angle_Result < - 50 || 50 < Angle_Result)
 		{
-			if (Run_Flag){OLED_ShowString(36, 16, "BAOF", OLED_6X8);
-			OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
-			OLED_Update();}
+			if (Run_Flag){OLED_ShowString(36, 16, "BAOF", OLED_6X8);// BAOF:BALANCE OFF
+						  OLED_ShowString(0 , 0 , "STOP", OLED_6X8);
+						  OLED_Update();}
 			
 			Mode_2_Cur_State = STATE_BALANCE_OFF;
 			Head_PID_control_enable = 0;		
@@ -430,7 +435,7 @@ int Mode_2_Running(void)
 		if ((Time_Count2 >= 3 && Track_Scan_flag == 0)||
 			Time_Count2 >= 8 && Track_Scan_flag == 1)
 		{
-			Track_Scan_flag += 1;// 重置逻辑在后面的代中
+			Track_Scan_flag += 1;
 			
 			float Error = Track_Sensor_Get_Error();
 			Error_filtered = 0.9 * Error + 0.1 * Error_filtered;
@@ -438,6 +443,7 @@ int Mode_2_Running(void)
 		if (Track_Scan_flag == 2)
 		{
 			Track_Scan_flag = 0;// 循迹周期相关的变量重置
+			
 #if MODE_2_SET == 0 // 调试性质的单巡线模式
 		
 			// 非任务模式：单巡线调试模式
@@ -485,7 +491,7 @@ int Mode_2_Running(void)
 //			OLED_Update();
 //			bluetooth_ch04_printf("[plot,%2.1f]\r\n", Turn__PID.Out);
 		
-#else			// 完整的任务模式
+#else				// 完整的任务模式
 		
 			// 任务模式	
 //			OLED_Printf(36, 24, OLED_6X8, "%2.1f", Error);
