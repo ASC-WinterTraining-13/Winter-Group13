@@ -311,7 +311,7 @@ int Mode_1_Running(void)
 		
 		
 		/* 蓝牙模块*/
-		bluetooth_ch04_handle_receive();			
+//		bluetooth_ch04_handle_receive();			
 		
 		
 		/* 失控保护*/
@@ -351,29 +351,6 @@ int Mode_1_Running(void)
 				
 				OLED_Printf(54, 8, OLED_6X8, "%4.1f   ", Car_Move_Distance);
 				OLED_Update();
-			
-			// （比较死板的方法，一般还是别用了）
-//			if (Car_Move_Distance > 250)
-//			{
-//				Speed_PID.Target = -20;
-//			}
-//			else if (Car_Move_Distance > 150)
-//			{
-//				Speed_PID.Target = -16;
-//			}
-//			else if (Car_Move_Distance < -250)
-//			{
-//				Speed_PID.Target = 20;
-//			}
-//			else if (Car_Move_Distance < -150)
-//			{
-//				Speed_PID.Target = 16;
-//			}
-//			else if (-50 < Car_Move_Distance && Car_Move_Distance < 50)
-//			{
-//				Speed_PID.Target = 0;
-//			}
-
 
 				Posi__PID.Actual = Car_Move_Distance;
 				PID_Update(&Posi__PID);

@@ -407,7 +407,7 @@ int Mode_2_Running(void)
 		
 		
 		/* 蓝牙模块*/
-		bluetooth_ch04_handle_receive();			
+//		bluetooth_ch04_handle_receive();			
 		
 		
 		/* 失控保护*/

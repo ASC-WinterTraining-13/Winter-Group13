@@ -242,7 +242,7 @@ int Mode_5_Running(void)
 	Run_Flag = 0;	
 	OLED_ShowString(0, 0 , "STOP", OLED_6X8);
 	OLED_ShowString(0, 8 , "Yaw_Act:", OLED_6X8);
-	OLED_ShowString(0, 16, "Yaw_Tar:", OLED_6X8);
+//	OLED_ShowString(0, 16, "Yaw_Tar:", OLED_6X8);
 	OLED_Update();
 	
 	// 变量相关的重置部分整合
@@ -441,17 +441,17 @@ int Mode_5_Running(void)
 			DifPWM  = 0;
 		}
 		OLED_Printf(48, 8 , OLED_6X8, "%3.2f", Yaw_Result);
-		OLED_Printf(48, 24 , OLED_6X8, "%d ", LeftPWM);
-		OLED_Printf(48, 32 , OLED_6X8, "%d ", RightPWM);
+//		OLED_Printf(48, 24 , OLED_6X8, "%d ", LeftPWM);
+//		OLED_Printf(48, 32 , OLED_6X8, "%d ", RightPWM);
 //		OLED_Printf(48, 40 , OLED_6X8, "%3.2f", Speed_PID.Out);
-		if (Head_PID_control_enable)
-		{
-			OLED_Printf(48, 16, OLED_6X8, "%3.2f  ", Yaw_Target);
-		}
-		else
-		{
-			OLED_Printf(48, 16, OLED_6X8, "*%3.2f*", Yaw_Target);
-		}
+//		if (Head_PID_control_enable)
+//		{
+//			OLED_Printf(48, 16, OLED_6X8, "%3.2f  ", Yaw_Target);
+//		}
+//		else
+//		{
+//			OLED_Printf(48, 16, OLED_6X8, "*%3.2f*", Yaw_Target);
+//		}
 		OLED_Update();
     }
 }
